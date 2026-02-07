@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  LucideArrowLeft,
   LucideArrowUpRight,
   LucideArrowDownRight,
   LucideBrain,
@@ -214,12 +213,12 @@ const BehaviourDashboard = () => {
   const topCategory = categorySpending[0];
   const opportunityItems = topCategory
     ? [
-        {
-          id: 1,
-          label: `Cut ${topCategory.name} by 10%`,
-          savings: formatCurrency(topCategory.amount * 0.1)
-        }
-      ]
+      {
+        id: 1,
+        label: `Cut ${topCategory.name} by 10%`,
+        savings: formatCurrency(topCategory.amount * 0.1)
+      }
+    ]
     : [];
 
   const scenarios = [
@@ -231,17 +230,17 @@ const BehaviourDashboard = () => {
     },
     topCategory
       ? {
-          id: 2,
-          title: `If you adjust ${topCategory.name}`,
-          detail: `Save about ${formatCurrency(topCategory.amount * 0.1)} this month.`,
-          tone: 'scenario-success'
-        }
+        id: 2,
+        title: `If you adjust ${topCategory.name}`,
+        detail: `Save about ${formatCurrency(topCategory.amount * 0.1)} this month.`,
+        tone: 'scenario-success'
+      }
       : {
-          id: 2,
-          title: 'If you set a budget',
-          detail: 'Create a budget to unlock projections.',
-          tone: 'scenario-success'
-        }
+        id: 2,
+        title: 'If you set a budget',
+        detail: 'Create a budget to unlock projections.',
+        tone: 'scenario-success'
+      }
   ];
 
   const progressTrackers = savingsGoals.slice(0, 3).map((goal) => {
@@ -260,10 +259,10 @@ const BehaviourDashboard = () => {
 
   const priorityAction = topCategory
     ? {
-        title: `Reduce ${topCategory.name} spend`,
-        detail: `You are already at ${formatCurrency(topCategory.amount)} in ${topCategory.name} this month.`,
-        impact: `Save ${formatCurrency(topCategory.amount * 0.1)}`
-      }
+      title: `Reduce ${topCategory.name} spend`,
+      detail: `You are already at ${formatCurrency(topCategory.amount)} in ${topCategory.name} this month.`,
+      impact: `Save ${formatCurrency(topCategory.amount * 0.1)}`
+    }
     : null;
 
   if (loading) {
@@ -290,8 +289,10 @@ const BehaviourDashboard = () => {
     <div className="ai-page">
       <header className="ai-header">
         <div className="ai-header-top">
-          <button className="ai-back-btn" onClick={() => navigate(-1)} type="button">
-            <LucideArrowLeft size={18} />
+          <button className="back-link" onClick={() => navigate(-1)} type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
             Back to Dashboard
           </button>
           <div className="ai-badge">

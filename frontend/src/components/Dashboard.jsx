@@ -525,7 +525,7 @@ const Dashboard = () => {
               <div className="dropdown-divider"></div>
               
               <Link 
-                to="/profile"
+                to="/settings"
                 className="dropdown-item"
                 role="menuitem"
                 onClick={() => setShowUserMenu(false)}

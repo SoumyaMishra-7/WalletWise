@@ -103,13 +103,16 @@ const Settings = () => {
     <div className="settings-page">
       <header className="settings-header">
         <div>
+          <Link to="/dashboard" className="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Dashboard
+          </Link>
           <span className="eyebrow">Settings</span>
           <h1>Personalize Your Dashboard</h1>
           <p>Update personal details, preferences, and financial profile to sharpen insights.</p>
         </div>
-        <Link to="/dashboard" className="btn-secondary">
-          Back to Dashboard
-        </Link>
       </header>
 
       <section className="settings-section">
