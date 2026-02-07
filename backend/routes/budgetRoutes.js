@@ -2,23 +2,13 @@ const express = require('express');
 const router = express.Router();
 const Budget = require('../models/Budget');
 const { protect } = require('../middleware/auth');
-
-// ==================== MIDDLEWARE ====================
-const sanitizeInput = (req, res, next) => {
-  if (req.body) {
-    Object.keys(req.body).forEach(key => {
-      if (typeof req.body[key] === 'string') {
-        req.body[key] = req.body[key].trim();
-      }
-    });
-  }
-  next();
-};
+const validate = require('../middleware/validate');
+const { budgetSchema, updateBudgetSchema } = require('../utils/validationSchemas');
 
 // ==================== BUDGET ROUTES ====================
 
 // Set/Update Budget
-router.post('/', protect, sanitizeInput, async (req, res) => {
+router.post('/', protect, validate(budgetSchema), async (req, res) => {
   try {
     console.log('\n💰 SET BUDGET REQUEST');
     console.log('User ID:', req.userId);
@@ -382,7 +372,7 @@ router.delete('/:id', protect, async (req, res) => {
 });
 
 // Update Budget
-router.put('/:id', protect, sanitizeInput, async (req, res) => {
+router.put('/:id', protect, validate(updateBudgetSchema), async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
