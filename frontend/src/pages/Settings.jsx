@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AppNavbar from '../components/AppNavbar';
 import './Settings.css';
 
 const Settings = () => {
@@ -100,17 +100,17 @@ const Settings = () => {
     .join('') || 'U';
 
   return (
-    <div className="settings-page">
-      <header className="settings-header">
-        <div>
-          <span className="eyebrow">Settings</span>
-          <h1>Personalize Your Dashboard</h1>
-          <p>Update personal details, preferences, and financial profile to sharpen insights.</p>
-        </div>
-        <Link to="/dashboard" className="btn-secondary">
-          Back to Dashboard
-        </Link>
-      </header>
+    <>
+      <AppNavbar />
+      <div className="settings-page">
+        <header className="settings-header">
+          <div>
+            <span className="eyebrow">Settings</span>
+            <h1>Personalize Your Dashboard</h1>
+            <p>Update personal details, preferences, and financial profile to sharpen insights.</p>
+          </div>
+
+        </header>
 
       <section className="settings-section">
         <div className="section-heading">
@@ -253,7 +253,8 @@ const Settings = () => {
           </button>
         </div>
       </form>
-    </div>
+      </div>
+    </>
   );
 };
 

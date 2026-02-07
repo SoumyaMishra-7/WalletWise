@@ -3,6 +3,7 @@ import api from '../api/client';
 import { Link } from 'react-router-dom';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import AppNavbar from '../components/AppNavbar';
 import './Budget.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -251,50 +252,56 @@ const Budget = () => {
 
   if (loading) {
     return (
-      <div className="budget-page">
-        <div className="overview-grid">
-          <div className="overview-card">
-            <h3>Loading budget...</h3>
+      <>
+        <AppNavbar />
+        <div className="budget-page">
+          <div className="overview-grid">
+            <div className="overview-card">
+              <h3>Loading budget...</h3>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="budget-page">
-        <div className="overview-grid">
-          <div className="overview-card">
-            <h3>{error}</h3>
+      <>
+        <AppNavbar />
+        <div className="budget-page">
+          <div className="overview-grid">
+            <div className="overview-card">
+              <h3>{error}</h3>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="budget-page">
-      <header className="budget-header">
-        <div>
-          <span className="eyebrow">Student Budget</span>
-          <h1>Keep it simple, stay on track</h1>
-          <p>See your pace, visualize your categories, and set a monthly budget in minutes.</p>
-        </div>
-        <div className="header-actions">
-          <button
-            className="advanced-toggle"
-            onClick={() => setShowAdvanced((prev) => !prev)}
-            aria-label="Toggle advanced tools"
-            title="Advanced tools"
-          >
-            ⚙️
-          </button>
-          <Link to="/dashboard" className="btn-secondary">
-            Back to Dashboard
-          </Link>
-        </div>
-      </header>
+    <>
+      <AppNavbar />
+      <div className="budget-page">
+        <header className="budget-header">
+          <div>
+            <span className="eyebrow">Student Budget</span>
+            <h1>Keep it simple, stay on track</h1>
+            <p>See your pace, visualize your categories, and set a monthly budget in minutes.</p>
+          </div>
+          <div className="header-actions">
+            <button
+              className="advanced-toggle"
+              onClick={() => setShowAdvanced((prev) => !prev)}
+              aria-label="Toggle advanced tools"
+              title="Advanced tools"
+            >
+              ⚙️
+            </button>
+
+          </div>
+        </header>
 
       <section className="overview-grid">
         <div className="overview-card">
@@ -663,7 +670,8 @@ const Budget = () => {
           </section>
         </section>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

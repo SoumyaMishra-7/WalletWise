@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { Pie, Bar, Line } from 'react-chartjs-2';
+import AppNavbar from '../components/AppNavbar';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -412,19 +412,19 @@ const Reports = () => {
       : 'Quick, student-friendly views of where your money went.';
 
   return (
-    <div className="reports-page">
-      <header className="reports-header">
-        <div>
-          <span className="eyebrow">Campus Spending</span>
-          <h1>This Month at a Glance</h1>
-          <p>{headerNote}</p>
-        </div>
-        <div className="header-actions">
-          <Link to="/dashboard" className="btn-secondary">
-            Back to Dashboard
-          </Link>
-        </div>
-      </header>
+    <>
+      <AppNavbar />
+      <div className="reports-page">
+        <header className="reports-header">
+          <div>
+            <span className="eyebrow">Campus Spending</span>
+            <h1>This Month at a Glance</h1>
+            <p>{headerNote}</p>
+          </div>
+          <div className="header-actions">
+
+          </div>
+        </header>
 
       {(loading || error) && (
         <div className={`reports-status ${error ? 'error' : 'loading'}`}>
@@ -584,7 +584,8 @@ const Reports = () => {
           </div>
         </section>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -1,7 +1,8 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { FaFilter, FaSearch } from 'react-icons/fa';
+import AppNavbar from '../components/AppNavbar';
 import './Transactions.css';
 
 const categoryLabelMap = {
@@ -208,47 +209,52 @@ const Transactions = () => {
 
   if (loading) {
     return (
-      <div className="transactions-page">
-        <div className="page-loading">Loading transactions...</div>
-      </div>
+      <>
+        <AppNavbar />
+        <div className="transactions-page">
+          <div className="page-loading">Loading transactions...</div>
+        </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="transactions-page">
-        <div className="page-error">
-          <p>{error}</p>
-          <button className="primary-button" onClick={() => window.location.reload()}>
-            Try Again
-          </button>
+      <>
+        <AppNavbar />
+        <div className="transactions-page">
+          <div className="page-error">
+            <p>{error}</p>
+            <button className="primary-button" onClick={() => window.location.reload()}>
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="transactions-page">
-      <header className="transactions-topbar">
-        <div>
-          <span className="eyebrow">Transactions</span>
-          <h1>Stay on top of your spending</h1>
-          <p>A calm snapshot of your money moments this semester.</p>
-        </div>
-        <div className="header-actions">
-          <Link to="/dashboard" className="btn-secondary">
-            Back to Dashboard
-          </Link>
-          <button
-            className={`advanced-toggle ${showAdvanced ? 'active' : ''}`}
-            onClick={() => setShowAdvanced((prev) => !prev)}
-            aria-label="Advanced filters"
-            type="button"
-          >
-            <FaFilter />
-          </button>
-        </div>
-      </header>
+    <>
+      <AppNavbar />
+      <div className="transactions-page">
+        <header className="transactions-topbar">
+          <div>
+            <span className="eyebrow">Transactions</span>
+            <h1>Stay on top of your spending</h1>
+            <p>A calm snapshot of your money moments this semester.</p>
+          </div>
+          <div className="header-actions">
+            <button
+              className={`advanced-toggle ${showAdvanced ? 'active' : ''}`}
+              onClick={() => setShowAdvanced((prev) => !prev)}
+              aria-label="Advanced filters"
+              type="button"
+            >
+              <FaFilter />
+            </button>
+          </div>
+        </header>
 
       <section className="transactions-toolbar">
         <div className="search-input compact">
@@ -317,52 +323,53 @@ const Transactions = () => {
         </section>
       )}
 
-      <section className="transactions-table">
-        {filteredTransactions.length === 0 ? (
-          <div className="empty-state">
-            <h3>No transactions match these filters.</h3>
-            <p>Try a different search or date range.</p>
-          </div>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Note</th>
-                <th>Amount</th>
-                <th>Mood</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTransactions.map((tx) => {
-                const moodKey = normalizeMood(tx.mood);
-                const mood = moodMeta[moodKey] || moodMeta.neutral;
-                const categoryKey = (tx.category || 'others').toLowerCase();
-                const categoryLabel = categoryLabelMap[categoryKey] || tx.category || 'Other';
-                const noteText = tx.description && `${tx.description}`.trim() ? tx.description : '.';
-                return (
-                  <tr key={tx.id || tx._id}>
-                    <td>{formatDate(tx.date)}</td>
-                    <td>{categoryLabel}</td>
-                    <td className="note">{noteText}</td>
-                    <td className={`amount ${tx.type}`}>{formatCurrency(tx.amount)}</td>
-                    <td>
-                      <span className="mood-pill" style={{ '--mood-color': mood.color }}>
-                        <span className="mood-emoji" aria-hidden="true">
-                          {mood.emoji}
+        <section className="transactions-table">
+          {filteredTransactions.length === 0 ? (
+            <div className="empty-state">
+              <h3>No transactions match these filters.</h3>
+              <p>Try a different search or date range.</p>
+            </div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Note</th>
+                  <th>Amount</th>
+                  <th>Mood</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTransactions.map((tx) => {
+                  const moodKey = normalizeMood(tx.mood);
+                  const mood = moodMeta[moodKey] || moodMeta.neutral;
+                  const categoryKey = (tx.category || 'others').toLowerCase();
+                  const categoryLabel = categoryLabelMap[categoryKey] || tx.category || 'Other';
+                  const noteText = tx.description && `${tx.description}`.trim() ? tx.description : '.';
+                  return (
+                    <tr key={tx.id || tx._id}>
+                      <td>{formatDate(tx.date)}</td>
+                      <td>{categoryLabel}</td>
+                      <td className="note">{noteText}</td>
+                      <td className={`amount ${tx.type}`}>{formatCurrency(tx.amount)}</td>
+                      <td>
+                        <span className="mood-pill" style={{ '--mood-color': mood.color }}>
+                          <span className="mood-emoji" aria-hidden="true">
+                            {mood.emoji}
+                          </span>
+                          {mood.label}
                         </span>
-                        {mood.label}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </section>
-    </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+      </div>
+    </>
   );
 };
 

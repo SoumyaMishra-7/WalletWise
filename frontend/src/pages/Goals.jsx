@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../api/client';
 import SavingGoal from './SavingGoal';
+import AppNavbar from '../components/AppNavbar';
 import {
   FaArrowLeft,
   FaBook,
@@ -208,19 +209,17 @@ const Goals = () => {
   }, [goals]);
 
   return (
-    <div className="goals-page">
-      <header className="goals-header">
-        <div className="goals-header-content">
-          <span className="eyebrow">Student Goals</span>
-          <h1>Make room for tuition, books, and the fun stuff.</h1>
-          <p>Track every goal in one place and keep your savings on pace with deadlines.</p>
-        </div>
-        <div className="header-actions">
-          <Link to="/dashboard" className="btn-secondary">
-            Back to Dashboard
-          </Link>
-        </div>
-      </header>
+    <>
+      <AppNavbar />
+      <div className="goals-page">
+        <header className="goals-header">
+          <div className="goals-header-content">
+            <span className="eyebrow">Student Goals</span>
+            <h1>Make room for tuition, books, and the fun stuff.</h1>
+            <p>Track every goal in one place and keep your savings on pace with deadlines.</p>
+          </div>
+          
+        </header>
 
       <section className="goals-summary">
         <div className="summary-card">
@@ -416,7 +415,8 @@ const Goals = () => {
           fetchGoals();
         }}
       />
-    </div>
+      </div>
+    </>
   );
 };
 
