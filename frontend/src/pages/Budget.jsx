@@ -277,6 +277,12 @@ const Budget = () => {
     <div className="budget-page">
       <header className="budget-header">
         <div>
+          <Link to="/dashboard" className="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Dashboard
+          </Link>
           <span className="eyebrow">Student Budget</span>
           <h1>Keep it simple, stay on track</h1>
           <p>See your pace, visualize your categories, and set a monthly budget in minutes.</p>
@@ -290,9 +296,6 @@ const Budget = () => {
           >
             ⚙️
           </button>
-          <Link to="/dashboard" className="btn-secondary">
-            Back to Dashboard
-          </Link>
         </div>
       </header>
 
