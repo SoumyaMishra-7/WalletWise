@@ -68,8 +68,6 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/wallet
 console.log(`🔗 Connecting to MongoDB: ${MONGODB_URI}`);
 
 mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
 })
@@ -92,149 +90,8 @@ mongoose.connect(MONGODB_URI, {
 // User Model
 const User = require('./models/User');
 const Transaction = require('./models/Transactions');
-
-// Budget Model
-const budgetSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  totalBudget: {
-    type: Number,
-    required: [true, 'Total budget amount is required'],
-    min: [1, 'Budget amount must be greater than 0']
-  },
-  categories: [{
-    name: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    amount: {
-      type: Number,
-      required: true,
-      min: 0
-    },
-    percentage: {
-      type: Number,
-      required: true,
-      min: 0,
-      max: 100
-    },
-    color: {
-      type: String,
-      default: '#667eea'
-    }
-  }],
-  month: {
-    type: String,
-    required: true,
-    match: [/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format']
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-}, {
-  timestamps: true
-});
-
-// Create compound index for user and month
-budgetSchema.index({ userId: 1, month: 1 }, { unique: true });
-
-// Pre-save hook to update updatedAt
-budgetSchema.pre('save', function(next) {
-  this.updatedAt = new Date();
-  next();
-});
-
-
-// Savings Goal Model - SIMPLIFIED
-const savingsGoalSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true
-  },
-  name: {
-    type: String,
-    required: [true, 'Goal name is required'],
-    trim: true
-  },
-  description: {
-    type: String,
-    trim: true,
-    default: ''
-  },
-  targetAmount: {
-    type: Number,
-    required: [true, 'Target amount is required'],
-    min: [1, 'Target amount must be greater than 0']
-  },
-  currentAmount: {
-    type: Number,
-    default: 0,
-    min: [0, 'Current amount cannot be negative']
-  },
-  targetDate: {
-    type: Date,
-    required: [true, 'Target date is required']
-  },
-  category: {
-    type: String,
-    default: 'Other'
-  },
-  priority: {
-    type: String,
-    default: 'Medium'
-  },
-  monthlyContribution: {
-    type: Number,
-    default: 0
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  progress: {
-    type: Number,
-    default: 0
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// Calculate progress before saving
-savingsGoalSchema.pre('save', function(next) {
-  if (this.targetAmount > 0) {
-    this.progress = Math.min(100, (this.currentAmount / this.targetAmount) * 100);
-  } else {
-    this.progress = 0;
-  }
-  this.updatedAt = new Date();
-  next();
-});
-
-// Create models
-const Budget = mongoose.model('Budget', budgetSchema);
-const SavingsGoal = mongoose.model('SavingsGoal', savingsGoalSchema);
-
+const Budget = require('./models/Budget');
+const SavingsGoal = require('./models/SavingGoal');
 // ==================== HELPER FUNCTIONS ====================
 
 // Simple sanitization
@@ -348,8 +205,13 @@ app.post('/api/budget', protect, sanitizeInput, async (req, res) => {
     if (budget) {
       // Update existing budget
       budget.totalBudget = totalBudget;
-      budget.categories = categories;
-      budget.updatedAt = new Date();
+      budget.categories = categories.map(cat => ({
+        name: cat.name,
+        categoryType: cat.categoryType,
+        amount: cat.amount,
+        percentage: cat.percentage,
+        color: cat.color
+      }));
       await budget.save();
       console.log('✅ Budget updated:', budget._id);
     } else {
@@ -580,6 +442,7 @@ app.post('/api/budget/copy-previous', protect, async (req, res) => {
       totalBudget: previousBudget.totalBudget,
       categories: previousBudget.categories.map(cat => ({
         name: cat.name,
+        categoryType: cat.categoryType,
         amount: cat.amount,
         percentage: cat.percentage,
         color: cat.color
@@ -752,43 +615,14 @@ app.get('/api/budget/stats/summary', protect, async (req, res) => {
       });
     }
     
-    const normalize = (value) =>
-      String(value || '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '');
-
-    const categoryAliases = {
-      food: ['food', 'grocery', 'grocer', 'dining', 'restaurant'],
-      transport: ['transport', 'travel', 'fuel', 'gas', 'uber', 'taxi', 'bus', 'train'],
-      shopping: ['shopping', 'shop', 'clothes', 'apparel'],
-      entertainment: ['entertain', 'movie', 'game', 'fun', 'subscription'],
-      education: ['education', 'school', 'tuition', 'course', 'book'],
-      healthcare: ['health', 'medical', 'doctor', 'pharmacy'],
-      housing: ['housing', 'rent', 'utility', 'utilities', 'home'],
-      other: ['other', 'misc']
-    };
-
     const spentByCategory = new Map();
     monthlyExpenses.forEach((tx) => {
-      const key = normalize(tx.category);
-      spentByCategory.set(key, (spentByCategory.get(key) || 0) + tx.amount);
+      spentByCategory.set(tx.category, (spentByCategory.get(tx.category) || 0) + tx.amount);
     });
 
-    const matchTransactionCategories = (categoryName) => {
-      const normalized = normalize(categoryName);
-      if (!normalized) return [];
-
-      const directMatch = Object.keys(categoryAliases).find((key) => key === normalized);
-      if (directMatch) return [directMatch];
-
-      return Object.entries(categoryAliases)
-        .filter(([, aliases]) => aliases.some((alias) => normalized.includes(normalize(alias))))
-        .map(([key]) => key);
-    };
-
     const categoriesWithSpend = budget.categories.map((category) => {
-      const matches = matchTransactionCategories(category.name);
-      const spent = matches.reduce((sum, key) => sum + (spentByCategory.get(key) || 0), 0);
+      const categoryKey = category.categoryType || category.name.toLowerCase();
+      const spent = spentByCategory.get(categoryKey) || 0;
       return {
         ...category.toObject(),
         spent
