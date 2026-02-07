@@ -15,6 +15,13 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'Type, amount, and category are required' });
     }
 
+    //Validate amount is a number and positive
+    if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({
+        message: 'Amount must be a valid positive number. Strings are not allowed.'
+      });
+    }
+
     // Validate type
     if (!['income', 'expense'].includes(type)) {
       return res.status(400).json({ message: 'Type must be either income or expense' });
