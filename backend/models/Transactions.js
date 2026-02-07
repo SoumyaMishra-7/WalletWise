@@ -1,5 +1,6 @@
 // models/Transaction.js
 const mongoose = require('mongoose');
+const { CATEGORIES } = require('../constants/categories');
 
 const transactionSchema = new mongoose.Schema({
   userId: {
@@ -19,7 +20,7 @@ const transactionSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['food', 'transport', 'shopping', 'entertainment', 'education', 'healthcare', 'housing', 'other'],
+    enum: CATEGORIES,
     required: true
   },
   description: {

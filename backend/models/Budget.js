@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { CATEGORIES } = require('../constants/categories');
 
 const budgetSchema = new mongoose.Schema({
   userId: {
@@ -16,6 +17,11 @@ const budgetSchema = new mongoose.Schema({
       type: String,
       required: true,
       trim: true
+    },
+    categoryType: {
+      type: String,
+      required: false,
+      enum: CATEGORIES
     },
     amount: {
       type: Number,
@@ -41,14 +47,6 @@ const budgetSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true
@@ -56,12 +54,6 @@ const budgetSchema = new mongoose.Schema({
 
 // Create compound index for user and month
 budgetSchema.index({ userId: 1, month: 1 }, { unique: true });
-
-// Pre-save hook to update updatedAt
-budgetSchema.pre('save', function(next) {
-  this.updatedAt = new Date();
-  next();
-});
 
 // Method to get formatted budget
 budgetSchema.methods.toJSON = function() {
@@ -113,6 +105,7 @@ budgetSchema.statics.copyPreviousMonth = async function(userId) {
     totalBudget: previousBudget.totalBudget,
     categories: previousBudget.categories.map(cat => ({
       name: cat.name,
+      categoryType: cat.categoryType,
       amount: cat.amount,
       percentage: cat.percentage,
       color: cat.color
