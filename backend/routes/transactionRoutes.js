@@ -1,14 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const Transaction = require('../models/Transactions');
 const { protect } = require('../middleware/auth');
+const transactionController = require('../controllers/transactionController');
 
 // Add transaction (both income and expense)
-router.post('/', protect, async (req, res) => {
-  try {
-    const { type, amount, category, description, paymentMethod, date, mood } = req.body;
+router.post('/', protect, transactionController.addTransaction);
 
-    console.log('📥 Received transaction data:', { type, amount, category, description, paymentMethod, date, mood });
+// Get all transactions
+router.get('/', protect, transactionController.getAllTransactions);
 
     // Validate required fields
     if (!type || !amount || !category) {

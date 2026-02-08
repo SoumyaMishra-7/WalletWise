@@ -8,7 +8,7 @@ import AddExpense from '../pages/AddExpense';
 import AddIncome from '../pages/AddIncome';
 import SetBudget from '../pages/SetBudget';
 import SavingGoal from '../pages/SavingGoal';
-import { 
+import {
   FaWallet, FaSignOutAlt, FaUserCircle, FaChevronDown,
   FaMoneyBillWave, FaChartLine, FaPiggyBank, FaPlusCircle,
   FaHandHoldingUsd, FaBullseye, FaChartBar, FaExclamationTriangle,
@@ -157,7 +157,7 @@ const Dashboard = () => {
     setRefreshing(true);
     try {
       console.log('???? Fetching dashboard data...');
-      
+
       const dashboardRes = await api.get('/api/dashboard/summary');
       const dashboardData = dashboardRes.data;
 
@@ -165,7 +165,7 @@ const Dashboard = () => {
 
       if (dashboardData.success) {
         const statsData = dashboardData.stats || {};
-        
+
         setStats({
           totalBalance: statsData.totalBalance || 0,
           spentThisMonth: statsData.monthlyExpenses || 0,
@@ -179,21 +179,21 @@ const Dashboard = () => {
 
         // Transactions
         setRecentTransactions(dashboardData.recentTransactions || []);
-        
+
         // Category spending
         setCategorySpending(dashboardData.categorySpending || []);
-        
+
         // Weekly expenses
         setWeeklyExpenses(dashboardData.weeklyExpenses || []);
-        
+
         // Savings goals
         setSavingsGoals(dashboardData.savingsGoals || []);
 
         // Update timestamp
-        setLastUpdated(new Date().toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
+        setLastUpdated(new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
           minute: '2-digit',
-          hour12: true 
+          hour12: true
         }));
 
       } else {
@@ -204,7 +204,7 @@ const Dashboard = () => {
     } catch (err) {
       console.error('❌ Error fetching dashboard data:', err);
       console.error('❌ Error details:', err.response?.data || err.message);
-      
+
       if (err.response?.status === 401) {
         await logout();
         navigate('/login');
@@ -239,7 +239,7 @@ const Dashboard = () => {
   const handleAddExpense = async (expenseData) => {
     try {
       console.log('??? Adding expense:', expenseData);
-      
+
       const response = await api.post('/api/transactions', expenseData);
 
       console.log('✅ Expense response:', response.data);
@@ -267,7 +267,7 @@ const Dashboard = () => {
   const handleAddIncome = async (incomeData) => {
     try {
       console.log('??? Adding income:', incomeData);
-      
+
       const response = await api.post('/api/transactions', incomeData);
 
       console.log('✅ Income response:', response.data);
@@ -321,17 +321,17 @@ const Dashboard = () => {
   };
 
   // ============ CHART CONFIGURATIONS ============
-  
+
   // Weekly expenses chart with empty state handling
   const weeklyExpensesChart = {
-    labels: weeklyExpenses.length > 0 
-      ? weeklyExpenses.map(item => item.day) 
+    labels: weeklyExpenses.length > 0
+      ? weeklyExpenses.map(item => item.day)
       : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
         label: 'Daily Expenses',
-        data: weeklyExpenses.length > 0 
-          ? weeklyExpenses.map(item => item.amount) 
+        data: weeklyExpenses.length > 0
+          ? weeklyExpenses.map(item => item.amount)
           : [0, 0, 0, 0, 0, 0, 0],
         borderColor: '#f87171',
         backgroundColor: 'rgba(248, 113, 113, 0.1)',
@@ -344,13 +344,13 @@ const Dashboard = () => {
 
   // Category spending chart with empty state
   const spendingByCategoryChart = {
-    labels: categorySpending.length > 0 
-      ? categorySpending.map(item => item.name) 
+    labels: categorySpending.length > 0
+      ? categorySpending.map(item => item.name)
       : ['No Data'],
     datasets: [
       {
-        data: categorySpending.length > 0 
-          ? categorySpending.map(item => item.amount) 
+        data: categorySpending.length > 0
+          ? categorySpending.map(item => item.amount)
           : [100],
         backgroundColor: [
           '#38bdf8', '#60a5fa', '#7dd3fc', '#93c5fd', '#a5b4fc',
@@ -383,7 +383,7 @@ const Dashboard = () => {
         },
         ticks: {
           color: '#64748b',
-          callback: function(value) {
+          callback: function (value) {
             return '₹' + value;
           }
         }
@@ -462,7 +462,7 @@ const Dashboard = () => {
 
         {/* Center: Navigation Links */}
         <nav className="nav-center" ref={mobileMenuRef}>
-          <button 
+          <button
             className="mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
@@ -496,7 +496,7 @@ const Dashboard = () => {
 
         {/* Right: User Profile */}
         <div className="nav-right" ref={userMenuRef}>
-          <button 
+          <button
             className="user-profile-trigger"
             onClick={() => setShowUserMenu(!showUserMenu)}
             aria-expanded={showUserMenu}
@@ -521,10 +521,10 @@ const Dashboard = () => {
                   <span className="dropdown-user-email">{user?.email}</span>
                 </div>
               </div>
-              
+
               <div className="dropdown-divider"></div>
-              
-              <Link 
+
+              <Link
                 to="/profile"
                 className="dropdown-item"
                 role="menuitem"
@@ -533,8 +533,8 @@ const Dashboard = () => {
                 <FaUserCircle />
                 <span>Profile</span>
               </Link>
-              
-              <Link 
+
+              <Link
                 to="/settings"
                 className="dropdown-item"
                 role="menuitem"
@@ -543,10 +543,10 @@ const Dashboard = () => {
                 <FaCog />
                 <span>Settings</span>
               </Link>
-              
+
               <div className="dropdown-divider"></div>
-              
-              <button 
+
+              <button
                 onClick={handleLogout}
                 className="dropdown-item logout"
                 role="menuitem"
@@ -576,10 +576,10 @@ const Dashboard = () => {
               </p>
             </div>
           </div>
-          
+
           <div className="dashboard-header-right">
             <div className="action-buttons">
-              <button 
+              <button
                 className={`refresh-btn ${refreshing ? 'refreshing' : ''}`}
                 onClick={fetchDashboardData}
                 title="Refresh dashboard data"
@@ -592,8 +592,8 @@ const Dashboard = () => {
                   <span className="last-updated">Updated {lastUpdated}</span>
                 )}
               </button>
-              
-              <button 
+
+              <button
                 className="ai-insights-btn"
                 onClick={handleAIInsights}
                 title="View AI-powered spending insights"
@@ -631,19 +631,19 @@ const Dashboard = () => {
               <p className="stat-value">{formatCurrency(stats.spentThisMonth)}</p>
               <div className="progress-container">
                 <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
+                  <div
+                    className="progress-fill"
                     style={{ width: `${Math.min(stats.budgetUsedPercentage, 100)}%` }}
                   ></div>
                 </div>
                 <span className="progress-text">
-                  {stats.monthlyBudget > 0 
-                    ? `${formatCurrency(stats.budgetLeft)} left of ${formatCurrency(stats.monthlyBudget)}` 
+                  {stats.monthlyBudget > 0
+                    ? `${formatCurrency(stats.budgetLeft)} left of ${formatCurrency(stats.monthlyBudget)}`
                     : 'No budget set'}
                 </span>
               </div>
               {stats.monthlyBudget === 0 && (
-                <button 
+                <button
                   onClick={() => setShowSetBudgetModal(true)}
                   className="cta-button small"
                 >
@@ -664,7 +664,7 @@ const Dashboard = () => {
                 <span>{savingsGoals.length} active goals</span>
               </div>
               {stats.savings === 0 && (
-                <button 
+                <button
                   onClick={() => setShowSavingsGoalModal(true)}
                   className="cta-button small"
                 >
@@ -683,19 +683,19 @@ const Dashboard = () => {
               <p className="stat-value">{Math.round(stats.budgetUsedPercentage)}% used</p>
               <div className="progress-container">
                 <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
+                  <div
+                    className="progress-fill"
                     style={{ width: `${Math.min(stats.budgetUsedPercentage, 100)}%` }}
                   ></div>
                 </div>
                 <span className="progress-text">
-                  {stats.monthlyBudget > 0 
+                  {stats.monthlyBudget > 0
                     ? `${formatCurrency(stats.monthlyBudget)} total`
                     : 'No budget set'}
                 </span>
               </div>
               {stats.monthlyBudget === 0 && (
-                <button 
+                <button
                   onClick={() => setShowSetBudgetModal(true)}
                   className="cta-button small"
                 >
@@ -774,7 +774,7 @@ const Dashboard = () => {
                 <div className="chart-empty-state">
                   <FaChartLine className="empty-chart-icon" />
                   <p>No expense data for this week</p>
-                  <button 
+                  <button
                     onClick={() => setShowAddExpenseModal(true)}
                     className="btn-primary small"
                   >
@@ -797,7 +797,7 @@ const Dashboard = () => {
                 <div className="chart-empty-state">
                   <FaChartPie className="empty-chart-icon" />
                   <p>No category data yet</p>
-                  <button 
+                  <button
                     onClick={() => setShowAddExpenseModal(true)}
                     className="btn-primary small"
                   >
@@ -817,14 +817,14 @@ const Dashboard = () => {
               <h3>Recent Transactions</h3>
               <p className="section-subtitle">{recentTransactions.length} transactions this month</p>
             </div>
-            <button 
+            <button
               onClick={() => navigate('/transactions')}
               className="view-all-btn"
             >
               View All ({recentTransactions.length})
             </button>
           </div>
-          
+
           {recentTransactions.length > 0 ? (
             <div className="transactions-grid">
               {recentTransactions.slice(0, 6).map((transaction, index) => (
@@ -877,8 +877,8 @@ const Dashboard = () => {
                   </div>
                   <div className="goal-progress">
                     <div className="progress-bar">
-                      <div 
-                        className="progress-fill green" 
+                      <div
+                        className="progress-fill green"
                         style={{ width: `${Math.min(goal.progress || 0, 100)}%` }}
                       ></div>
                     </div>

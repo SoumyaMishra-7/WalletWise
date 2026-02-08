@@ -5,9 +5,6 @@ const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const passport = require('passport');
 const { configurePassport } = require('./config/passport');
-const authRoutes = require('./routes/authRoutes');
-const oauthRoutes = require('./routes/oauthRoutes');
-const { protect } = require('./middleware/auth');
 dotenv.config();
 
 // Initialize Express app
@@ -78,6 +75,8 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/wallet
 console.log(`🔗 Connecting to MongoDB: ${MONGODB_URI}`);
 
 mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
 })
@@ -100,8 +99,154 @@ mongoose.connect(MONGODB_URI, {
 // User Model
 const User = require('./models/User');
 const Transaction = require('./models/Transactions');
+<<<<<<<< < Temporary merge branch 1
+
+// Budget Model
+const budgetSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  totalBudget: {
+    type: Number,
+    required: [true, 'Total budget amount is required'],
+    min: [1, 'Budget amount must be greater than 0']
+  },
+  categories: [{
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    amount: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    percentage: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100
+    },
+    color: {
+      type: String,
+      default: '#667eea'
+    }
+  }],
+  month: {
+    type: String,
+    required: true,
+    match: [/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format']
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true
+});
+
+// Create compound index for user and month
+budgetSchema.index({ userId: 1, month: 1 }, { unique: true });
+
+// Pre-save hook to update updatedAt
+budgetSchema.pre('save', function (next) {
+  this.updatedAt = new Date();
+  next();
+});
+
+
+// Savings Goal Model - SIMPLIFIED
+const savingsGoalSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  name: {
+    type: String,
+    required: [true, 'Goal name is required'],
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  targetAmount: {
+    type: Number,
+    required: [true, 'Target amount is required'],
+    min: [1, 'Target amount must be greater than 0']
+  },
+  currentAmount: {
+    type: Number,
+    default: 0,
+    min: [0, 'Current amount cannot be negative']
+  },
+  targetDate: {
+    type: Date,
+    required: [true, 'Target date is required']
+  },
+  category: {
+    type: String,
+    default: 'Other'
+  },
+  priority: {
+    type: String,
+    default: 'Medium'
+  },
+  monthlyContribution: {
+    type: Number,
+    default: 0
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  progress: {
+    type: Number,
+    default: 0
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Calculate progress before saving
+savingsGoalSchema.pre('save', function (next) {
+  if (this.targetAmount > 0) {
+    this.progress = Math.min(100, (this.currentAmount / this.targetAmount) * 100);
+  } else {
+    this.progress = 0;
+  }
+  this.updatedAt = new Date();
+  next();
+});
+
+// Create models
+const Budget = mongoose.model('Budget', budgetSchema);
+const SavingsGoal = mongoose.model('SavingsGoal', savingsGoalSchema);
+
+=========
 const Budget = require('./models/Budget');
 const SavingsGoal = require('./models/SavingGoal');
+>>>>>>>>> Temporary merge branch 2
 // ==================== HELPER FUNCTIONS ====================
 
 // Simple sanitization
@@ -116,8 +261,7 @@ const sanitizeInput = (req, res, next) => {
   next();
 };
 
-// ==================== AUTH ROUTES ====================
-
+// ==================== ROUTE MOUNTING ====================
 app.use('/api/auth', authRoutes);
 app.use('/auth', oauthRoutes);
 
@@ -624,7 +768,27 @@ app.get('/api/budget/stats/summary', protect, async (req, res) => {
         }
       });
     }
+<<<<<<<<< Temporary merge branch 1
 
+    const normalize = (value) =>
+      String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '');
+
+    const categoryAliases = {
+      food: ['food', 'grocery', 'grocer', 'dining', 'restaurant'],
+      transport: ['transport', 'travel', 'fuel', 'gas', 'uber', 'taxi', 'bus', 'train'],
+      shopping: ['shopping', 'shop', 'clothes', 'apparel'],
+      entertainment: ['entertain', 'movie', 'game', 'fun', 'subscription'],
+      education: ['education', 'school', 'tuition', 'course', 'book'],
+      healthcare: ['health', 'medical', 'doctor', 'pharmacy'],
+      housing: ['housing', 'rent', 'utility', 'utilities', 'home'],
+      other: ['other', 'misc']
+    };
+
+=========
+
+>>>>>>>>> Temporary merge branch 2
     const spentByCategory = new Map();
     monthlyExpenses.forEach((tx) => {
       spentByCategory.set(tx.category, (spentByCategory.get(tx.category) || 0) + tx.amount);
@@ -674,7 +838,7 @@ app.get('/api/budget/stats/summary', protect, async (req, res) => {
 // ==================== SAVINGS GOALS ROUTES ====================
 
 // Create Savings Goal - SIMPLIFIED
-app.post('/api/savings-goals', protect, sanitizeInput, async (req, res) => {
+app.post('/api/savings-goals', sanitizeInput, protect, async (req, res) => {
   try {
     console.log('\n🎯 CREATE SAVINGS GOAL REQUEST');
     console.log('User ID:', req.userId);
@@ -1068,135 +1232,136 @@ app.get('/api/dashboard/summary', protect, async (req, res) => {
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    endpoints: {
-      auth: {
-        register: 'POST /api/auth/register',
-        login: 'POST /api/auth/login',
-        logout: 'POST /api/auth/logout',
-        profile: 'GET /api/auth/me'
-      },
-      budget: {
-        set: 'POST /api/budget',
-        get: 'GET /api/budget',
-        getCurrent: 'GET /api/budget/current',
-        copyPrevious: 'POST /api/budget/copy-previous',
-        summary: 'GET /api/budget/stats/summary'
-      },
-      savings_goals: {
-        create: 'POST /api/savings-goals',
-        list: 'GET /api/savings-goals'
-      },
-      transactions: {
-        add: 'POST /api/transactions',
-        list: 'GET /api/transactions'
-      },
-      dashboard: {
-        summary: 'GET /api/dashboard/summary'
-      }
-    }
-  });
+    res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+        endpoints: {
+            auth: {
+                register: 'POST /api/auth/register',
+                login: 'POST /api/auth/login',
+                logout: 'POST /api/auth/logout',
+                profile: 'GET /api/auth/me',
+                verifyEmail: 'POST /api/auth/verify-email',
+                resendOtp: 'POST /api/auth/resend-otp',
+                updateProfile: 'PUT /api/auth/profile',
+                refresh: 'POST /api/auth/refresh'
+            },
+            budget: {
+                set: 'POST /api/budget',
+                get: 'GET /api/budget',
+                getCurrent: 'GET /api/budget/current',
+                copyPrevious: 'POST /api/budget/copy-previous',
+                summary: 'GET /api/budget/stats/summary'
+            },
+            savings_goals: {
+                create: 'POST /api/savings-goals',
+                list: 'GET /api/savings-goals'
+            },
+            transactions: {
+                add: 'POST /api/transactions',
+                list: 'GET /api/transactions'
+            },
+            dashboard: {
+                summary: 'GET /api/dashboard/summary'
+            }
+        }
+    });
 });
 
 // Test route
 app.get('/', (req, res) => {
-  res.json({
-    message: 'WalletWise Backend API is running',
-    version: '1.0.0',
-    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-    endpoints: {
-      auth: {
-        register: 'POST /api/auth/register',
-        login: 'POST /api/auth/login',
-        profile: 'GET /api/auth/me (requires token)'
-      },
-      budget: {
-        set: 'POST /api/budget (requires token)',
-        get: 'GET /api/budget (requires token)',
-        getCurrent: 'GET /api/budget/current (requires token)',
-        copyPrevious: 'POST /api/budget/copy-previous (requires token)',
-        summary: 'GET /api/budget/stats/summary (requires token)'
-      },
-      savings_goals: {
-        create: 'POST /api/savings-goals (requires token)',
-        list: 'GET /api/savings-goals (requires token)'
-      },
-      transactions: {
-        add: 'POST /api/transactions (requires token)',
-        list: 'GET /api/transactions (requires token)'
-      },
-      dashboard: {
-        summary: 'GET /api/dashboard/summary (requires token)'
-      },
-      utility: {
-        health: 'GET /api/health'
-      }
-    }
-  });
+    res.json({
+        message: 'WalletWise Backend API is running',
+        version: '1.0.0',
+        database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+        endpoints: {
+            auth: {
+                register: 'POST /api/auth/register',
+                login: 'POST /api/auth/login',
+                profile: 'GET /api/auth/me (requires token)'
+            },
+            budget: {
+                set: 'POST /api/budget (requires token)',
+                get: 'GET /api/budget (requires token)',
+                getCurrent: 'GET /api/budget/current (requires token)',
+                copyPrevious: 'POST /api/budget/copy-previous (requires token)',
+                summary: 'GET /api/budget/stats/summary (requires token)'
+            },
+            savings_goals: {
+                create: 'POST /api/savings-goals (requires token)',
+                list: 'GET /api/savings-goals (requires token)'
+            },
+            transactions: {
+                add: 'POST /api/transactions (requires token)',
+                list: 'GET /api/transactions (requires token)'
+            },
+            dashboard: {
+                summary: 'GET /api/dashboard/summary (requires token)'
+            },
+            utility: {
+                health: 'GET /api/health'
+            }
+        }
+    });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Endpoint not found',
-    requestedUrl: req.originalUrl,
-    timestamp: new Date().toISOString()
-  });
+    res.status(404).json({
+        success: false,
+        message: 'Endpoint not found',
+        requestedUrl: req.originalUrl,
+        timestamp: new Date().toISOString()
+    });
 });
 
 // ==================== START SERVER ====================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 Server running on port ${PORT}`);
-  console.log(`🔗 API Base URL: http://localhost:${PORT}`);
-  console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
-  console.log(`🔐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`\n🚀 Server running on port ${PORT}`);
+    console.log(`🔗 API Base URL: http://localhost:${PORT}`);
+    console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+    console.log(`🔐 Environment: ${process.env.NODE_ENV || 'development'}`);
 
-  console.log(`\n📋 AVAILABLE ENDPOINTS:`);
-  console.log(`\n🔐 AUTH:`);
-  console.log(`  POST /api/auth/register       - Register user`);
-  console.log(`  POST /api/auth/login          - Login user`);
-  console.log(`  GET  /api/auth/me             - Get current user (requires token)`);
+    console.log(`\n📋 AVAILABLE ENDPOINTS:`);
+    console.log(`\n🔐 AUTH:`);
+    console.log(`  POST /api/auth/register       - Register user`);
+    console.log(`  POST /api/auth/login          - Login user`);
+    console.log(`  GET  /api/auth/me             - Get current user (requires token)`);
 
-  console.log(`\n💰 BUDGET:`);
-  console.log(`  POST /api/budget              - Set/update budget (requires token)`);
-  console.log(`  GET  /api/budget              - Get all budgets (requires token)`);
-  console.log(`  GET  /api/budget/current      - Get current month budget (requires token)`);
-  console.log(`  POST /api/budget/copy-previous - Copy previous month budget (requires token)`);
-  console.log(`  GET  /api/budget/stats/summary - Budget statistics (requires token)`);
-  console.log(`  PUT  /api/budget/:id          - Update budget (requires token)`);
-  console.log(`  DELETE /api/budget/:id        - Delete budget (requires token)`);
+    console.log(`\n💰 BUDGET:`);
+    console.log(`  POST /api/budget              - Set/update budget (requires token)`);
+    console.log(`  GET  /api/budget              - Get all budgets (requires token)`);
+    console.log(`  GET  /api/budget/current      - Get current month budget (requires token)`);
+    console.log(`  POST /api/budget/copy-previous - Copy previous month budget (requires token)`);
+    console.log(`  GET  /api/budget/stats/summary - Budget statistics (requires token)`);
+    console.log(`  PUT  /api/budget/:id          - Update budget (requires token)`);
+    console.log(`  DELETE /api/budget/:id        - Delete budget (requires token)`);
 
-  console.log(`\n🎯 SAVINGS GOALS:`);
-  console.log(`  POST /api/savings-goals       - Create savings goal (requires token)`);
-  console.log(`  GET  /api/savings-goals       - List savings goals (requires token)`);
+    console.log(`\n🎯 SAVINGS GOALS:`);
+    console.log(`  POST /api/savings-goals       - Create savings goal (requires token)`);
+    console.log(`  GET  /api/savings-goals       - List savings goals (requires token)`);
 
-  console.log(`\n💳 TRANSACTIONS:`);
-  console.log(`  POST /api/transactions        - Add transaction (requires token)`);
-  console.log(`  GET  /api/transactions        - List transactions (requires token)`);
+    console.log(`\n💳 TRANSACTIONS:`);
+    console.log(`  POST /api/transactions        - Add transaction (requires token)`);
+    console.log(`  GET  /api/transactions        - List transactions (requires token)`);
 
-  console.log(`\n📊 DASHBOARD:`);
-  console.log(`  GET  /api/dashboard/summary   - Dashboard data (requires token)`);
+    console.log(`\n📊 DASHBOARD:`);
+    console.log(`  GET  /api/dashboard/summary   - Dashboard data (requires token)`);
 
-  console.log(`\n🔧 UTILITY:`);
-  console.log(`  GET  /api/health              - Health check`);
-  console.log(`  GET  /                        - API documentation`);
+    console.log(`\n🔧 UTILITY:`);
+    console.log(`  GET  /api/health              - Health check`);
+    console.log(`  GET  /                        - API documentation`);
 
-  console.log(`\n💡 IMPORTANT: Budget endpoints now include notifications!`);
-  console.log('   Use this format for budget data:');
-  console.log('   {');
-  console.log('     "totalBudget": 15000,');
-  console.log('     "categories": [');
-  console.log('       {"name": "Food", "amount": 4500, "percentage": 30, "color": "#FF6B6B"}');
-  console.log('     ]');
-  console.log('   }');
-  console.log('📊 Waiting for requests...');
+    console.log(`\n💡 IMPORTANT: Budget endpoints now include notifications!`);
+    console.log('   Use this format for budget data:');
+    console.log('   {');
+    console.log('     "totalBudget": 15000,');
+    console.log('     "categories": [');
+    console.log('       {"name": "Food", "amount": 4500, "percentage": 30, "color": "#FF6B6B"}');
+    console.log('     ]');
+    console.log('   }');
+    console.log('📊 Waiting for requests...');
 });

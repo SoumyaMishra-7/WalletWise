@@ -9,7 +9,8 @@ import {
   FaExchangeAlt,
   FaChartPie,
   FaBullseye,
-  FaChartBar
+  FaChartBar,
+  FaUser
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import './AppNavbar.css';
@@ -123,6 +124,18 @@ const AppNavbar = () => {
                 {displayEmail && <span className="dropdown-user-email">{displayEmail}</span>}
               </div>
             </div>
+
+            <div className="dropdown-divider"></div>
+
+            <Link
+              to="/profile"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+            >
+              <FaUser />
+              <span>Profile</span>
+            </Link>
 
             <div className="dropdown-divider"></div>
 

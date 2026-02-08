@@ -4,7 +4,6 @@ import api from '../api/client';
 import SavingGoal from './SavingGoal';
 import AppNavbar from '../components/AppNavbar';
 import {
-  FaArrowLeft,
   FaBook,
   FaBullseye,
   FaClock,
@@ -209,17 +208,20 @@ const Goals = () => {
   }, [goals]);
 
   return (
-    <>
-      <AppNavbar />
-      <div className="goals-page">
-        <header className="goals-header">
-          <div className="goals-header-content">
-            <span className="eyebrow">Student Goals</span>
-            <h1>Make room for tuition, books, and the fun stuff.</h1>
-            <p>Track every goal in one place and keep your savings on pace with deadlines.</p>
-          </div>
-          
-        </header>
+    <div className="goals-page">
+      <header className="goals-header">
+        <div className="goals-header-content">
+          <Link to="/dashboard" className="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Dashboard
+          </Link>
+          <span className="eyebrow">Student Goals</span>
+          <h1>Make room for tuition, books, and the fun stuff.</h1>
+          <p>Track every goal in one place and keep your savings on pace with deadlines.</p>
+        </div>
+      </header>
 
       <section className="goals-summary">
         <div className="summary-card">
@@ -415,8 +417,8 @@ const Goals = () => {
           fetchGoals();
         }}
       />
-      </div>
-    </>
+    </div>
+
   );
 };
 
