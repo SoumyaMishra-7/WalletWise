@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 # Environment variables
-.env
+*.env
 .env.local
 .env.development
 .env.production
@@ -32,3 +32,4 @@ frontend/.env
 *.njsproj
 *.sln
 *.sw?
+build

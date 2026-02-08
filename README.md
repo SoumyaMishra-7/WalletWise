@@ -307,7 +307,6 @@ WalletWise is designed for:
 | **Frontend** | React.js, TailwindCSS |
 | **Backend** | Node.js, Express.js |
 | **Database** | MongoDB |
-| **AI/ML** | Python, TensorFlow/scikit-learn |
 | **Authentication** | JWT, OAuth 2.0 |
 | **Deployment** | Docker, AWS/Vercel |
 

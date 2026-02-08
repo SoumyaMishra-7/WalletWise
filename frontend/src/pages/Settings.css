@@ -8,12 +8,24 @@
 
 .settings-header {
   width: 92%;
-  max-width: 1600px;
+  max-width: 1200px;
   margin: 0 auto 2.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 2rem;
+}
+
+/* Back link styles moved to App.css */
+
+.back-link:hover svg {
+  transform: translateX(-3px);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  color: var(--brand-secondary);
+  font-weight: 700;
+  display: block;
+  margin-top: 0.5rem;
 }
 
 .settings-header h1 {
@@ -22,6 +34,7 @@
   letter-spacing: -0.02em;
   margin: 0.5rem 0;
   background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -32,21 +45,13 @@
   margin: 0;
 }
 
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.75rem;
-  color: var(--brand-secondary);
-  font-weight: 700;
-}
-
 .settings-section {
   margin-bottom: 2.5rem;
 }
 
 .section-heading {
   width: 92%;
-  max-width: 1600px;
+  max-width: 1200px;
   margin: 0 auto 1.5rem;
 }
 
@@ -61,7 +66,7 @@
 
 .profile-card {
   width: 92%;
-  max-width: 1600px;
+  max-width: 1200px;
   margin: 0 auto;
   background: var(--bg-card);
   border-radius: var(--radius-xl);
@@ -116,7 +121,7 @@
 
 .settings-actions {
   width: 92%;
-  max-width: 1600px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -150,6 +155,7 @@
 }
 
 @media (max-width: 640px) {
+
   .settings-header,
   .section-heading,
   .profile-card,

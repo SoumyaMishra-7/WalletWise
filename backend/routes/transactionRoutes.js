@@ -1,18 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const Transaction = require('../models/Transactions');
 const { protect } = require('../middleware/auth');
+const transactionController = require('../controllers/transactionController');
 
 // Add transaction (both income and expense)
-router.post('/', protect, async (req, res) => {
-  try {
-    const { type, amount, category, description, paymentMethod, date, mood } = req.body;
+router.post('/', protect, transactionController.addTransaction);
 
-    console.log('📥 Received transaction data:', { type, amount, category, description, paymentMethod, date, mood });
+// Get all transactions
+router.get('/', protect, transactionController.getAllTransactions);
 
     // Validate required fields
     if (!type || !amount || !category) {
       return res.status(400).json({ message: 'Type, amount, and category are required' });
+    }
+
+    //Validate amount is a number and positive
+    if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({
+        message: 'Amount must be a valid positive number. Strings are not allowed.'
+      });
     }
 
     // Validate type

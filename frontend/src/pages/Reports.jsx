@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { Pie, Bar, Line } from 'react-chartjs-2';
+import { Link } from 'react-router-dom';
+import AppNavbar from '../components/AppNavbar';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -94,12 +95,12 @@ const Reports = () => {
       const derivedPieCategories = pieCategories.length
         ? pieCategories
         : Array.from(fallbackCategoryMap.entries()).map(([label, amount], idx) => ({
-            id: String(label).toLowerCase().replace(/\s+/g, '-'),
-            label,
-            value: totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0,
-            amount,
-            color: palette[idx % palette.length]
-          }));
+          id: String(label).toLowerCase().replace(/\s+/g, '-'),
+          label,
+          value: totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0,
+          amount,
+          color: palette[idx % palette.length]
+        }));
 
       const weeklySpend = [];
       for (let w = 3; w >= 0; w -= 1) {
@@ -151,28 +152,28 @@ const Reports = () => {
       const insights = [
         monthlyBudget > 0
           ? {
-              text: totalPercent > 90
-                ? `You have used ${totalPercent}% of your budget.`
-                : `You are at ${totalPercent}% of your budget.`,
-              status: totalPercent > 90 ? 'warning' : totalPercent > 75 ? 'ok' : 'good',
-              emoji: totalPercent > 90 ? '!' : totalPercent > 75 ? '~' : '+'
-            }
+            text: totalPercent > 90
+              ? `You have used ${totalPercent}% of your budget.`
+              : `You are at ${totalPercent}% of your budget.`,
+            status: totalPercent > 90 ? 'warning' : totalPercent > 75 ? 'ok' : 'good',
+            emoji: totalPercent > 90 ? '!' : totalPercent > 75 ? '~' : '+'
+          }
           : {
-              text: 'Set a monthly budget to track progress.',
-              status: 'warning',
-              emoji: '!'
-            },
+            text: 'Set a monthly budget to track progress.',
+            status: 'warning',
+            emoji: '!'
+          },
         topCategory
           ? {
-              text: `${topCategory[0]} is your top spend category this month.`,
-              status: 'ok',
-              emoji: '~'
-            }
+            text: `${topCategory[0]} is your top spend category this month.`,
+            status: 'ok',
+            emoji: '~'
+          }
           : {
-              text: 'Add transactions to unlock insights.',
-              status: 'ok',
-              emoji: '~'
-            }
+            text: 'Add transactions to unlock insights.',
+            status: 'ok',
+            emoji: '~'
+          }
       ];
 
       const placeTotals = new Map();
@@ -299,8 +300,8 @@ const Reports = () => {
           data: reportData.trends.length ? reportData.trends.map((item) => item.change) : [0],
           backgroundColor: reportData.trends.length
             ? reportData.trends.map((item) =>
-                item.change < 0 ? '#22c55e' : item.change > 10 ? '#ef4444' : '#f59e0b'
-              )
+              item.change < 0 ? '#22c55e' : item.change > 10 ? '#ef4444' : '#f59e0b'
+            )
             : ['#f59e0b'],
           borderRadius: 8
         }
@@ -415,14 +416,15 @@ const Reports = () => {
     <div className="reports-page">
       <header className="reports-header">
         <div>
+          <Link to="/dashboard" className="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Dashboard
+          </Link>
           <span className="eyebrow">Campus Spending</span>
           <h1>This Month at a Glance</h1>
           <p>{headerNote}</p>
-        </div>
-        <div className="header-actions">
-          <Link to="/dashboard" className="btn-secondary">
-            Back to Dashboard
-          </Link>
         </div>
       </header>
 
@@ -585,6 +587,7 @@ const Reports = () => {
         </section>
       </div>
     </div>
+
   );
 };
 

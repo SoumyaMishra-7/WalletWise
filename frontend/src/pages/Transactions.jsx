@@ -2,6 +2,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { FaFilter, FaSearch } from 'react-icons/fa';
+import AppNavbar from '../components/AppNavbar';
 import './Transactions.css';
 
 const categoryLabelMap = {
@@ -208,22 +209,28 @@ const Transactions = () => {
 
   if (loading) {
     return (
-      <div className="transactions-page">
-        <div className="page-loading">Loading transactions...</div>
-      </div>
+      <>
+        <AppNavbar />
+        <div className="transactions-page">
+          <div className="page-loading">Loading transactions...</div>
+        </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="transactions-page">
-        <div className="page-error">
-          <p>{error}</p>
-          <button className="primary-button" onClick={() => window.location.reload()}>
-            Try Again
-          </button>
+      <>
+        <AppNavbar />
+        <div className="transactions-page">
+          <div className="page-error">
+            <p>{error}</p>
+            <button className="primary-button" onClick={() => window.location.reload()}>
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -231,14 +238,17 @@ const Transactions = () => {
     <div className="transactions-page">
       <header className="transactions-topbar">
         <div>
+          <Link to="/dashboard" className="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Dashboard
+          </Link>
           <span className="eyebrow">Transactions</span>
           <h1>Stay on top of your spending</h1>
           <p>A calm snapshot of your money moments this semester.</p>
         </div>
         <div className="header-actions">
-          <Link to="/dashboard" className="btn-secondary">
-            Back to Dashboard
-          </Link>
           <button
             className={`advanced-toggle ${showAdvanced ? 'active' : ''}`}
             onClick={() => setShowAdvanced((prev) => !prev)}
@@ -363,6 +373,7 @@ const Transactions = () => {
         )}
       </section>
     </div>
+
   );
 };
 
