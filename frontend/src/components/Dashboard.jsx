@@ -8,14 +8,14 @@ import AddExpense from '../pages/AddExpense';
 import AddIncome from '../pages/AddIncome';
 import SetBudget from '../pages/SetBudget';
 import SavingGoal from '../pages/SavingGoal';
-import { 
+import {
   FaWallet, FaSignOutAlt, FaUserCircle, FaChevronDown,
   FaMoneyBillWave, FaChartLine, FaPiggyBank, FaPlusCircle,
   FaHandHoldingUsd, FaBullseye, FaChartBar, FaExclamationTriangle,
   FaBrain, FaArrowUp, FaArrowDown, FaCalendarAlt,
   FaSync, FaExclamationCircle, FaHome, FaExchangeAlt,
   FaCog, FaChartPie, FaCreditCard, FaFileAlt, FaBell,
-  FaFilter, FaSearch
+  FaFilter, FaSearch, FaEdit, FaTrash
 } from 'react-icons/fa';
 import { Line, Pie, Bar } from 'react-chartjs-2';
 import { toast } from 'react-hot-toast';
@@ -101,6 +101,7 @@ const Dashboard = () => {
   const [categorySpending, setCategorySpending] = useState([]);
   const [weeklyExpenses, setWeeklyExpenses] = useState([]);
   const [savingsGoals, setSavingsGoals] = useState([]);
+  const [transactionToEdit, setTransactionToEdit] = useState(null);
 
   // Navigation items with proper routes
   const navItems = [
@@ -157,7 +158,7 @@ const Dashboard = () => {
     setRefreshing(true);
     try {
       console.log('???? Fetching dashboard data...');
-      
+
       const dashboardRes = await api.get('/api/dashboard/summary');
       const dashboardData = dashboardRes.data;
 
@@ -165,7 +166,7 @@ const Dashboard = () => {
 
       if (dashboardData.success) {
         const statsData = dashboardData.stats || {};
-        
+
         setStats({
           totalBalance: statsData.totalBalance || 0,
           spentThisMonth: statsData.monthlyExpenses || 0,
@@ -179,21 +180,21 @@ const Dashboard = () => {
 
         // Transactions
         setRecentTransactions(dashboardData.recentTransactions || []);
-        
+
         // Category spending
         setCategorySpending(dashboardData.categorySpending || []);
-        
+
         // Weekly expenses
         setWeeklyExpenses(dashboardData.weeklyExpenses || []);
-        
+
         // Savings goals
         setSavingsGoals(dashboardData.savingsGoals || []);
 
         // Update timestamp
-        setLastUpdated(new Date().toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
+        setLastUpdated(new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
           minute: '2-digit',
-          hour12: true 
+          hour12: true
         }));
 
       } else {
@@ -204,7 +205,7 @@ const Dashboard = () => {
     } catch (err) {
       console.error('❌ Error fetching dashboard data:', err);
       console.error('❌ Error details:', err.response?.data || err.message);
-      
+
       if (err.response?.status === 401) {
         await logout();
         navigate('/login');
@@ -236,38 +237,35 @@ const Dashboard = () => {
     return false;
   };
 
-  const handleAddExpense = async (expenseData) => {
+  const handleAddExpense = async (transactionData) => {
     try {
-      console.log('??? Adding expense:', expenseData);
-      
-      const response = await api.post('/api/transactions', expenseData);
+      let response;
 
-      console.log('✅ Expense response:', response.data);
+      if (transactionData._id) {
+        console.log('✏️ Updating transaction:', transactionData);
+        response = await api.put(`/api/transactions/${transactionData._id}`, transactionData);
+        toast.success('Transaction updated successfully');
+      } else {
+        console.log('➕ Adding new expense:', transactionData);
+        response = await api.post('/api/transactions', transactionData);
+        toast.success('Expense added successfully');
+      }
 
       if (response.data.success) {
         setShowAddExpenseModal(false);
+        setTransactionToEdit(null);
         await fetchDashboardData();
-        toast.success('Expenses added succesfullly.', {
-          style: {
-            background: '#16a34a',
-            color: '#ffffff'
-          },
-          iconTheme: {
-            primary: '#bbf7d0',
-            secondary: '#166534'
-          }
-        });
       }
     } catch (err) {
-      console.error('❌ Failed to add expense:', err);
-      alert('Failed to add expense. Please try again.');
+      console.error('❌ Failed to save transaction:', err);
+      toast.error('Failed to save transaction');
     }
   };
 
   const handleAddIncome = async (incomeData) => {
     try {
       console.log('??? Adding income:', incomeData);
-      
+
       const response = await api.post('/api/transactions', incomeData);
 
       console.log('✅ Income response:', response.data);
@@ -320,18 +318,36 @@ const Dashboard = () => {
     navigate('/goals', { state: { refetchAt: Date.now() } });
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this transaction?')) {
+      try {
+        await api.delete(`/api/transactions/${id}`);
+        toast.success('Transaction deleted successfully');
+        await fetchDashboardData(); // Refresh the list immediately
+      } catch (err) {
+        console.error('Error deleting transaction:', err);
+        toast.error('Failed to delete transaction');
+      }
+    }
+  };
+
+  const handleEdit = (transaction) => {
+    setTransactionToEdit(transaction);
+    setShowAddExpenseModal(true);
+  };
+
   // ============ CHART CONFIGURATIONS ============
-  
+
   // Weekly expenses chart with empty state handling
   const weeklyExpensesChart = {
-    labels: weeklyExpenses.length > 0 
-      ? weeklyExpenses.map(item => item.day) 
+    labels: weeklyExpenses.length > 0
+      ? weeklyExpenses.map(item => item.day)
       : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
         label: 'Daily Expenses',
-        data: weeklyExpenses.length > 0 
-          ? weeklyExpenses.map(item => item.amount) 
+        data: weeklyExpenses.length > 0
+          ? weeklyExpenses.map(item => item.amount)
           : [0, 0, 0, 0, 0, 0, 0],
         borderColor: '#f87171',
         backgroundColor: 'rgba(248, 113, 113, 0.1)',
@@ -344,13 +360,13 @@ const Dashboard = () => {
 
   // Category spending chart with empty state
   const spendingByCategoryChart = {
-    labels: categorySpending.length > 0 
-      ? categorySpending.map(item => item.name) 
+    labels: categorySpending.length > 0
+      ? categorySpending.map(item => item.name)
       : ['No Data'],
     datasets: [
       {
-        data: categorySpending.length > 0 
-          ? categorySpending.map(item => item.amount) 
+        data: categorySpending.length > 0
+          ? categorySpending.map(item => item.amount)
           : [100],
         backgroundColor: [
           '#38bdf8', '#60a5fa', '#7dd3fc', '#93c5fd', '#a5b4fc',
@@ -383,7 +399,7 @@ const Dashboard = () => {
         },
         ticks: {
           color: '#64748b',
-          callback: function(value) {
+          callback: function (value) {
             return '₹' + value;
           }
         }
@@ -462,7 +478,7 @@ const Dashboard = () => {
 
         {/* Center: Navigation Links */}
         <nav className="nav-center" ref={mobileMenuRef}>
-          <button 
+          <button
             className="mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
@@ -496,7 +512,7 @@ const Dashboard = () => {
 
         {/* Right: User Profile */}
         <div className="nav-right" ref={userMenuRef}>
-          <button 
+          <button
             className="user-profile-trigger"
             onClick={() => setShowUserMenu(!showUserMenu)}
             aria-expanded={showUserMenu}
@@ -521,10 +537,10 @@ const Dashboard = () => {
                   <span className="dropdown-user-email">{user?.email}</span>
                 </div>
               </div>
-              
+
               <div className="dropdown-divider"></div>
-              
-              <Link 
+
+              <Link
                 to="/profile"
                 className="dropdown-item"
                 role="menuitem"
@@ -533,8 +549,8 @@ const Dashboard = () => {
                 <FaUserCircle />
                 <span>Profile</span>
               </Link>
-              
-              <Link 
+
+              <Link
                 to="/settings"
                 className="dropdown-item"
                 role="menuitem"
@@ -543,10 +559,10 @@ const Dashboard = () => {
                 <FaCog />
                 <span>Settings</span>
               </Link>
-              
+
               <div className="dropdown-divider"></div>
-              
-              <button 
+
+              <button
                 onClick={handleLogout}
                 className="dropdown-item logout"
                 role="menuitem"
@@ -576,10 +592,10 @@ const Dashboard = () => {
               </p>
             </div>
           </div>
-          
+
           <div className="dashboard-header-right">
             <div className="action-buttons">
-              <button 
+              <button
                 className={`refresh-btn ${refreshing ? 'refreshing' : ''}`}
                 onClick={fetchDashboardData}
                 title="Refresh dashboard data"
@@ -592,8 +608,8 @@ const Dashboard = () => {
                   <span className="last-updated">Updated {lastUpdated}</span>
                 )}
               </button>
-              
-              <button 
+
+              <button
                 className="ai-insights-btn"
                 onClick={handleAIInsights}
                 title="View AI-powered spending insights"
@@ -631,19 +647,19 @@ const Dashboard = () => {
               <p className="stat-value">{formatCurrency(stats.spentThisMonth)}</p>
               <div className="progress-container">
                 <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
+                  <div
+                    className="progress-fill"
                     style={{ width: `${Math.min(stats.budgetUsedPercentage, 100)}%` }}
                   ></div>
                 </div>
                 <span className="progress-text">
-                  {stats.monthlyBudget > 0 
-                    ? `${formatCurrency(stats.budgetLeft)} left of ${formatCurrency(stats.monthlyBudget)}` 
+                  {stats.monthlyBudget > 0
+                    ? `${formatCurrency(stats.budgetLeft)} left of ${formatCurrency(stats.monthlyBudget)}`
                     : 'No budget set'}
                 </span>
               </div>
               {stats.monthlyBudget === 0 && (
-                <button 
+                <button
                   onClick={() => setShowSetBudgetModal(true)}
                   className="cta-button small"
                 >
@@ -664,7 +680,7 @@ const Dashboard = () => {
                 <span>{savingsGoals.length} active goals</span>
               </div>
               {stats.savings === 0 && (
-                <button 
+                <button
                   onClick={() => setShowSavingsGoalModal(true)}
                   className="cta-button small"
                 >
@@ -683,19 +699,19 @@ const Dashboard = () => {
               <p className="stat-value">{Math.round(stats.budgetUsedPercentage)}% used</p>
               <div className="progress-container">
                 <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
+                  <div
+                    className="progress-fill"
                     style={{ width: `${Math.min(stats.budgetUsedPercentage, 100)}%` }}
                   ></div>
                 </div>
                 <span className="progress-text">
-                  {stats.monthlyBudget > 0 
+                  {stats.monthlyBudget > 0
                     ? `${formatCurrency(stats.monthlyBudget)} total`
                     : 'No budget set'}
                 </span>
               </div>
               {stats.monthlyBudget === 0 && (
-                <button 
+                <button
                   onClick={() => setShowSetBudgetModal(true)}
                   className="cta-button small"
                 >
@@ -774,7 +790,7 @@ const Dashboard = () => {
                 <div className="chart-empty-state">
                   <FaChartLine className="empty-chart-icon" />
                   <p>No expense data for this week</p>
-                  <button 
+                  <button
                     onClick={() => setShowAddExpenseModal(true)}
                     className="btn-primary small"
                   >
@@ -797,7 +813,7 @@ const Dashboard = () => {
                 <div className="chart-empty-state">
                   <FaChartPie className="empty-chart-icon" />
                   <p>No category data yet</p>
-                  <button 
+                  <button
                     onClick={() => setShowAddExpenseModal(true)}
                     className="btn-primary small"
                   >
@@ -817,31 +833,54 @@ const Dashboard = () => {
               <h3>Recent Transactions</h3>
               <p className="section-subtitle">{recentTransactions.length} transactions this month</p>
             </div>
-            <button 
+            <button
               onClick={() => navigate('/transactions')}
               className="view-all-btn"
             >
               View All ({recentTransactions.length})
             </button>
           </div>
-          
+
           {recentTransactions.length > 0 ? (
             <div className="transactions-grid">
               {recentTransactions.slice(0, 6).map((transaction, index) => (
                 <div key={index} className="transaction-card">
+                  {/* 1. Existing Icon */}
                   <div className="transaction-icon">
                     <div className={`icon-bg ${transaction.type}`}>
                       {transaction.type === 'expense' ? '-' : '+'}
                     </div>
                   </div>
+
+                  {/* 2. Existing Details */}
                   <div className="transaction-details">
                     <h4>{transaction.description || transaction.category || 'Transaction'}</h4>
                     <p className="transaction-category">{transaction.category}</p>
                     <p className="transaction-date">{formatTransactionDate(transaction.date)}</p>
                   </div>
+
+                  {/* 3. Existing Amount */}
                   <div className={`transaction-amount ${transaction.type}`}>
                     {transaction.type === 'expense' ? '-' : '+'}
                     {formatCurrency(transaction.amount)}
+                  </div>
+
+                  {/* 4. NEW: Edit & Delete Buttons */}
+                  <div className="transaction-actions" style={{ display: 'flex', gap: '10px', marginLeft: '15px' }}>
+                    <button
+                      onClick={() => handleEdit(transaction)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6', fontSize: '1.1rem' }}
+                      title="Edit"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(transaction._id || transaction.id)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '1rem' }}
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -877,8 +916,8 @@ const Dashboard = () => {
                   </div>
                   <div className="goal-progress">
                     <div className="progress-bar">
-                      <div 
-                        className="progress-fill green" 
+                      <div
+                        className="progress-fill green"
                         style={{ width: `${Math.min(goal.progress || 0, 100)}%` }}
                       ></div>
                     </div>
@@ -904,8 +943,12 @@ const Dashboard = () => {
       {/* MODALS */}
       <AddExpense
         isOpen={showAddExpenseModal}
-        onClose={() => setShowAddExpenseModal(false)}
+        onClose={() => {
+          setShowAddExpenseModal(false);
+          setTransactionToEdit(null);
+        }}
         onAddExpense={handleAddExpense}
+        transactionToEdit={transactionToEdit}
       />
 
       <AddIncome

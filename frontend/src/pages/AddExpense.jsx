@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AddExpense.css';
 
-const AddExpense = ({ isOpen, onClose, onAddExpense }) => {
+const AddExpense = ({ isOpen, onClose, onAddExpense, transactionToEdit }) => {
   const [formData, setFormData] = useState({
     amount: '',
     category: 'food',
@@ -10,6 +10,28 @@ const AddExpense = ({ isOpen, onClose, onAddExpense }) => {
     description: '',
     mood: 'neutral' // New behavioral component
   });
+
+  useEffect(() => {
+    if (transactionToEdit) {
+      setFormData({
+        amount: transactionToEdit.amount,
+        category: transactionToEdit.category || 'food',
+        date: transactionToEdit.date ? new Date(transactionToEdit.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        paymentMethod: transactionToEdit.paymentMethod || 'cash',
+        description: transactionToEdit.description || '',
+        mood: transactionToEdit.mood || 'neutral'
+      });
+    } else {
+      setFormData({
+        amount: '',
+        category: 'food',
+        date: new Date().toISOString().split('T')[0],
+        paymentMethod: 'cash',
+        description: '',
+        mood: 'neutral'
+      });
+    }
+  }, [transactionToEdit, isOpen]);
 
   const expenseCategories = [
     { value: 'food', label: 'Food & Dining' },
@@ -41,7 +63,7 @@ const AddExpense = ({ isOpen, onClose, onAddExpense }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!formData.amount || isNaN(formData.amount) || Number(formData.amount) <= 0) {
       alert('Please enter a valid amount');
       return;
@@ -54,20 +76,33 @@ const AddExpense = ({ isOpen, onClose, onAddExpense }) => {
       description: formData.description || '',
       paymentMethod: formData.paymentMethod,
       date: formData.date,
-      mood: formData.mood // Sending mood data for behavioral analysis
+      mood: formData.mood
     };
+
+    if (transactionToEdit) {
+      const id = transactionToEdit._id || transactionToEdit.id;
+
+      if (id) {
+        transactionData._id = id;
+        console.log("✅ Attaching ID for Edit:", id);
+      } else {
+        console.error("⚠️ Error: Editing but no ID found in:", transactionToEdit);
+      }
+    }
 
     onAddExpense(transactionData);
     onClose();
-    
-    setFormData({
-      amount: '',
-      category: 'food',
-      date: new Date().toISOString().split('T')[0],
-      paymentMethod: 'cash',
-      description: '',
-      mood: 'neutral'
-    });
+
+    if (!transactionToEdit) {
+      setFormData({
+        amount: '',
+        category: 'food',
+        date: new Date().toISOString().split('T')[0],
+        paymentMethod: 'cash',
+        description: '',
+        mood: 'neutral'
+      });
+    }
   };
 
   const handleChange = (e) => {
@@ -81,7 +116,7 @@ const AddExpense = ({ isOpen, onClose, onAddExpense }) => {
     <div className="expense-modal-overlay">
       <div className="expense-modal-content">
         <div className="expense-modal-header expense-header">
-          <h2>Add Expense</h2>
+          <h2>{transactionToEdit ? 'Edit Expense' : 'Add Expense'}</h2>
           <button className="close-expense-btn" onClick={onClose}>Close</button>
         </div>
 
@@ -156,10 +191,10 @@ const AddExpense = ({ isOpen, onClose, onAddExpense }) => {
             {/* Payment Method */}
             <div className="expense-form-group flex-1">
               <label htmlFor="paymentMethod">Payment Method</label>
-              <select 
-                id="paymentMethod" 
-                name="paymentMethod" 
-                value={formData.paymentMethod} 
+              <select
+                id="paymentMethod"
+                name="paymentMethod"
+                value={formData.paymentMethod}
                 onChange={handleChange}
               >
                 {paymentMethods.map(pm => (
@@ -184,7 +219,9 @@ const AddExpense = ({ isOpen, onClose, onAddExpense }) => {
 
           <div className="expense-form-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary">Save Expense</button>
+            <button type="submit" className="btn-primary">
+              {transactionToEdit ? 'Update Expense' : 'Save Expense'}
+            </button>
           </div>
         </form>
       </div>

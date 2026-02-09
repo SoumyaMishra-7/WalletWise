@@ -1134,6 +1134,67 @@ app.get("/api/transactions", protect, async (req, res) => {
   }
 });
 
+// UPDATE (PUT) Transaction
+app.put("/api/transactions/:id", protect, async (req, res) => {
+  try {
+    let transaction = await Transaction.findById(req.params.id);
+
+    if (!transaction) {
+      return res.status(404).json({ success: false, message: 'Transaction not found' });
+    }
+
+    // Check user ownership
+    if (transaction.userId.toString() !== req.userId.toString()) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Update fields (Only update what is sent)
+    const { amount, category, description, date, type, paymentMethod, mood } = req.body;
+
+    // 1. AMOUNT: Must be positive (min: 0)
+    if (amount !== undefined) {
+      transaction.amount = Math.abs(amount);
+    }
+
+    // 2. ENUMS: Only update if valid, otherwise Mongoose defaults will handle it
+    if (type) transaction.type = type;
+    if (category) transaction.category = category;
+    if (description) transaction.description = description;
+    if (date) transaction.date = date;
+    if (paymentMethod) transaction.paymentMethod = paymentMethod;
+    if (mood) transaction.mood = mood;
+
+    await transaction.save();
+
+    res.json({ success: true, message: 'Transaction updated', transaction });
+
+  } catch (error) {
+    console.error("PUT Error:", error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// DELETE Transaction
+app.delete("/api/transactions/:id", protect, async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+
+    if (!transaction) {
+      return res.status(404).json({ success: false, message: 'Transaction not found' });
+    }
+
+    if (transaction.userId.toString() !== req.userId.toString()) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    await transaction.deleteOne();
+    res.status(200).json({ success: true, message: 'Transaction deleted successfully' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 // ==================== DASHBOARD ROUTES ====================
 
 // Dashboard Summary
