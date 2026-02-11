@@ -32,9 +32,9 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Body parsers
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Body parsers with stricter limits to prevent memory exhaustion
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Cookie parser
 app.use(cookieParser());
@@ -59,13 +59,20 @@ app.use((req, res, next) => {
     next();
 });
 
-// ==================== RATE LIMITING ====================
-const { globalLimiter, authLimiter } = require('./middleware/rateLimiter');
+// ==================== RATE LIMITING & DDoS PROTECTION ====================
+const { totalTrafficLimiter, speedLimiter, globalLimiter, authLimiter } = require('./middleware/rateLimiter');
 
-// Apply global rate limiter to all requests
+// 1. Apply total traffic limiter (fuse) to ALL requests
+// This is the first line of defense against distributed attacks
+app.use(totalTrafficLimiter);
+
+// 2. Apply speed limiter to throttle high-frequency requesters
+app.use(speedLimiter);
+
+// 3. Apply standard IP-based global rate limiter
 app.use(globalLimiter);
 
-// Apply stricter rate limiter to auth routes
+// 4. Apply stricter rate limiter to auth routes
 app.use('/api/auth', authLimiter);
 
 
