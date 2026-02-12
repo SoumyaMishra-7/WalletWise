@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import AppNavbar from '../components/AppNavbar';
+
 import './Settings.css';
 
 const Profile = () => {

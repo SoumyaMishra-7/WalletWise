@@ -39,19 +39,21 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
   useEffect(() => {
     const total = Number(formData.totalBudget) || 0;
     if (total > 0) {
-      const updatedCategories = formData.categories.map(cat => ({
-        ...cat,
-        amount: Math.round((cat.percentage / 100) * total),
-        amountStr: Math.round((cat.percentage / 100) * total).toString()
+      setFormData(prev => ({
+        ...prev,
+        categories: prev.categories.map(cat => ({
+          ...cat,
+          amount: Math.round((cat.percentage / 100) * total),
+          amountStr: Math.round((cat.percentage / 100) * total).toString()
+        }))
       }));
-      setFormData(prev => ({ ...prev, categories: updatedCategories }));
     }
   }, [formData.totalBudget]);
 
   const handleTotalBudgetChange = (e) => {
     const value = e.target.value;
     const numValue = value === '' ? '' : parseInt(value) || 0;
-    
+
     setFormData(prev => ({
       ...prev,
       totalBudget: numValue,
@@ -67,7 +69,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     const numValue = value === '' ? 0 : parseInt(value) || 0;
     const maxValue = 100;
     const clampedValue = Math.min(Math.max(numValue, 0), maxValue);
-    
+
     const updatedCategories = [...formData.categories];
     updatedCategories[index] = {
       ...updatedCategories[index],
@@ -75,7 +77,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
       amount: Math.round((clampedValue / 100) * (formData.totalBudget || 0)),
       amountStr: Math.round((clampedValue / 100) * (formData.totalBudget || 0)).toString()
     };
-    
+
     // Recalculate other categories to maintain total of 100%
     const totalPercentage = updatedCategories.reduce((sum, cat) => sum + cat.percentage, 0);
     if (totalPercentage > 100) {
@@ -83,7 +85,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
       const otherCategories = updatedCategories.filter((_, i) => i !== index);
       const totalOtherPercentage = otherCategories.reduce((sum, cat) => sum + cat.percentage, 0);
       const remainingPercentage = 100 - clampedValue;
-      
+
       if (totalOtherPercentage > 0) {
         otherCategories.forEach((cat, i) => {
           const originalIndex = updatedCategories.findIndex(c => c.name === cat.name);
@@ -97,7 +99,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
         });
       }
     }
-    
+
     setFormData(prev => ({ ...prev, categories: updatedCategories }));
   };
 
@@ -105,11 +107,11 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     const numValue = value === '' ? 0 : parseInt(value) || 0;
     const maxAmount = formData.totalBudget || 0;
     const clampedValue = Math.min(Math.max(numValue, 0), maxAmount);
-    
-    const percentage = (formData.totalBudget || 0) > 0 
+
+    const percentage = (formData.totalBudget || 0) > 0
       ? Math.round((clampedValue / (formData.totalBudget || 1)) * 100)
       : 0;
-    
+
     const updatedCategories = [...formData.categories];
     updatedCategories[index] = {
       ...updatedCategories[index],
@@ -117,7 +119,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
       percentage: percentage,
       amountStr: clampedValue.toString()
     };
-    
+
     setFormData(prev => ({ ...prev, categories: updatedCategories }));
   };
 
@@ -127,7 +129,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
       'balanced': [20, 15, 10, 10, 15, 10, 10, 10],
       'saver': [30, 20, 5, 5, 15, 5, 15, 5]
     };
-    
+
     const percentages = allocations[type] || allocations['balanced'];
     const total = Number(formData.totalBudget) || 0;
     const updatedCategories = formData.categories.map((cat, index) => ({
@@ -136,7 +138,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
       amount: Math.round((percentages[index] / 100) * total),
       amountStr: Math.round((percentages[index] / 100) * total).toString()
     }));
-    
+
     setFormData(prev => ({ ...prev, categories: updatedCategories }));
   };
 
@@ -144,7 +146,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     if (!formData.totalBudget || Number(formData.totalBudget) <= 0) {
       setError('Please enter a valid total budget amount');
       setLoading(false);
@@ -204,12 +206,12 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
             secondary: '#166534'
           }
         });
-        
+
         // Call parent callback
         if (onSetBudget) {
           onSetBudget(response.data.budget);
         }
-        
+
         // Close modal
         onClose();
       } else {
@@ -297,8 +299,8 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
           <div className="budget-form-group">
             <div className="quick-allocation-header">
               <label>Quick Allocation Templates</label>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="copy-last-month-btn"
                 onClick={handleCopyLastMonth}
                 disabled={loading}
@@ -307,24 +309,24 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               </button>
             </div>
             <div className="quick-allocation-buttons">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="allocation-btn student"
                 onClick={() => handleQuickAllocation('student')}
                 disabled={loading}
               >
                 Student
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="allocation-btn balanced"
                 onClick={() => handleQuickAllocation('balanced')}
                 disabled={loading}
               >
                 Balanced
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="allocation-btn saver"
                 onClick={() => handleQuickAllocation('saver')}
                 disabled={loading}
@@ -337,7 +339,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
           {/* Category Budgets */}
           <div className="budget-form-group">
             <label>Category-wise Allocation *</label>
-            
+
             <div className="category-tabs">
               {formData.categories.map((category, index) => (
                 <button
@@ -442,16 +444,16 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
 
           {/* Form Actions */}
           <div className="budget-form-actions">
-            <button 
-              type="button" 
-              className="budget-btn-cancel" 
+            <button
+              type="button"
+              className="budget-btn-cancel"
               onClick={handleClose}
               disabled={loading}
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="budget-btn-submit"
               disabled={totalAllocated !== 100 || !formData.totalBudget || Number(formData.totalBudget) <= 0 || loading}
             >

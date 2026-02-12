@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -15,7 +15,6 @@ import {
   Wallet,
   User,
   ArrowUpRight,
-  PieChart,
 } from "lucide-react";
 import "./Homepage.css";
 import Navbar from '../components/Navbar';
@@ -23,7 +22,6 @@ import Navbar from '../components/Navbar';
 const Homepage = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   // Animation for the connecting lines
   const drawLine = {
@@ -71,11 +69,7 @@ const Homepage = () => {
     }
   };
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+
 
   return (
     <div className="ww-page">

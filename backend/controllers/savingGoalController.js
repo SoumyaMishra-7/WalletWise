@@ -3,9 +3,6 @@ const SavingsGoal = require('../models/SavingGoal');
 // Create Savings Goal
 const createGoal = async (req, res) => {
     try {
-        console.log('\n🎯 CREATE SAVINGS GOAL REQUEST');
-        console.log('User ID:', req.userId);
-        console.log('Request body:', req.body);
 
         const {
             name,
@@ -52,9 +49,7 @@ const createGoal = async (req, res) => {
             isActive: true
         });
 
-        console.log('Saving goal to database...');
         await savingsGoal.save();
-        console.log('✅ Goal saved with ID:', savingsGoal._id);
 
         res.status(201).json({
             success: true,

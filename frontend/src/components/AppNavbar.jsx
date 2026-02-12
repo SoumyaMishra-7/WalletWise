@@ -10,9 +10,12 @@ import {
   FaChartPie,
   FaBullseye,
   FaChartBar,
-  FaUser
+  FaUser,
+  FaSun,
+  FaMoon
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import './AppNavbar.css';
 
 const navItems = [
@@ -26,6 +29,7 @@ const navItems = [
 
 const AppNavbar = () => {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -101,6 +105,14 @@ const AppNavbar = () => {
       </nav>
 
       <div className="nav-right" ref={userMenuRef}>
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+          type="button"
+        >
+          {isDark ? <FaSun /> : <FaMoon />}
+        </button>
         <button
           className="user-profile-trigger"
           onClick={() => setShowUserMenu((prev) => !prev)}

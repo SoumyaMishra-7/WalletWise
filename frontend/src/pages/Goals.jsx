@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../api/client';
 import SavingGoal from './SavingGoal';
-import AppNavbar from '../components/AppNavbar';
+
 import {
   FaBook,
   FaBullseye,
