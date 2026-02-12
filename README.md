@@ -435,6 +435,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 **Made with ❤️ for financial empowerment**
 
-⭐ Star this repo if you find it helpful !
+⭐ Star this repo if you find it helpful!
 
 </div>
