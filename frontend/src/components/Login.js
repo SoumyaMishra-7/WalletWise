@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import './Auth.css';
 
 const Login = () => {
@@ -66,6 +66,9 @@ const Login = () => {
 
 
       <div className="auth-card">
+        <Link to="/" className="back-to-home">
+          <FaArrowLeft /> Back to Home
+        </Link>
         <div className="auth-header">
           <h1>WalletWise</h1>
           <p className="subtitle">Welcome back! Login to continue.</p>

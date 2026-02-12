@@ -555,3 +555,24 @@ html {
     font-size: 1rem;
   }
 }
+
+/* Back to Home Button */
+.back-to-home {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.back-to-home:hover {
+  color: var(--brand-primary);
+  transform: translateX(-3px);
+}

@@ -1,11 +1,17 @@
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load environment variables from .env file
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const dotenv = require('dotenv');
 const passport = require('passport');
 const { configurePassport } = require('./config/passport');
-dotenv.config();
 
 const helmet = require('helmet');
 
