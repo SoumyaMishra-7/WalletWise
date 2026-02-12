@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import AppNavbar from '../components/AppNavbar';
+
 import './Settings.css';
 import { FaUserCircle, FaArrowLeft, FaCamera, FaCheck, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 

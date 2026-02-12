@@ -771,14 +771,14 @@
   align-items: center;
   gap: 1.25rem;
   padding: 1.25rem;
-  background: #fcfdfe;
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   transition: var(--transition-elegant);
 }
 
 .transaction-card:hover {
-  background: white;
+  background: var(--bg-card);
   border-color: var(--brand-primary);
   transform: translateX(5px);
 }
@@ -823,7 +823,7 @@
 }
 
 .goal-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   border: 1px solid var(--border-subtle);

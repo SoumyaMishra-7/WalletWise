@@ -1,8 +1,7 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { FaFilter, FaSearch } from 'react-icons/fa';
-import AppNavbar from '../components/AppNavbar';
 import './Transactions.css';
 
 const categoryLabelMap = {
@@ -210,7 +209,6 @@ const Transactions = () => {
   if (loading) {
     return (
       <>
-        <AppNavbar />
         <div className="transactions-page">
           <div className="page-loading">Loading transactions...</div>
         </div>
@@ -221,7 +219,6 @@ const Transactions = () => {
   if (error) {
     return (
       <>
-        <AppNavbar />
         <div className="transactions-page">
           <div className="page-error">
             <p>{error}</p>

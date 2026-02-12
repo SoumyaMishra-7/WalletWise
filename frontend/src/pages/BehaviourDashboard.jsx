@@ -77,7 +77,7 @@ const BehaviourDashboard = () => {
   }, []);
 
   const stats = summary?.stats || {};
-  const savingsGoals = summary?.savingsGoals || [];
+  const savingsGoals = useMemo(() => summary?.savingsGoals || [], [summary]);
   const categorySpending = summary?.categorySpending || [];
 
   const confidenceScore = useMemo(() => {

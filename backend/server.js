@@ -7,8 +7,13 @@ const passport = require('passport');
 const { configurePassport } = require('./config/passport');
 dotenv.config();
 
+const helmet = require('helmet');
+
 // Initialize Express app
 const app = express();
+
+// ==================== SECURITY HEADERS ====================
+app.use(helmet());
 
 // ==================== ENHANCED ERROR LOGGING ====================
 process.on('uncaughtException', (error) => {
@@ -32,9 +37,9 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Body parsers
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Body parsers with stricter limits to prevent memory exhaustion
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Cookie parser
 app.use(cookieParser());
@@ -42,30 +47,49 @@ app.use(cookieParser());
 // Passport setup (Google OAuth)
 configurePassport();
 app.use(passport.initialize());
-
-// Request logging middleware
 app.use((req, res, next) => {
     const timestamp = new Date().toISOString();
     console.log(`\n═══════════════════════════════════════════════════`);
     console.log(`📨 ${timestamp} - ${req.method} ${req.originalUrl}`);
     console.log(`🌍 Origin: ${req.headers.origin || 'No origin'}`);
-    console.log(`🔑 Auth Header: ${req.headers.authorization || 'No auth header'}`);
-    console.log(`🍪 Cookies:`, req.cookies);
+    
+    // Mask Auth Header in logs
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+        console.log(`🔑 Auth Header: ${authHeader.substring(0, 15)}...[REDACTED]`);
+    } else {
+        console.log(`🔑 Auth Header: No auth header`);
+    }
 
     if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
-        console.log(`📝 Request Body:`, JSON.stringify(req.body, null, 2));
+        // Create a safe copy of the body for logging
+        const safeBody = { ...req.body };
+        const sensitiveKeys = ['password', 'token', 'refreshToken', 'accessToken', 'client_secret', 'code'];
+        
+        sensitiveKeys.forEach(key => {
+            if (safeBody[key]) safeBody[key] = '***[REDACTED]***';
+        });
+
+        console.log(`📝 Request Body:`, JSON.stringify(safeBody, null, 2));
     }
 
     next();
 });
 
-// ==================== RATE LIMITING ====================
-const { globalLimiter, authLimiter } = require('./middleware/rateLimiter');
+// ==================== RATE LIMITING & DDoS PROTECTION ====================
+const { totalTrafficLimiter, speedLimiter, globalLimiter, authLimiter } = require('./middleware/rateLimiter');
 
-// Apply global rate limiter to all requests
+// 1. Apply total traffic limiter (fuse) to ALL requests
+// This is the first line of defense against distributed attacks
+app.use(totalTrafficLimiter);
+
+// 2. Apply speed limiter to throttle high-frequency requesters
+app.use(speedLimiter);
+
+// 3. Apply standard IP-based global rate limiter
 app.use(globalLimiter);
 
-// Apply stricter rate limiter to auth routes
+// 4. Apply stricter rate limiter to auth routes
 app.use('/api/auth', authLimiter);
 
 

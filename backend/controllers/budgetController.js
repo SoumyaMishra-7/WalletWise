@@ -4,9 +4,6 @@ const Transaction = require('../models/Transactions');
 // Set/Update Budget
 const setBudget = async (req, res) => {
     try {
-        console.log('\n💰 SET BUDGET REQUEST');
-        console.log('User ID:', req.userId);
-        console.log('Request body:', req.body);
 
         const { totalBudget, categories, month } = req.body;
 
@@ -96,7 +93,7 @@ const setBudget = async (req, res) => {
             budget.categories = categories;
             budget.updatedAt = new Date();
             await budget.save();
-            console.log('✅ Budget updated:', budget._id);
+
         } else {
             // Create new budget
             budget = new Budget({
@@ -107,7 +104,7 @@ const setBudget = async (req, res) => {
                 isActive: true
             });
             await budget.save();
-            console.log('✅ Budget created:', budget._id);
+
         }
 
         // Send success response
@@ -158,8 +155,7 @@ const setBudget = async (req, res) => {
 // Get Current Budget
 const getCurrentBudget = async (req, res) => {
     try {
-        console.log('\n📊 GET CURRENT BUDGET REQUEST');
-        console.log('User ID:', req.userId);
+
 
         const currentMonth = new Date().toISOString().slice(0, 7);
         const budget = await Budget.findOne({
@@ -283,8 +279,7 @@ const getAllBudgets = async (req, res) => {
 // Copy Previous Month's Budget
 const copyPreviousBudget = async (req, res) => {
     try {
-        console.log('\n📋 COPY PREVIOUS MONTH BUDGET REQUEST');
-        console.log('User ID:', req.userId);
+
 
         const currentDate = new Date();
         const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)

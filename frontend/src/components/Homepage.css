@@ -50,6 +50,12 @@ h1, h2, h3, button {
   border-bottom: 1px solid transparent; transition: all 0.3s ease;
 }
 .ww-header.scrolled { border-bottom: 1px solid var(--border-light); background: rgba(255, 255, 255, 0.95); }
+body.theme-dark .ww-header {
+  background: rgba(15, 23, 42, 0.85);
+}
+body.theme-dark .ww-header.scrolled {
+  background: rgba(15, 23, 42, 0.95);
+}
 .ww-nav { height: 80px; display: flex; align-items: center; justify-content: space-between; }
 .ww-brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
 .ww-logo-icon {
@@ -65,7 +71,7 @@ h1, h2, h3, button {
 .ww-btn-link { background: none; border: none; font-weight: 600; cursor: pointer; color: var(--text-main); }
 .ww-btn-primary { background: var(--color-primary); color: white; }
 .ww-btn-primary:hover { background: #4338CA; transform: translateY(-1px); }
-.ww-btn-white { background: white; color: var(--color-primary); }
+.ww-btn-white { background: var(--bg-card); color: var(--color-primary); }
 .ww-btn-white:hover { background: #f8f9fa; }
 .ww-menu-toggle { display: none; }
 
@@ -92,7 +98,7 @@ h1, h2, h3, button {
 .ww-hero-ref-visual { position: relative; padding-left: 20px; }
 .ww-main-image-wrapper { position: relative; }
 .ww-main-img { width: 100%; height: 550px; border-radius: 32px; box-shadow: var(--shadow-md); }
-.ww-float-card { position: absolute; background: white; border-radius: 20px; box-shadow: var(--shadow-float); padding: 20px; animation: float 6s ease-in-out infinite; border: 1px solid rgba(255,255,255,0.8); }
+.ww-float-card { position: absolute; background: var(--bg-card); border-radius: 20px; box-shadow: var(--shadow-float); padding: 20px; animation: float 6s ease-in-out infinite; border: 1px solid var(--border-light); }
 .icon-card { top: 40px; left: -40px; width: 72px; height: 72px; display: grid; place-items: center; border-radius: 24px; }
 .graph-card { bottom: 50px; right: -50px; width: 240px; padding: 24px; animation-delay: 2s; }
 .ww-graph-header { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
@@ -129,7 +135,7 @@ h1, h2, h3, button {
 .ww-center-icon { width: 56px; height: 56px; background: #111827; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); position: relative; z-index: 2; }
 .ww-center-pulse { position: absolute; width: 100%; height: 100%; background: rgba(17, 24, 39, 0.1); border-radius: 50%; z-index: 1; animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
 @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
-.ww-conn-card { position: absolute; background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05); display: flex; align-items: center; gap: 12px; font-weight: 600; color: #1F2937; border: 1px solid #F3F4F6; z-index: 5; white-space: nowrap; }
+.ww-conn-card { position: absolute; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05); display: flex; align-items: center; gap: 12px; font-weight: 600; color: var(--text-main); border: 1px solid var(--border-light); z-index: 5; white-space: nowrap; }
 .icon-box { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .ib-blue { background: #EFF6FF; color: #3B82F6; }
 .ib-green { background: #ECFDF5; color: #10B981; }
@@ -146,7 +152,7 @@ h1, h2, h3, button {
 }
 
 .ww-bento-card {
-  background: white;
+  background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: 20px;
   padding: 30px;
@@ -228,7 +234,7 @@ h1, h2, h3, button {
 .ww-cta-box p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
 
 /* --- Footer --- */
-.ww-footer { padding: 60px 0; border-top: 1px solid var(--border-light); background: white; }
+.ww-footer { padding: 60px 0; border-top: 1px solid var(--border-light); background: var(--bg-card); }
 .ww-footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
 .ww-brand-footer { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--text-main); }
 .ww-footer-links { display: flex; gap: 32px; }

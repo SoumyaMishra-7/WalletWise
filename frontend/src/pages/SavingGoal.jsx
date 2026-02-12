@@ -16,7 +16,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
   const [success, setSuccess] = useState('');
 
   const categories = ['Emergency Fund', 'Travel', 'Education', 'Home', 'Vehicle', 'Retirement', 'Wedding', 'Health', 'Gift', 'Other'];
-  
+
   const priorityOptions = [
     { value: 'Critical', label: 'Must Have', color: '#FF6B6B' },
     { value: 'High', label: 'High Priority', color: '#4ECDC4' },
@@ -59,7 +59,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
     // Calculate target date
     const targetDate = new Date();
     targetDate.setMonth(targetDate.getMonth() + timeline);
-    
+
     console.log('Calculated target date:', targetDate.toISOString());
 
     // Prepare goal data matching backend model
@@ -79,32 +79,32 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
 
     try {
       console.log('Sending request to backend...');
-      
+
       // ADD TIMEOUT to prevent hanging indefinitely
       const response = await api.post('/api/savings-goals', goalData, {
         timeout: 15000
       });
 
       console.log('Response received:', response.data);
-      
+
       if (response.data && response.data.message) {
         setSuccess(response.data.message);
       } else {
         setSuccess('Goal created successfully!');
       }
-      
+
       // Call parent callback with the created goal
       if (onGoalCreated) {
         onGoalCreated(response.data.goal || response.data);
       }
-      
+
       // Reset form after short delay
       setTimeout(() => {
         console.log('Closing modal and resetting form');
         resetForm();
         if (onClose) onClose();
       }, 1500);
-      
+
     } catch (err) {
       console.error('Error creating goal:', err);
       console.error('Error details:', {
@@ -113,10 +113,10 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
         status: err.response?.status,
         code: err.code
       });
-      
+
       // Handle different types of errors
       let errorMessage = 'Failed to create goal. Please try again.';
-      
+
       if (err.response) {
         // Server responded with error
         if (err.response.status === 401) {
@@ -147,7 +147,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
       } else if (err.code === 'ERR_NETWORK') {
         errorMessage = 'Network error. Check your internet connection and ensure backend is running.';
       }
-      
+
       setError(errorMessage);
       setLoading(false);
     }
@@ -174,12 +174,12 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
     setLoading(false);
   };
 
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
     if (!loading) {
       resetForm();
       if (onClose) onClose();
     }
-  };
+  }, [loading, onClose]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -195,10 +195,10 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
         handleClose();
       }
     };
-    
+
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [isOpen, loading]);
+  }, [isOpen, loading, handleClose]);
 
   if (!isOpen) return null;
 
@@ -210,9 +210,9 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             <h2>Create Savings Goal</h2>
             <p className="subtitle">Plan and track your financial goals</p>
           </div>
-          <button 
-            className="close-savings-btn" 
-            onClick={handleClose} 
+          <button
+            className="close-savings-btn"
+            onClick={handleClose}
             disabled={loading}
             aria-label="Close"
           >
@@ -366,9 +366,9 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
           {/* Category Dropdown */}
           <div className="savings-form-group">
             <label htmlFor="category">Goal Category</label>
-            <select 
+            <select
               id="category"
-              value={formData.category} 
+              value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               disabled={loading}
             >
@@ -382,29 +382,29 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
               <div className="summary-title">
                 <span>📊 Plan Summary</span>
               </div>
-              
+
               <div className="summary-grid">
                 <div className="summary-item">
                   <span className="summary-label">Target:</span>
                   <span className="summary-value">₹{targetAmountNum.toLocaleString('en-IN')}</span>
                 </div>
-                
+
                 <div className="summary-item">
                   <span className="summary-label">Current:</span>
                   <span className="summary-value">₹{currentAmountNum.toLocaleString('en-IN')}</span>
                 </div>
-                
+
                 <div className="summary-item">
                   <span className="summary-label">Remaining:</span>
                   <span className="summary-value highlight">₹{remaining.toLocaleString('en-IN')}</span>
                 </div>
-                
+
                 <div className="summary-item">
                   <span className="summary-label">Timeline:</span>
                   <span className="summary-value">{timeline} months</span>
                 </div>
               </div>
-              
+
               <div className="monthly-section">
                 <div className="monthly-label">Monthly savings needed:</div>
                 <div className="monthly-amount">₹{monthlyNeeded.toLocaleString('en-IN')}</div>
@@ -417,16 +417,16 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
 
           {/* Form Actions */}
           <div className="savings-form-actions">
-            <button 
-              type="button" 
-              className="savings-btn-cancel" 
+            <button
+              type="button"
+              className="savings-btn-cancel"
               onClick={handleClose}
               disabled={loading}
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="savings-btn-submit"
               disabled={loading || !formData.name.trim() || !formData.targetAmount || Number(formData.targetAmount) <= 0}
             >
@@ -438,7 +438,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
               ) : 'Create Goal'}
             </button>
           </div>
-          
+
           {/* Debug info - only in development */}
           {process.env.NODE_ENV === 'development' && (
             <div className="debug-info">

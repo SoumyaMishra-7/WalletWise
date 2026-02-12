@@ -10,14 +10,14 @@ import SetBudget from '../pages/SetBudget';
 import SavingGoal from '../pages/SavingGoal';
 import {
   FaWallet, FaSignOutAlt, FaUserCircle, FaChevronDown,
-  FaMoneyBillWave, FaChartLine, FaPiggyBank, FaPlusCircle,
+  FaMoneyBillWave, FaChartLine, FaPiggyBank,
   FaHandHoldingUsd, FaBullseye, FaChartBar, FaExclamationTriangle,
-  FaBrain, FaArrowUp, FaArrowDown, FaCalendarAlt,
-  FaSync, FaExclamationCircle, FaHome, FaExchangeAlt,
-  FaCog, FaChartPie, FaCreditCard, FaFileAlt, FaBell,
-  FaFilter, FaSearch, FaEdit, FaTrash
+  FaBrain, FaArrowUp, FaCalendarAlt,
+  FaSync, FaHome, FaExchangeAlt,
+  FaCog, FaChartPie, FaEdit, FaTrash
 } from 'react-icons/fa';
-import { Line, Pie, Bar } from 'react-chartjs-2';
+import { Line, Pie } from 'react-chartjs-2';
+
 import { toast } from 'react-hot-toast';
 import {
   Chart as ChartJS,
@@ -114,47 +114,8 @@ const Dashboard = () => {
   ];
 
   // ============ AUTH & DATA FETCHING ============
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        if (authLoading) {
-          return;
-        }
-
-        if (!authUser) {
-          navigate('/login');
-          return;
-        }
-
-        setUser(authUser);
-
-        // Set time greeting
-        const hour = new Date().getHours();
-        if (hour < 12) setTimeOfDay('Morning');
-        else if (hour < 17) setTimeOfDay('Afternoon');
-        else setTimeOfDay('Evening');
-
-        // Set current date - standardized format
-        const now = new Date();
-        const options = { month: 'long', day: 'numeric', year: 'numeric' };
-        setCurrentDate(now.toLocaleDateString('en-US', options));
-
-        await fetchDashboardData();
-
-      } catch (err) {
-        console.error('Dashboard initialization error:', err);
-        setError('Failed to initialize dashboard.');
-        setTimeout(() => navigate('/login'), 2000);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [navigate, authUser, authLoading]);
-
   // Fetch dashboard data
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = React.useCallback(async () => {
     setRefreshing(true);
     try {
       console.log('???? Fetching dashboard data...');
@@ -215,7 +176,46 @@ const Dashboard = () => {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [navigate, logout]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        if (authLoading) {
+          return;
+        }
+
+        if (!authUser) {
+          navigate('/login');
+          return;
+        }
+
+        setUser(authUser);
+
+        // Set time greeting
+        const hour = new Date().getHours();
+        if (hour < 12) setTimeOfDay('Morning');
+        else if (hour < 17) setTimeOfDay('Afternoon');
+        else setTimeOfDay('Evening');
+
+        // Set current date - standardized format
+        const now = new Date();
+        const options = { month: 'long', day: 'numeric', year: 'numeric' };
+        setCurrentDate(now.toLocaleDateString('en-US', options));
+
+        await fetchDashboardData();
+
+      } catch (err) {
+        console.error('Dashboard initialization error:', err);
+        setError('Failed to initialize dashboard.');
+        setTimeout(() => navigate('/login'), 2000);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [navigate, authUser, authLoading, fetchDashboardData]);
 
   // ============ HANDLERS ============
   const handleLogout = async () => {
@@ -428,13 +428,7 @@ const Dashboard = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short'
-    });
-  };
+
 
   const formatTransactionDate = (dateString) => {
     if (!dateString) return '';

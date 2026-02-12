@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Import your existing components
 import Homepage from './components/Homepage';
@@ -27,173 +28,175 @@ import PublicRoute from './components/PublicRoute';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="app">
-          {/* Toast Notifications */}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-              success: {
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="app">
+            {/* Toast Notifications */}
+            <Toaster
+              position="top-right"
+              toastOptions={{
                 duration: 3000,
-                iconTheme: {
-                  primary: '#10b981',
-                  secondary: '#fff',
+                style: {
+                  background: '#363636',
+                  color: '#fff',
                 },
-              },
-              error: {
-                duration: 4000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: '#10b981',
+                    secondary: '#fff',
+                  },
                 },
-              },
-            }}
-          />
-
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Homepage />} />
-
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              }
+                error: {
+                  duration: 4000,
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
+                  },
+                },
+              }}
             />
 
-            <Route
-              path="/signup"
-              element={
-                <PublicRoute>
-                  <Signup />
-                </PublicRoute>
-              }
-            />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Homepage />} />
 
-            <Route
-              path="/verify-email"
-              element={
-                <PublicRoute>
-                  <VerifyEmail />
-                </PublicRoute>
-              }
-            />
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
 
-            {/* Protected Routes - Only accessible when logged in */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/signup"
+                element={
+                  <PublicRoute>
+                    <Signup />
+                  </PublicRoute>
+                }
+              />
 
-            {/* NEW: Behaviour Analysis Route */}
-            <Route
-              path="/behaviour-analysis"
-              element={
-                <ProtectedRoute>
-                  <BehaviourDashboard />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/verify-email"
+                element={
+                  <PublicRoute>
+                    <VerifyEmail />
+                  </PublicRoute>
+                }
+              />
 
-            <Route
-              path="/add-expense"
-              element={
-                <ProtectedRoute>
-                  <AddExpense />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Routes - Only accessible when logged in */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/set-budget"
-              element={
-                <ProtectedRoute>
-                  <SetBudget />
-                </ProtectedRoute>
-              }
-            />
+              {/* NEW: Behaviour Analysis Route */}
+              <Route
+                path="/behaviour-analysis"
+                element={
+                  <ProtectedRoute>
+                    <BehaviourDashboard />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/saving-goal"
-              element={
-                <ProtectedRoute>
-                  <SavingGoal />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/add-expense"
+                element={
+                  <ProtectedRoute>
+                    <AddExpense />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/transactions"
-              element={
-                <ProtectedRoute>
-                  <Transactions />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/set-budget"
+                element={
+                  <ProtectedRoute>
+                    <SetBudget />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/budget"
-              element={
-                <ProtectedRoute>
-                  <Budget />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/saving-goal"
+                element={
+                  <ProtectedRoute>
+                    <SavingGoal />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/goals"
-              element={
-                <ProtectedRoute>
-                  <Goals />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/transactions"
+                element={
+                  <ProtectedRoute>
+                    <Transactions />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/reports"
-              element={
-                <ProtectedRoute>
-                  <Reports />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/budget"
+                element={
+                  <ProtectedRoute>
+                    <Budget />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/goals"
+                element={
+                  <ProtectedRoute>
+                    <Goals />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute>
+                    <Reports />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Redirect unknown routes to homepage */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
-      </Router>
-    </AuthProvider>
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Redirect unknown routes to homepage */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

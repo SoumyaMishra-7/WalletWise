@@ -168,7 +168,7 @@ const Budget = () => {
       recommendedDaily,
       projection
     };
-  }, [categories, dayOfMonth, daysInMonth]);
+  }, [categories, dayOfMonth, daysInMonth, summaryTotals]);
 
   const needsTotal = categories.filter((c) => c.type === 'needs').reduce((sum, c) => sum + c.budget, 0);
   const wantsTotal = categories.filter((c) => c.type === 'wants').reduce((sum, c) => sum + c.budget, 0);

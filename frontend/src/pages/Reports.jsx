@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { Link } from 'react-router-dom';
-import AppNavbar from '../components/AppNavbar';
+
 import {
   Chart as ChartJS,
   ArcElement,
