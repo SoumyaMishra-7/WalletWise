@@ -202,12 +202,39 @@
   transition: all 0.2s ease;
 }
 
+/* Specific Dark Mode Overrides */
+body.theme-dark .form-group input,
+body.theme-dark .form-group select {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border-color: var(--border-subtle);
+}
+
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
   border-color: var(--brand-primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  background: #fff;
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+
+/* Autofill Fix for Dark Mode */
+.form-group input:-webkit-autofill,
+.form-group input:-webkit-autofill:hover,
+.form-group input:-webkit-autofill:focus,
+.form-group input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--bg-app) inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+body.theme-dark .form-group input:-webkit-autofill,
+body.theme-dark .form-group input:-webkit-autofill:hover,
+body.theme-dark .form-group input:-webkit-autofill:focus,
+body.theme-dark .form-group input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--bg-card) inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
 }
 
 .select-wrapper {
