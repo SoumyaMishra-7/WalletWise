@@ -14,7 +14,7 @@ router.post('/', protect, validate(transactionSchema), transactionController.add
 router.get('/', protect, transactionController.getAllTransactions);
 
 // Update transaction
-router.put('/:id', protect, transactionController.updateTransaction);
+router.put('/:id', protect, validate(transactionSchema), transactionController.updateTransaction);
 
 // Delete transaction
 router.delete('/:id', protect, transactionController.deleteTransaction);
