@@ -1,0 +1,328 @@
+﻿.transactions-page {
+  min-height: 100vh;
+  padding: 2rem 0 4rem;
+  background: var(--bg-app);
+  color: var(--text-main);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.transactions-topbar {
+  width: 92%;
+  max-width: 1600px;
+  margin: 0 auto 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.transactions-topbar h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0.5rem 0;
+  background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.transactions-topbar p {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 560px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  color: var(--brand-secondary);
+  font-weight: 700;
+}
+
+.advanced-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: var(--shadow-soft);
+}
+
+.advanced-toggle.active,
+.advanced-toggle:hover {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.transactions-toolbar {
+  width: 92%;
+  max-width: 1600px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.search-input.compact {
+  max-width: 520px;
+}
+
+.search-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: transparent;
+}
+
+.quick-filters {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.pill {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.pill.active,
+.pill:hover {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+.advanced-panel {
+  width: 92%;
+  max-width: 1600px;
+  margin: 0 auto 1.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.advanced-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.advanced-block label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.advanced-block input,
+.advanced-block select {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-app);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+.date-inputs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.export-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.primary-button,
+.ghost-button {
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  color: white;
+  box-shadow: 0 8px 18px rgba(99, 102, 241, 0.2);
+}
+
+.primary-button:hover {
+  transform: translateY(-1px);
+}
+
+.ghost-button {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+}
+
+.transactions-table {
+  width: 92%;
+  max-width: 1600px;
+  margin: 0 auto 2rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  padding: 0.5rem 1.2rem 1.2rem;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.transactions-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transactions-table thead th {
+  text-align: left;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 1rem 0.3rem;
+}
+
+.transactions-table tbody tr {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.transactions-table tbody td {
+  padding: 0.85rem 0.3rem;
+  font-size: 0.92rem;
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.transactions-table td.note {
+  color: var(--text-muted);
+  max-width: 240px;
+}
+
+.amount {
+  font-weight: 600;
+}
+
+.amount.expense {
+  color: var(--danger-pill);
+}
+
+.amount.income {
+  color: var(--success-pill);
+}
+
+.mood-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.05);
+  background: color-mix(in srgb, var(--mood-color), #ffffff 85%);
+  color: var(--mood-color);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.mood-emoji {
+  font-size: 1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+  background: rgba(99, 102, 241, 0.02);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-subtle);
+}
+
+.page-loading,
+.page-error {
+  width: 92%;
+  max-width: 1600px;
+  margin: 4rem auto;
+  text-align: center;
+  background: var(--bg-card);
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+}
+
+@media (max-width: 960px) {
+  .transactions-topbar {
+    flex-direction: column;
+  }
+
+  .transactions-table {
+    overflow-x: auto;
+  }
+
+  .transactions-table table {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 640px) {
+  .transactions-topbar,
+  .transactions-toolbar,
+  .advanced-panel,
+  .transactions-table,
+  .page-loading,
+  .page-error {
+    width: 94%;
+  }
+
+  .transactions-topbar h1 {
+    font-size: 2rem;
+  }
+}

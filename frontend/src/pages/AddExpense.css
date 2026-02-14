@@ -1,0 +1,233 @@
+/* src/components/AddExpense.css */
+
+/* ============ UNIVERSAL MODAL STYLES ============ */
+.expense-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  padding: 1rem;
+}
+
+.expense-modal-content {
+  background: #ffffff;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+  animation: modalAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #f1f5f9;
+}
+
+@keyframes modalAppear {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ============ DYNAMIC HEADERS ============ */
+.expense-modal-header {
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Header Themes */
+.expense-header { 
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); 
+}
+.income-header { 
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); 
+}
+
+.expense-modal-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.expense-header h2 { color: #be123c; }
+.income-header h2 { color: #15803d; }
+
+.close-expense-btn {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* ============ FORM ELEMENTS ============ */
+.expense-modal-content form {
+  padding: 1.5rem 2rem 2rem;
+}
+
+.expense-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.expense-form-group label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+/* Amount Inputs */
+.expense-amount-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-label {
+  position: absolute;
+  left: 1.25rem;
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+.expense-amount-input input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 2.5px solid #e2e8f0;
+  border-radius: 16px;
+  font-size: 1.75rem;
+  font-weight: 800;
+  transition: all 0.2s;
+}
+
+/* Amount Context Colors */
+.expense-header + form .currency-label { color: #e11d48; }
+.expense-header + form input { border-color: #fecaca; color: #e11d48; }
+
+.income-header + form .currency-label { color: #16a34a; }
+.income-header + form input { border-color: #bbf7d0; color: #16a34a; }
+
+.expense-amount-input input:focus {
+  outline: none;
+  border-color: currentColor;
+  box-shadow: 0 0 0 4px rgba(0,0,0,0.05);
+}
+
+/* ============ BEHAVIORAL SELECTION GRIDS ============ */
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.selection-btn {
+  padding: 0.85rem;
+  border: 2px solid #f1f5f9;
+  background: #f8fafc;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.selection-btn:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+/* Active States (Red for Expense, Green for Income) */
+.expense-header + form .selection-btn.active {
+  background: #fff1f2;
+  border-color: #fb7185;
+  color: #be123c;
+}
+
+.income-header + form .selection-btn.active {
+  background: #f0fdf4;
+  border-color: #4ade80;
+  color: #166534;
+}
+
+/* ============ LAYOUT & UTILS ============ */
+.form-row-flex {
+  display: flex;
+  gap: 1rem;
+}
+
+.flex-1 { flex: 1; }
+
+.expense-form-group input[type="date"],
+.expense-form-group select,
+.expense-form-group textarea {
+  width: 100%;
+  padding: 0.85rem;
+  border: 2px solid #f1f5f9;
+  background: #f8fafc;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  font-family: inherit;
+}
+
+.expense-form-group textarea {
+  resize: none;
+  min-height: 70px;
+}
+
+/* ============ ACTION BUTTONS ============ */
+.expense-form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 1rem;
+  border: 2px solid #f1f5f9;
+  background: #ffffff;
+  color: #64748b;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary {
+  flex: 2;
+  padding: 1rem;
+  border: none;
+  color: white;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.expense-header + form .btn-primary { background: #e11d48; }
+.income-header + form .btn-primary { background: #16a34a; }
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 480px) {
+  .form-row-flex { flex-direction: column; gap: 0; }
+  .selection-grid { grid-template-columns: 1fr; }
+  .expense-modal-content { border-radius: 0; height: 100vh; max-height: 100vh; }
+}
