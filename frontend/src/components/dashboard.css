@@ -20,6 +20,7 @@
   --text-main: #0f172a;
   --text-muted: #64748b;
   --border-subtle: #f1f5f9;
+  --nav-indicator: var(--brand-primary);
   --glass-border: rgba(255, 255, 255, 0.4);
 
   /* Elevation & Curves */
@@ -92,6 +93,7 @@
   font-size: 2rem;
   background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2));
 }
@@ -102,6 +104,7 @@
   letter-spacing: -0.03em;
   background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -218,6 +221,37 @@
   display: flex;
   justify-content: flex-end;
   position: relative;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: var(--shadow-soft);
+  font-size: 1.1rem;
+}
+
+.theme-toggle:hover {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.2);
+  transform: translateY(-1px);
+}
+
+.nav-divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--border-subtle);
+  margin: 0 0.25rem;
 }
 
 .user-profile-trigger {
@@ -252,6 +286,13 @@
   font-weight: 700;
   font-size: 1rem;
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .dropdown-arrow {
@@ -396,6 +437,7 @@
   letter-spacing: -0.02em;
   background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0 0 0.5rem 0;
 }

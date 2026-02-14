@@ -245,6 +245,13 @@
   font-weight: 700;
   font-size: 1rem;
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .dropdown-arrow {
@@ -277,6 +284,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -304,6 +312,7 @@
   font-weight: 700;
   font-size: 1.2rem;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  overflow: hidden;
 }
 
 .dropdown-user-info {

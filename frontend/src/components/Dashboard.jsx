@@ -14,8 +14,9 @@ import {
   FaHandHoldingUsd, FaBullseye, FaChartBar, FaExclamationTriangle,
   FaBrain, FaArrowUp, FaCalendarAlt,
   FaSync, FaHome, FaExchangeAlt,
-  FaCog, FaChartPie, FaEdit, FaTrash, FaCalendarCheck, FaBell
+  FaCog, FaChartPie, FaEdit, FaTrash, FaCalendarCheck, FaBell, FaSun, FaMoon
 } from 'react-icons/fa';
+import { useTheme } from '../context/ThemeContext';
 import { Line, Pie } from 'react-chartjs-2';
 
 import { toast } from 'react-hot-toast';
@@ -65,6 +66,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user: authUser, loading: authLoading, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -530,6 +532,17 @@ const Dashboard = () => {
 
         {/* Right: User Profile & Notifications */}
         <div className="nav-right">
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            type="button"
+          >
+            {isDark ? <FaSun /> : <FaMoon />}
+          </button>
+
+          <div className="nav-divider"></div>
+
           {/* Notification Bell */}
           <div className="notification-wrapper" ref={notificationsRef}>
             <button
@@ -590,7 +603,11 @@ const Dashboard = () => {
               aria-haspopup="true"
             >
               <div className="user-avatar" aria-hidden="true">
-                {user?.fullName?.charAt(0) || user?.name?.charAt(0) || 'U'}
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="" className="avatar-img" />
+                ) : (
+                  user?.fullName?.charAt(0) || user?.name?.charAt(0) || 'U'
+                )}
               </div>
               <FaChevronDown className={`dropdown-arrow ${showUserMenu ? 'open' : ''}`} />
             </button>
@@ -600,7 +617,11 @@ const Dashboard = () => {
               <div className="user-dropdown-menu" role="menu">
                 <div className="user-dropdown-header">
                   <div className="dropdown-avatar">
-                    {user?.fullName?.charAt(0) || user?.name?.charAt(0) || 'U'}
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt="" className="avatar-img" />
+                    ) : (
+                      user?.fullName?.charAt(0) || user?.name?.charAt(0) || 'U'
+                    )}
                   </div>
                   <div className="dropdown-user-info">
                     <span className="dropdown-user-name">{user?.fullName || user?.name}</span>

@@ -124,7 +124,11 @@ const AppNavbar = () => {
           type="button"
         >
           <div className="user-avatar" aria-hidden="true">
-            {userInitial}
+            {user?.avatar ? (
+              <img src={user.avatar} alt="" className="avatar-img" />
+            ) : (
+              userInitial
+            )}
           </div>
           <FaChevronDown className={`dropdown-arrow ${showUserMenu ? 'open' : ''}`} />
         </button>
@@ -132,7 +136,13 @@ const AppNavbar = () => {
         {showUserMenu && (
           <div className="user-dropdown-menu" role="menu">
             <div className="user-dropdown-header">
-              <div className="dropdown-avatar">{userInitial}</div>
+              <div className="dropdown-avatar">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="" className="avatar-img" />
+                ) : (
+                  userInitial
+                )}
+              </div>
               <div className="dropdown-user-info">
                 <span className="dropdown-user-name">{displayName}</span>
                 {displayEmail && <span className="dropdown-user-email">{displayEmail}</span>}
