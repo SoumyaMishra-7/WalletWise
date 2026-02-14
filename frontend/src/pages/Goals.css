@@ -1,9 +1,14 @@
 .goals-page {
   min-height: 100vh;
   padding: 2.5rem 0 4rem;
-  background: radial-gradient(circle at top, #f8fafc 0%, #f2f6ff 45%, #edf2f7 100%);
-  color: #0f172a;
+  background: var(--bg-app, radial-gradient(circle at top, #f8fafc 0%, #f2f6ff 45%, #edf2f7 100%));
+  color: var(--text-main, #0f172a);
   font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.dark .goals-page,
+.theme-dark .goals-page {
+  background: radial-gradient(circle at top, #0f172a 0%, #171717 100%);
 }
 
 .goals-header,
@@ -29,28 +34,28 @@
   font-size: 2.3rem;
   font-weight: 700;
   margin: 0.5rem 0 0.4rem;
-  color: #1e293b;
+  color: var(--text-main, #1e293b);
 }
 
 .goals-header p {
   margin: 0;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
 }
 
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.2em;
   font-size: 0.7rem;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
   font-weight: 700;
 }
 
 .summary-card {
-  background: #ffffff;
+  background: var(--bg-card, #ffffff);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-subtle, #e2e8f0);
   padding: 1.4rem 1.5rem;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-soft, 0 12px 28px rgba(15, 23, 42, 0.06));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -61,7 +66,7 @@
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 0.7rem;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
   font-weight: 700;
   margin: 0;
 }
@@ -73,13 +78,13 @@
 
 .summary-stats span {
   display: block;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-size: 0.85rem;
 }
 
 .summary-stats strong {
   font-size: 1.2rem;
-  color: #1e293b;
+  color: var(--text-main, #1e293b);
 }
 
 .goals-grid {
@@ -89,32 +94,32 @@
 }
 
 .overview-card {
-  background: #ffffff;
+  background: var(--bg-card, #ffffff);
   border-radius: 20px;
   padding: 1.8rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  box-shadow: var(--shadow-soft, 0 12px 24px rgba(15, 23, 42, 0.05));
 }
 
 .overview-card h3 {
   margin: 0 0 0.5rem;
-  color: #1e293b;
+  color: var(--text-main, #1e293b);
 }
 
 .overview-card p {
   margin: 0;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
 }
 
 .goal-card {
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  background: var(--bg-card, #ffffff);
   border-radius: 20px;
   padding: 1.3rem;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-soft, 0 12px 24px rgba(15, 23, 42, 0.06));
   cursor: pointer;
   text-align: left;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -122,7 +127,8 @@
 
 .goal-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-soft, 0 16px 28px rgba(15, 23, 42, 0.08));
+  border-color: var(--brand-primary);
 }
 
 .goal-card:focus-visible {
@@ -131,7 +137,7 @@
 }
 
 .goal-card.paused {
-  opacity: 0.8;
+  opacity: 0.6;
 }
 
 .goal-card.completed .progress-fill {
@@ -150,22 +156,22 @@
   border-radius: 14px;
   display: grid;
   place-items: center;
-  background: #eef2ff;
-  color: #4338ca;
+  background: var(--bg-app, #eef2ff);
+  color: var(--brand-primary, #4338ca);
   font-size: 1.1rem;
 }
 
 .goal-text h3 {
   margin: 0.2rem 0 0;
   font-size: 1.05rem;
-  color: #1e293b;
+  color: var(--text-main, #1e293b);
 }
 
 .goal-type {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.65rem;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
 }
 
 .goal-deadline {
@@ -173,7 +179,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-size: 0.8rem;
   white-space: nowrap;
 }
@@ -182,7 +188,7 @@
   width: 100%;
   height: 8px;
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--border-subtle, #e2e8f0);
   overflow: hidden;
 }
 
@@ -195,7 +201,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
 }
 
 .goal-card-footer {
@@ -208,18 +214,18 @@
 .goal-amounts span {
   display: block;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
 }
 
 .goal-amounts strong {
   font-size: 1.05rem;
-  color: #1e293b;
+  color: var(--text-main, #1e293b);
 }
 
 .quick-add {
   border: none;
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--text-main, #0f172a);
+  color: var(--bg-card, #ffffff);
   padding: 0.5rem 0.95rem;
   border-radius: 999px;
   font-weight: 600;
@@ -233,7 +239,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  background: #4338ca;
+  background: var(--brand-primary, #4338ca);
   color: #ffffff;
   border: none;
   padding: 0.8rem 1.4rem;
@@ -250,17 +256,18 @@
   background: rgba(15, 23, 42, 0.55);
   display: grid;
   place-items: center;
-  z-index: 20;
+  z-index: 1000;
   padding: 1.5rem;
+  backdrop-filter: blur(4px);
 }
 
 .goal-modal {
   width: min(520px, 92vw);
-  background: #ffffff;
+  background: var(--bg-card, #ffffff);
   border-radius: 20px;
   padding: 1.6rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  box-shadow: var(--shadow-soft, 0 24px 60px rgba(15, 23, 42, 0.2));
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
@@ -284,21 +291,26 @@
   font-size: 1.2rem;
 }
 
+.dark .goal-modal-icon {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
 .goal-modal-header h2 {
   margin: 0.2rem 0 0;
-  color: #1e293b;
+  color: var(--text-main, #1e293b);
 }
 
 .modal-label {
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 0.7rem;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
   margin: 0;
 }
 
 .modal-deadline {
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-size: 0.85rem;
 }
 
@@ -308,7 +320,7 @@
   border: none;
   font-size: 1.4rem;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--text-muted, #94a3b8);
 }
 
 .goal-modal-progress .progress-bar {
@@ -323,13 +335,13 @@
 
 .goal-modal-stats span {
   display: block;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
   font-size: 0.85rem;
 }
 
 .goal-modal-stats strong {
   font-size: 1.1rem;
-  color: #1e293b;
+  color: var(--text-main, #1e293b);
 }
 
 .goal-modal-actions {
@@ -354,13 +366,15 @@
 
 .amount-field label {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-muted, #64748b);
 }
 
 .amount-field input {
   padding: 0.55rem 0.75rem;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  background: var(--bg-app);
+  color: var(--text-main);
   font-size: 1rem;
 }
 
@@ -392,6 +406,7 @@
 }
 
 @media (max-width: 640px) {
+
   .goals-header,
   .goals-summary,
   .goals-grid,

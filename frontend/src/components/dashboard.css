@@ -36,6 +36,41 @@
   --transition-fast: all 0.2s ease;
 }
 
+html.dark,
+body.theme-dark,
+[data-theme='dark'],
+.dark,
+.theme-dark {
+  --bg-app: #0f172a;
+  --bg-card: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-subtle: #334155;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+/* Force visibility for dashboard summary values in dark mode */
+.dark .stat-value,
+.theme-dark .stat-value,
+[data-theme='dark'] .stat-value,
+.dark .stat-trend,
+.theme-dark .stat-trend,
+[data-theme='dark'] .stat-trend,
+.dark .progress-text,
+.theme-dark .progress-text,
+[data-theme='dark'] .progress-text {
+  color: var(--text-main) !important;
+}
+
+.dark .stat-content h3,
+.theme-dark .stat-content h3 {
+  color: var(--text-muted) !important;
+}
+
+
+
+
 /* ==========================================================================
    2. GLOBAL LAYOUT
    ========================================================================== */
@@ -619,6 +654,14 @@
   margin-top: 0.5rem;
 }
 
+.progress-text {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+
 .trend-up {
   color: var(--success-pill);
 }
@@ -884,14 +927,17 @@
 }
 
 .icon-bg.expense {
-  background: #fff1f2;
+  background: var(--bg-app);
   color: var(--danger-pill);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .icon-bg.income {
-  background: #f0fdf4;
+  background: var(--bg-app);
   color: var(--success-pill);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
+
 
 .transaction-amount {
   font-weight: 700;
@@ -958,7 +1004,9 @@
   border-radius: 12px;
   color: var(--brand-primary);
   font-weight: 500;
+  border: 1px solid rgba(99, 102, 241, 0.2);
 }
+
 
 .goal-amounts {
   display: flex;
@@ -1536,17 +1584,23 @@ textarea:focus {
 }
 
 
-/* Dark Mode Support */
-body.dark-mode .upcoming-bills-widget {
-  background: #1e293b;
-  border-color: #334155;
+/* Dark Mode Support for Specific Widgets */
+.dark .upcoming-bills-widget,
+.theme-dark .upcoming-bills-widget,
+[data-theme='dark'] .upcoming-bills-widget {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
 }
 
-body.dark-mode .widget-title,
-body.dark-mode .bill-name {
-  color: #f1f5f9;
+.dark .widget-title,
+.theme-dark .widget-title,
+.dark .bill-name,
+.theme-dark .bill-name {
+  color: var(--text-main);
 }
 
-body.dark-mode .bill-item {
-  background-color: #0f172a;
+.dark .bill-item,
+.theme-dark .bill-item {
+  background-color: var(--bg-app);
+  border-color: var(--border-subtle);
 }
