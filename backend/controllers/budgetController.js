@@ -424,9 +424,11 @@ const updateBudget = async (req, res) => {
             }
         }
 
-        // Update fields
-        Object.keys(updates).forEach(key => {
-            if (key !== '_id' && key !== 'userId' && key !== 'month') {
+        // Update fields with a secure whitelist
+        const allowedUpdates = ['totalBudget', 'categories', 'isActive'];
+
+        allowedUpdates.forEach(key => {
+            if (updates[key] !== undefined) {
                 budget[key] = updates[key];
             }
         });
