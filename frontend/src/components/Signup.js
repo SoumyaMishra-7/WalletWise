@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 import {
   FaUser,
   FaLock,
@@ -17,6 +18,7 @@ import {
   FaArrowLeft
 } from 'react-icons/fa';
 import './Auth.css';
+import { departments } from '../assets/inputdata';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -37,7 +39,7 @@ const Signup = () => {
   const { signup } = useAuth();
 
   const years = ['1st', '2nd', '3rd', '4th', '5th'];
-
+  
   const {
     studentId,
     email,
@@ -361,7 +363,7 @@ const Signup = () => {
               <FaUniversity className="input-icon" />
               Department *
             </label>
-            <input
+            {/* <input
               type="text"
               id="department"
               name="department"
@@ -370,7 +372,23 @@ const Signup = () => {
               placeholder="e.g., Computer Science"
               required
               disabled={loading}
-            />
+            /> */}
+            <select
+              id="department"
+              name="department"
+              value={department}
+              onChange={handleChange}
+              required
+              disabled={loading}
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept, index) => (
+                <option key={index} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+
           </div>
 
           <div className="terms-agreement">

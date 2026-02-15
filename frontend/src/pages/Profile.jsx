@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import AppNavbar from '../components/AppNavbar';
-
+import { departments } from '../assets/inputdata';
 import './Settings.css';
 import { FaUserCircle, FaArrowLeft, FaCamera, FaCheck, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
@@ -147,213 +147,265 @@ const Profile = () => {
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
         .join('') || 'U';
+   return (
+    <div className="min-h-screen bg-slate-50">
+        <AppNavbar />
 
-    return (
-        <div className="settings-page">
-            <AppNavbar />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-            <div className="settings-container">
-                <header className="settings-header">
-                    <Link to="/dashboard" className="back-link">
-                        <FaArrowLeft />
-                        Back to Dashboard
-                    </Link>
-                    <div className="header-content">
-                        <span className="eyebrow">User Profile</span>
-                        <h1>Personal Information</h1>
-                        <p>Manage your personal information and preferences.</p>
-                    </div>
-                </header>
+        {/* Header */}
+        <div className="mb-10">
+            <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 transition"
+            >
+            <FaArrowLeft />
+            Back to Dashboard
+            </Link>
 
-                {status.message && (
-                    <div className={`status-message ${status.type}`}>
-                        <div className="status-icon">
-                            {status.type === 'success' ? <FaCheck /> : <FaExclamationTriangle />}
-                        </div>
-                        <p>{status.message}</p>
-                        <button onClick={() => setStatus({ type: '', message: '' })} className="close-status">
-                            <FaTimes />
-                        </button>
-                    </div>
-                )}
-
-                <form onSubmit={handleSave} className="settings-form">
-                    <section className="settings-card">
-                        <div className="card-header">
-                            <div className="card-icon blue">
-                                <FaUserCircle />
-                            </div>
-                            <div>
-                                <h2>Profile Details</h2>
-                                <p>Update your photo and personal details here.</p>
-                            </div>
-                        </div>
-
-                        <div className="form-grid" style={{ marginBottom: '2rem' }}>
-                            {/* Avatar Section */}
-                            <div className="form-group" style={{ gridColumn: '1 / -1', flexDirection: 'row', alignItems: 'center', gap: '1.5rem' }}>
-                                <div className="avatar-preview" style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    borderRadius: '50%',
-                                    overflow: 'hidden',
-                                    background: 'var(--brand-primary)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white',
-                                    fontSize: '2rem',
-                                    fontWeight: '700'
-                                }}>
-                                    {formData.avatar ? (
-                                        <img
-                                            src={formData.avatar}
-                                            alt="Profile"
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        userInitials
-                                    )}
-                                </div>
-                                <div>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        ref={fileInputRef}
-                                        onChange={handleFileChange}
-                                        style={{ display: 'none' }}
-                                    />
-                                    <button
-                                        className="btn-secondary"
-                                        onClick={handleAvatarClick}
-                                        type="button"
-                                        style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-                                    >
-                                        <FaCamera style={{ marginRight: '0.5rem' }} />
-                                        Change Avatar
-                                    </button>
-                                    <p className="field-info" style={{ marginTop: '0.5rem' }}>
-                                        JPG, GIF or PNG. 1MB max.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="form-grid">
-                            <div className="form-group">
-                                <label>Name</label>
-                                <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input type="email" name="email" value={formData.email} disabled style={{ opacity: 0.7, cursor: 'not-allowed' }} />
-                            </div>
-                            <div className="form-group">
-                                <label>Phone</label>
-                                <input
-                                    type="tel"
-                                    name="phoneNumber"
-                                    value={formData.phoneNumber}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Department</label>
-                                <input
-                                    type="text"
-                                    name="department"
-                                    value={formData.department}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Year</label>
-                                <div className="select-wrapper">
-                                    <select name="year" value={formData.year} onChange={handleChange}>
-                                        <option value="1st">1st</option>
-                                        <option value="2nd">2nd</option>
-                                        <option value="3rd">3rd</option>
-                                        <option value="4th">4th</option>
-                                        <option value="5th">5th</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label>Currency</label>
-                                <div className="select-wrapper">
-                                    <select name="currency" value={formData.currency} onChange={handleChange}>
-                                        <option value="INR">INR (Rs)</option>
-                                        <option value="USD">USD ($)</option>
-                                        <option value="EUR">EUR (EUR)</option>
-                                        <option value="GBP">GBP (GBP)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label>Date Format</label>
-                                <div className="select-wrapper">
-                                    <select name="dateFormat" value={formData.dateFormat} onChange={handleChange}>
-                                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label>Language</label>
-                                <div className="select-wrapper">
-                                    <select name="language" value={formData.language} onChange={handleChange}>
-                                        <option>English</option>
-                                        <option>Hindi</option>
-                                        <option>Spanish</option>
-                                        <option>French</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </form>
-
-                <div className="settings-footer">
-                    <div className="footer-content">
-                        <div className="unsaved-changes">
-                            {hasChanges && (
-                                <>
-                                    <FaExclamationTriangle />
-                                    <span>You have unsaved changes</span>
-                                </>
-                            )}
-                        </div>
-
-                        <div className="footer-actions">
-                            <button
-                                type="button"
-                                onClick={handleReset}
-                                disabled={loading || isSaving || !user || !hasChanges}
-                                className="btn-secondary"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="btn-primary"
-                                type="button" /* Changed to type button for safety, but wrapping form submit needs trigger */
-                                onClick={handleSave} /* Direct handler */
-                                disabled={loading || isSaving || !user || !hasChanges}
-                            >
-                                {isSaving ? (
-                                    <>
-                                        <div className="spinner-small"></div>
-                                        Saving...
-                                    </>
-                                ) : (
-                                    'Save Changes'
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div className="mt-4">
+            <h1 className="text-3xl font-bold text-slate-800">
+                Personal Information
+            </h1>
+            <p className="text-slate-500 mt-1">
+                Manage your personal information and preferences.
+            </p>
             </div>
         </div>
+
+        {/* Status Message */}
+        {status.message && (
+            <div
+            className={`mb-6 flex items-center justify-between p-4 rounded-xl border ${
+                status.type === "success"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                : "bg-red-50 border-red-200 text-red-700"
+            }`}
+            >
+            <div className="flex items-center gap-3">
+                {status.type === "success" ? (
+                <FaCheck />
+                ) : (
+                <FaExclamationTriangle />
+                )}
+                <p>{status.message}</p>
+            </div>
+            <button
+                onClick={() => setStatus({ type: "", message: "" })}
+                className="text-slate-400 hover:text-slate-600"
+            >
+                <FaTimes />
+            </button>
+            </div>
+        )}
+
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+
+            {/* Avatar Section */}
+            <div className="flex flex-col  items-center gap-6 mb-10">
+
+            <div className="w-24 h-24 rounded-full bg-indigo-600 text-white flex items-center justify-center text-3xl font-semibold overflow-hidden">
+                {formData.avatar ? (
+                <img
+                    src={formData.avatar}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                />
+                ) : (
+                userInitials
+                )}
+            </div>
+
+            <div>
+                <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                />
+                <button
+                type="button"
+                onClick={handleAvatarClick}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+                >
+                <FaCamera />
+                Change Avatar
+                </button>
+                <p className="text-xs text-slate-500 mt-2">
+                JPG, GIF or PNG. 1MB max.
+                </p>
+            </div>
+            </div>
+
+            {/* Form Grid */}
+            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                Name
+                </label>
+                <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                Email
+                </label>
+                <input
+                type="email"
+                value={formData.email}
+                disabled
+                className="w-full px-4 py-2.5 border border-slate-200 bg-slate-100 rounded-xl cursor-not-allowed"
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                Phone
+                </label>
+                <input
+                type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+            </div>
+
+            {/* Department */}
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                Department
+                </label>
+                <select
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                <option value="">Select Department</option>
+                {departments.map((dept, index) => (
+                    <option key={index} value={dept}>
+                    {dept}
+                    </option>
+                ))}
+                </select>
+            </div>
+
+            {/* Year */}
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                Year
+                </label>
+                <select
+                name="year"
+                value={formData.year}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                <option value="1st">1st</option>
+                <option value="2nd">2nd</option>
+                <option value="3rd">3rd</option>
+                <option value="4th">4th</option>
+                <option value="5th">5th</option>
+                </select>
+            </div>
+
+            {/* Currency */}
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                Currency
+                </label>
+                <select
+                name="currency"
+                value={formData.currency}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                <option value="INR">INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                </select>
+            </div>
+
+            {/* Date Format */}
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                Date Format
+                </label>
+                <select
+                name="dateFormat"
+                value={formData.dateFormat}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                </select>
+            </div>
+
+            {/* Language */}
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                Language
+                </label>
+                <select
+                name="language"
+                value={formData.language}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Spanish</option>
+                <option>French</option>
+                </select>
+            </div>
+
+            </form>
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            {hasChanges && (
+            <span className="text-sm text-amber-600 flex items-center gap-2">
+                <FaExclamationTriangle />
+                You have unsaved changes
+            </span>
+            )}
+
+            <div className="flex gap-4">
+            <button
+                type="button"
+                onClick={handleReset}
+                disabled={!hasChanges}
+                className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition"
+            >
+                Cancel
+            </button>
+
+            <button
+                onClick={handleSave}
+                disabled={!hasChanges || isSaving}
+                className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-50"
+            >
+                {isSaving ? "Updating..." : "Update Profile"}
+            </button>
+            </div>
+        </div>
+
+        </div>
+    </div>
     );
 };
 
