@@ -128,7 +128,7 @@ const register = async (req, res) => {
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists with this email or student ID'
+        message: 'Registration failed. Please check your details.'
       });
     }
 
