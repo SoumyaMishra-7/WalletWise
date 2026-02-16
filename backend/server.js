@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const passport = require("passport");
+const helmet = require("helmet");
 const { configurePassport } = require("./config/passport");
 const authRoutes = require("./routes/authRoutes");
 const oauthRoutes = require("./routes/oauthRoutes");
@@ -128,8 +129,7 @@ mongoose.connect(MONGODB_URI, {
     });
 
 // ==================== ROUTE IMPORTS ====================
-const authRoutes = require('./routes/authRoutes');
-const oauthRoutes = require('./routes/oauthRoutes');
+// const authRoutes = require('./routes/authRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 const savingGoalRoutes = require('./routes/savingGoalRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');

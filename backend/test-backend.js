@@ -6,12 +6,12 @@ const BASE_URL = 'http://localhost:5000/api';
 async function testBackend() {
   try {
     console.log('=== Testing WalletWise Backend ===\n');
-    
+
     // 1. Test health endpoint
     console.log('1. Testing health endpoint...');
     const health = await axios.get(`${BASE_URL}/health`);
     console.log('✅ Health check:', health.data);
-    
+
     // 2. Register a test user
     console.log('\n2. Registering test user...');
     const registerData = {
@@ -22,7 +22,7 @@ async function testBackend() {
       department: 'Computer Science',
       year: '3rd'
     };
-    
+
     let token;
     try {
       const registerRes = await axios.post(`${BASE_URL}/auth/register`, registerData);
@@ -38,12 +38,12 @@ async function testBackend() {
       });
       token = loginRes.data.token;
     }
-    
+
     if (!token) {
       console.log('❌ No token received');
       return;
     }
-    
+
     // 3. Test creating savings goal WITH token
     console.log('\n3. Testing savings goal creation...');
     const goalData = {
@@ -57,10 +57,10 @@ async function testBackend() {
       monthlyContribution: 7500,
       isActive: true
     };
-    
+
     console.log('Goal data:', goalData);
     console.log('Using token:', token.substring(0, 20) + '...');
-    
+
     try {
       const goalRes = await axios.post(`${BASE_URL}/savings-goals`, goalData, {
         headers: {
@@ -76,9 +76,8 @@ async function testBackend() {
       console.log('Error message:', goalError.response?.data?.message);
       console.log('Full error:', goalError.response?.data);
     }
-    
+
     // 4. Test getting savings goals
-    console.log('\n4. Testing get savings goals...');
     try {
       const goalsRes = await axios.get(`${BASE_URL}/savings-goals`, {
         headers: {
@@ -89,7 +88,42 @@ async function testBackend() {
     } catch (getError) {
       console.log('❌ Error getting savings goals:', getError.response?.data?.message);
     }
-    
+
+    // 5. Test pagination
+    console.log('\n5. Testing transaction pagination...');
+    try {
+      // First add some dummy transactions to ensure we have data
+      for (let i = 0; i < 5; i++) {
+        await axios.post(`${BASE_URL}/transactions`, {
+          type: 'expense',
+          amount: 100 * (i + 1),
+          category: 'Food',
+          description: `Test Transaction ${i + 1}`,
+          date: new Date()
+        }, { headers: { 'Authorization': `Bearer ${token}` } });
+      }
+
+      const pageRes = await axios.get(`${BASE_URL}/transactions?page=1&limit=2`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      console.log('✅ Pagination response:', {
+        total: pageRes.data.pagination?.total,
+        page: pageRes.data.pagination?.page,
+        limit: pageRes.data.pagination?.limit,
+        count: pageRes.data.transactions?.length
+      });
+
+      if (pageRes.data.transactions?.length === 2 && pageRes.data.pagination?.page === 1) {
+        console.log('✅ Pagination fetch successful');
+      } else {
+        console.log('❌ Pagination data mismatch');
+      }
+
+    } catch (pageError) {
+      console.log('❌ Error testing pagination:', pageError.response?.data?.message || pageError.message);
+    }
+
   } catch (error) {
     console.error('❌ General error:', error.message);
     if (error.code === 'ECONNREFUSED') {

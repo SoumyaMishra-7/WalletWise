@@ -91,12 +91,63 @@ const addTransaction = async (req, res) => {
     }
 };
 
-// Get all transactions
+// Get all transactions with pagination and filtering
 const getAllTransactions = async (req, res) => {
     try {
         const userId = req.userId;
-        const transactions = await Transaction.find({ userId })
-            .sort({ date: -1 });
+        const {
+            page = 1,
+            limit = 10,
+            search,
+            type,
+            startDate,
+            endDate,
+            sort = 'newest'
+        } = req.query;
+
+        const query = { userId };
+
+        // Apply filters
+        if (type && type !== 'all') {
+            query.type = type;
+        }
+
+        if (startDate || endDate) {
+            query.date = {};
+            if (startDate) query.date.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.date.$lte = end;
+            }
+        }
+
+        if (search) {
+            const searchRegex = new RegExp(search, 'i');
+            query.$or = [
+                { description: searchRegex },
+                { category: searchRegex }
+            ];
+        }
+
+        // Calculate pagination
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        // Determine sort order
+        let sortOptions = { date: -1 }; // Default new to old
+        if (sort === 'oldest') sortOptions = { date: 1 };
+        else if (sort === 'amount-high') sortOptions = { amount: -1 };
+        else if (sort === 'amount-low') sortOptions = { amount: 1 };
+
+        // Execute query
+        const transactions = await Transaction.find(query)
+            .sort(sortOptions)
+            .skip(skip)
+            .limit(limitNum);
+
+        const totalOptions = await Transaction.countDocuments(query);
 
         res.json({
             success: true,
@@ -109,7 +160,13 @@ const getAllTransactions = async (req, res) => {
                 date: t.date,
                 paymentMethod: t.paymentMethod,
                 mood: t.mood
-            }))
+            })),
+            pagination: {
+                total: totalOptions,
+                page: pageNum,
+                pages: Math.ceil(totalOptions / limitNum),
+                limit: limitNum
+            }
         });
 
     } catch (error) {
