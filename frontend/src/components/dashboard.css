@@ -464,6 +464,7 @@ body.theme-dark,
 
 .dashboard-header-left {
   flex: 1;
+  min-width: 0;
 }
 
 .dashboard-title {
@@ -482,6 +483,8 @@ body.theme-dark,
 }
 
 .greeting-text {
+  white-space: normal;       /* allow normal wrapping */
+  overflow-wrap: break-word; /* wrap naturally if needed */
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-main);

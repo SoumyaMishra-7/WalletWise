@@ -674,8 +674,7 @@ const Dashboard = () => {
           <div className="dashboard-header-left">
             <h1 className="dashboard-title">Dashboard</h1>
             <div className="greeting-section">
-              {/* FIXED: Single span for greeting text */}
-              <h2 className="greeting-text">
+            <h2 className="greeting-text">
                 Good {timeOfDay}, <span className="user-name">{user?.fullName || user?.name}</span>!
               </h2>
               <p className="current-date">
