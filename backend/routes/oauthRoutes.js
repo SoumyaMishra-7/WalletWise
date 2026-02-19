@@ -5,7 +5,11 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile', 'email'],
+  session: false,
+  state: true
+}));
 
 router.get(
   '/google/callback',
