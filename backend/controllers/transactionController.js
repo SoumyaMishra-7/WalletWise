@@ -23,119 +23,141 @@ const withTransaction = async (operation) => {
 const addTransaction = async (req, res) => {
     try {
         const userId = req.userId;
-        const {
-    type,
-    amount,
-    category,
-    description,
-    paymentMethod,
-    mood,
-    date,
-    isRecurring,
-    recurringInterval
-} = req.body;
 
-        if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+        const {
+            type,
+            amount,
+            category,
+            description,
+            paymentMethod,
+            mood,
+            date,
+            isRecurring,
+            recurringInterval
+        } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
 
         if (!type || amount === undefined || amount === null || !category) {
-            return res.status(400).json({ success: false, message: 'Type, amount, and category are required' });
+            return res.status(400).json({
+                success: false,
+                message: 'Type, amount, and category are required'
+            });
         }
 
         const numericAmount = Number(amount);
+
         if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-            return res.status(400).json({ success: false, message: 'Amount must be a valid number greater than 0' });
+            return res.status(400).json({
+                success: false,
+                message: 'Amount must be a valid number greater than 0'
+            });
         }
 
         if (!['income', 'expense'].includes(type)) {
-            return res.status(400).json({ success: false, message: 'Type must be either income or expense' });
+            return res.status(400).json({
+                success: false,
+                message: 'Type must be either income or expense'
+            });
         }
+        // ===== Duplicate Detection =====
 
-await withTransaction(async (session) => {
+        // configurable time window (24 hours)
+        const duplicateWindow = 24 * 60 * 60 * 1000;
+        const sinceDate = new Date(Date.now() - duplicateWindow);
 
-    let nextExecutionDate = null;
+        // find similar transactions
+        const possibleDuplicate = await Transaction.findOne({
+            userId,
+            type,
+            amount: numericAmount,
+            category: typeof category === 'string'
+                ? category.trim().toLowerCase()
+                : category,
+            date: { $gte: sinceDate }
+        });
 
-    if (isRecurring && recurringInterval) {
-        const now = new Date();
-
-        if (recurringInterval === "daily") {
-            now.setDate(now.getDate() + 1);
-        } else if (recurringInterval === "weekly") {
-            now.setDate(now.getDate() + 7);
-        } else if (recurringInterval === "monthly") {
-            now.setMonth(now.getMonth() + 1);
+        if (possibleDuplicate) {
+            return res.status(409).json({
+                success: false,
+                duplicate: true,
+                message: "A similar transaction was recently added. Do you still want to continue?"
+            });
         }
+        let nextExecutionDate = null;
 
-        nextExecutionDate = now;
-    }
+if (isRecurring && recurringInterval) {
+    const now = new Date();
 
-    const transaction = new Transaction({
-        userId,
-        type,
-        amount: numericAmount,
-        category: typeof category === 'string' ? category.trim().toLowerCase() : category,
-        description: typeof description === 'string' ? description.trim() : description,
-        paymentMethod: paymentMethod || 'cash',
-        mood: mood || 'neutral',
-        ...(date ? { date } : {}),
-        isRecurring: isRecurring || false,
-        recurringInterval: recurringInterval || null,
-        nextExecutionDate
-    });
+    if (recurringInterval === "daily") now.setDate(now.getDate() + 1);
+    else if (recurringInterval === "weekly") now.setDate(now.getDate() + 7);
+    else if (recurringInterval === "monthly") now.setMonth(now.getMonth() + 1);
 
-    await transaction.save({ session });
+    nextExecutionDate = now;
+}
 
+const transaction = new Transaction({
+    userId,
+    type,
+    amount: numericAmount,
+    category: typeof category === 'string' ? category.trim().toLowerCase() : category,
+    description: typeof description === 'string' ? description.trim() : description,
+    paymentMethod: paymentMethod || 'cash',
+    mood: mood || 'neutral',
+    ...(date ? { date } : {}),
+    isRecurring: isRecurring || false,
+    recurringInterval: recurringInterval || null,
+    nextExecutionDate
 });
 
+await transaction.save();
 
-            await transaction.save({ session });
+// update wallet
+const balanceChange = type === 'income' ? numericAmount : -numericAmount;
 
-            // Update user wallet balance atomically
-            const balanceChange = type === 'income' ? numericAmount : -numericAmount;
-            await User.findByIdAndUpdate(userId, {
-                $inc: { walletBalance: balanceChange }
-            }, { session });
+await User.findByIdAndUpdate(userId, {
+    $inc: { walletBalance: balanceChange }
+});
 
-            res.status(201).json({
-                success: true,
-                message: 'Transaction added successfully',
-                transaction: {
-                    id: transaction._id,
-                    type: transaction.type,
-                    amount: transaction.amount,
-                    category: transaction.category,
-                    description: transaction.description,
-                    date: transaction.date,
-                    paymentMethod: transaction.paymentMethod,
-                    mood: transaction.mood
-                }
-            });
-        });
+res.status(201).json({
+    success: true,
+    message: 'Transaction added successfully',
+    transaction
+});
 
     } catch (error) {
         console.error('Add transaction error:', error);
 
-        // Handle "Transaction numbers are only allowed on a replica set" error for local dev
-        if (error.message && error.message.includes('Transaction numbers are only allowed on a replica set')) {
+        if (
+            error.message &&
+            error.message.includes('Transaction numbers are only allowed on a replica set')
+        ) {
             return res.status(500).json({
                 success: false,
-                message: 'Database configuration error: Transactions require a Replica Set (Atlas or local-rs).'
+                message:
+                    'Database configuration error: Transactions require a Replica Set.'
             });
         }
 
         if (error.name === 'ValidationError') {
             return res.status(400).json({
                 success: false,
-                message: 'Validation error',
-                errors: Object.values(error.errors || {}).map((e) => ({ field: e.path, message: e.message }))
+                message: 'Validation error'
             });
         }
 
-        // Avoid double-sending headers if response already sent inside transaction (rare but possible)
         if (!res.headersSent) {
-            res.status(500).json({ success: false, message: 'Error adding transaction' });
+            res.status(500).json({
+                success: false,
+                message: 'Error adding transaction'
+            });
         }
     }
 };
+
+
 
 // Get all transactions with pagination and filtering
 const getAllTransactions = async (req, res) => {
