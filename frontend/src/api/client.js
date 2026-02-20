@@ -7,7 +7,7 @@ const api = axios.create({
   withCredentials: true
 });
 
-const refreshClient = axios.create({
+export const refreshClient = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true
 });

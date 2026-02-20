@@ -7,14 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshSession = useCallback(async () => {
-    try {
-      await api.post('/api/auth/refresh');
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }, []);
 
   const loadUser = useCallback(async () => {
     setLoading(true);
@@ -26,25 +18,11 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       }
     } catch (error) {
-      const refreshed = await refreshSession();
-      if (refreshed) {
-        try {
-          const { data } = await api.get('/api/auth/me');
-          if (data?.success) {
-            setUser(data.user);
-          } else {
-            setUser(null);
-          }
-        } catch {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
+      setUser(null);
     } finally {
       setLoading(false);
     }
-  }, [refreshSession]);
+  }, []);
 
   useEffect(() => {
     loadUser();
@@ -89,7 +67,7 @@ export const AuthProvider = ({ children }) => {
         signup,
         updateProfile,
         logout,
-        refreshSession,
+        logout,
         reloadUser: loadUser
       }}
     >
