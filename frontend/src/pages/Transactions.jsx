@@ -85,7 +85,7 @@ const Transactions = () => {
           params.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
         } else {
 
-          if (activeQuickFilter === 'food') params.search = 'food'; 
+          if (activeQuickFilter === 'food') params.search = 'food';
           if (activeQuickFilter === 'transport') params.search = 'transport';
           if (activeQuickFilter === 'fun') params.search = 'fun';
         }
@@ -113,7 +113,7 @@ const Transactions = () => {
       } else {
         setError('Could not connect to server.');
       }
-      setTransactions([]); 
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -138,7 +138,7 @@ const Transactions = () => {
       year: 'numeric'
     });
 
-
+  const buildExportRows = () => {
     return transactions.map((tx) => ({
       date: formatDate(tx.date),
       category: tx.category || 'others',
@@ -359,6 +359,6 @@ const Transactions = () => {
       </section>
     </div>
   );
-};
+}
 
 export default Transactions;
