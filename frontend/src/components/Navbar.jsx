@@ -81,6 +81,13 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen, navigate }) => {
       {isMenuOpen && (
         <div className="md:hidden bg-white dark:bg-slate-900 border-t border-zinc-200 dark:border-slate-700 px-4 py-4 space-y-4">
           <a
+            href="#home"
+            onClick={() => setIsMenuOpen(false)}
+            className="block w-full text-left text-zinc-700 dark:text-slate-200 focus:outline-none"
+          >
+            Home
+          </a>
+          <a
             href="#about"
             onClick={() => setIsMenuOpen(false)}
             className="block w-full text-left text-zinc-700 dark:text-slate-200 focus:outline-none"
@@ -93,6 +100,13 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen, navigate }) => {
             className="block w-full text-left text-zinc-700 dark:text-slate-200 focus:outline-none"
           >
             Features
+          </a>
+          <a
+            href="#how"
+            onClick={() => setIsMenuOpen(false)}
+            className="block w-full text-left text-zinc-700 dark:text-slate-200 focus:outline-none"
+          >
+            How it Works
           </a>
           <button
             onClick={() => navigate("/signup")}
