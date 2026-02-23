@@ -1,0 +1,371 @@
+/* ========== Mood Insight Page ========== */
+.mood-insight-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%);
+  padding: 2rem 1.5rem 4rem;
+  color: #e0e0e0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.mood-insight-page h1 {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.25rem;
+}
+
+.mood-insight-page .subtitle {
+  text-align: center;
+  color: #8a8aa0;
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+/* ---- Demo banner ---- */
+.demo-banner {
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  color: #ffd54f;
+  font-size: 0.82rem;
+  margin: 0 auto 2rem;
+  max-width: 700px;
+}
+
+/* ---- Loading & Error ---- */
+.mood-loading,
+.mood-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+}
+
+.mood-loading .spinner-ring {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(102, 126, 234, 0.2);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mood-error {
+  color: #ef5350;
+}
+
+.mood-error button {
+  background: rgba(239, 83, 80, 0.15);
+  border: 1px solid rgba(239, 83, 80, 0.4);
+  color: #ef5350;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mood-error button:hover {
+  background: rgba(239, 83, 80, 0.25);
+}
+
+/* ---- Grid ---- */
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---- Cards ---- */
+.mood-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.mood-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.1);
+}
+
+.mood-card h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #c5c5e0;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mood-card h2 .card-icon {
+  font-size: 1.2rem;
+}
+
+/* ---- Verdict card (full width) ---- */
+.verdict-card {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+}
+
+.verdict-card .verdict-text {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #81c784;
+  margin-top: 0.25rem;
+}
+
+/* ---- Stats row ---- */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.stat-value.impulsive {
+  color: #ef5350;
+}
+
+.stat-value.intentional {
+  color: #66bb6a;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #8a8aa0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.15rem;
+}
+
+.stat-amount {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-top: 0.15rem;
+}
+
+/* ---- Ratio bar ---- */
+.ratio-bar-container {
+  margin-top: 1.25rem;
+}
+
+.ratio-bar {
+  height: 10px;
+  border-radius: 8px;
+  display: flex;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ratio-bar .impulsive-fill {
+  background: linear-gradient(90deg, #ef5350, #ff7043);
+  transition: width 0.8s ease;
+}
+
+.ratio-bar .intentional-fill {
+  background: linear-gradient(90deg, #66bb6a, #26a69a);
+  transition: width 0.8s ease;
+}
+
+.ratio-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #8a8aa0;
+  margin-top: 0.4rem;
+}
+
+/* ---- Mood breakdown table ---- */
+.mood-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.mood-table th {
+  text-align: left;
+  font-weight: 500;
+  color: #8a8aa0;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.mood-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.mood-emoji {
+  font-size: 1.1rem;
+  margin-right: 0.4rem;
+}
+
+.mood-name {
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+/* ---- Triggers ---- */
+.trigger-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.trigger-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+}
+
+.trigger-rank {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.trigger-rank.rank-1 {
+  background: rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+}
+
+.trigger-rank.rank-2 {
+  background: rgba(255, 167, 38, 0.2);
+  color: #ffa726;
+}
+
+.trigger-rank.rank-3 {
+  background: rgba(255, 238, 88, 0.2);
+  color: #ffee58;
+}
+
+.trigger-info {
+  flex: 1;
+}
+
+.trigger-mood {
+  text-transform: capitalize;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.trigger-amount {
+  font-size: 0.8rem;
+  color: #8a8aa0;
+}
+
+.trigger-category {
+  font-size: 0.75rem;
+  color: #667eea;
+  margin-top: 0.15rem;
+}
+
+/* ---- Tips ---- */
+.tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 0.85rem;
+  background: rgba(102, 126, 234, 0.06);
+  border-left: 3px solid #667eea;
+  border-radius: 0 10px 10px 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #c5c5e0;
+}
+
+.tip-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ---- Back link ---- */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #8e9bef;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .mood-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mood-insight-page h1 {
+    font-size: 1.5rem;
+  }
+
+  .stats-row {
+    gap: 1.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.3rem;
+  }
+}
