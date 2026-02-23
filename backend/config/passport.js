@@ -32,7 +32,12 @@ const configurePassport = () => {
           user = await User.findOne({ email });
           if (user) {
             user.googleId = googleId;
-            user.provider = user.provider === 'local' ? 'both' : user.provider;
+            if (!user.emailVerified && user.provider === 'local') {
+              user.passwordHash = undefined;
+              user.provider = 'google';
+            } else {
+              user.provider = user.provider === 'local' ? 'both' : user.provider;
+            }
             if (!user.emailVerified) {
               user.emailVerified = true;
             }

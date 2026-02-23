@@ -123,7 +123,8 @@ const getAllTransactions = async (req, res) => {
         }
 
         if (search) {
-            const searchRegex = new RegExp(search, 'i');
+            const escapedSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const searchRegex = new RegExp(escapedSearch, 'i');
             query.$or = [
                 { description: searchRegex },
                 { category: searchRegex }

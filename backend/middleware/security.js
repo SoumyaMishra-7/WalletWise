@@ -22,8 +22,8 @@ const enforceJsonContent = (req, res, next) => {
         return next();
     }
 
-    // Skip if content-type is json
-    if (req.is('application/json')) {
+    // Skip if content-type is json or multipart/form-data
+    if (req.is('application/json') || req.is('multipart/form-data')) {
         return next();
     }
 
