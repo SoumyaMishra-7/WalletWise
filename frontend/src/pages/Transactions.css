@@ -1,8 +1,8 @@
 ﻿.transactions-page {
   min-height: 100vh;
   padding: 2rem 0 4rem;
-  background: var(--bg-app);
-  color: var(--text-main);
+  background: var(--bg-app, #f8fafc);
+  color: var(--text-main, #0f172a);
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -29,6 +29,7 @@
   margin: 0.5rem 0;
   background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -238,7 +239,7 @@
 .transactions-table tbody td {
   padding: 0.85rem 0.3rem;
   font-size: 0.92rem;
-  color: var(--text-main);
+  color: var(--text-main, #1e293b);
   vertical-align: middle;
 }
 
@@ -276,14 +277,7 @@
   font-size: 1rem;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 2.5rem 1rem;
-  color: var(--text-muted);
-  background: rgba(99, 102, 241, 0.02);
-  border-radius: var(--radius-lg);
-  border: 1px dashed var(--border-subtle);
-}
+
 
 .page-loading,
 .page-error {
@@ -296,6 +290,70 @@
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-soft);
+}
+
+/* Dark mode overrides for table */
+.dark .transactions-page,
+.theme-dark .transactions-page {
+  background: #0f172a;
+}
+
+.dark .transactions-table,
+.theme-dark .transactions-table {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .transactions-table thead th,
+.theme-dark .transactions-table thead th {
+  color: #94a3b8;
+}
+
+.dark .transactions-table tbody tr,
+.theme-dark .transactions-table tbody tr {
+  border-color: #334155;
+}
+
+.dark .transactions-table tbody td,
+.theme-dark .transactions-table tbody td {
+  color: #f1f5f9;
+}
+
+.dark .transactions-table td.note,
+.theme-dark .transactions-table td.note {
+  color: #94a3b8;
+}
+
+.dark .search-input,
+.theme-dark .search-input,
+.dark .advanced-panel,
+.theme-dark .advanced-panel,
+.dark .advanced-toggle,
+.theme-dark .advanced-toggle,
+.dark .pill,
+.theme-dark .pill {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.dark .search-input input,
+.theme-dark .search-input input {
+  color: #f1f5f9;
+}
+
+.dark .advanced-block label,
+.theme-dark .advanced-block label {
+  color: #94a3b8;
+}
+
+.dark .advanced-block input,
+.theme-dark .advanced-block input,
+.dark .advanced-block select,
+.theme-dark .advanced-block select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
 }
 
 @media (max-width: 960px) {
@@ -313,6 +371,7 @@
 }
 
 @media (max-width: 640px) {
+
   .transactions-topbar,
   .transactions-toolbar,
   .advanced-panel,

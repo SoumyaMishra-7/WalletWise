@@ -1,8 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import useDebounce from '../hooks/useDebounce';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { FaFilter, FaSearch } from 'react-icons/fa';
 import Pagination from '../components/Pagination';
+import EmptyState from '../components/EmptyState';
+import { ShoppingBag, SearchX } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Transactions.css';
 
 const categoryLabelMap = {
@@ -50,6 +54,7 @@ const exportColumns = [
 
 const Transactions = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -61,6 +66,9 @@ const Transactions = () => {
 
   // Filter State
   const [searchTerm, setSearchTerm] = useState('');
+  // Debounced search — only triggers API call after 300ms of inactivity
+  // Empty string is instantly applied (no debounce on clear for better UX)
+  const debouncedSearch = useDebounce(searchTerm, 300);
   const [activeQuickFilter, setActiveQuickFilter] = useState('all');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -75,7 +83,7 @@ const Transactions = () => {
         page: currentPage,
         limit,
         sort: sortMode,
-        search: searchTerm,
+        search: debouncedSearch,
       };
 
       if (activeQuickFilter !== 'all') {
@@ -117,19 +125,23 @@ const Transactions = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, limit, sortMode, searchTerm, activeQuickFilter, startDate, endDate, navigate]);
+  }, [currentPage, limit, sortMode, debouncedSearch, activeQuickFilter, startDate, endDate, navigate]);
 
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
 
+  // Reset to page 1 when debounced search or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, activeQuickFilter, sortMode, startDate, endDate]);
+  }, [debouncedSearch, activeQuickFilter, sortMode, startDate, endDate]);
 
 
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
+  const formatCurrency = (amount) => {
+    const currency = user?.currency || 'USD';
+    const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
+  };
 
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString('en-GB', {
@@ -137,6 +149,7 @@ const Transactions = () => {
       month: 'short',
       year: 'numeric'
     });
+
 
   const buildExportRows = () => {
     return transactions.map((tx) => ({
@@ -306,10 +319,15 @@ const Transactions = () => {
 
       <section className="transactions-table">
         {transactions.length === 0 ? (
-          <div className="empty-state">
-            <h3>No transactions match these filters.</h3>
-            <p>Try a different search or date range.</p>
-          </div>
+          <EmptyState
+            icon={searchTerm || startDate || endDate || activeQuickFilter !== 'all' ? SearchX : ShoppingBag}
+            title={searchTerm || startDate || endDate || activeQuickFilter !== 'all' ? "No matching transactions" : "No transactions yet"}
+            description={searchTerm || startDate || endDate || activeQuickFilter !== 'all'
+              ? "We couldn't find any transactions for your current filters. Try resetting them or searching for something else."
+              : "You haven't recorded any spending moments yet this semester. Start tracking to see your financial story unfold!"}
+            actionLabel={searchTerm || startDate || endDate || activeQuickFilter !== 'all' ? null : "Add Your First Transaction"}
+            onAction={() => navigate('/add-expense')}
+          />
         ) : (
           <>
             <table>

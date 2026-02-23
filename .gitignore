@@ -29,9 +29,9 @@ out
 # =========================
 .env
 .env.*
-!.env.example
-backend/.env
-frontend/.env
+**/.env
+**/.env.*
+!**/.env.example
 
 # =========================
 # Local config

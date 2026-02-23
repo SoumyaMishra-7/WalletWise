@@ -36,6 +36,20 @@ const transactionSchema = new mongoose.Schema({
     enum: ['cash', 'card', 'upi', 'online'],
     default: 'cash'
   },
+  isRecurring: {
+  type: Boolean,
+  default: false
+},
+recurringInterval: {
+  type: String,
+  enum: ["daily", "weekly", "monthly", null],
+  default: null
+},
+nextExecutionDate: {
+  type: Date,
+  default: null
+},
+
   mood: {
     type: String,
     enum: ['happy', 'stressed', 'bored', 'sad', 'calm', 'neutral'],

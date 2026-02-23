@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshSession = useCallback(async () => {
     try {
-      await api.post('/api/auth/refresh');
+      await api.post('/api/auth/refresh', {});
       return true;
     } catch (error) {
       return false;
@@ -26,29 +26,28 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       }
     } catch (error) {
-      const refreshed = await refreshSession();
-      if (refreshed) {
-        try {
-          const { data } = await api.get('/api/auth/me');
-          if (data?.success) {
-            setUser(data.user);
-          } else {
-            setUser(null);
-          }
-        } catch {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
+      setUser(null);
     } finally {
       setLoading(false);
     }
-  }, [refreshSession]);
+  }, []);
 
   useEffect(() => {
     loadUser();
   }, [loadUser]);
+
+  // Listen for forced logout events triggered by the API interceptor
+  // (when token refresh fails after a 401). This avoids circular imports
+  // between AuthContext and client.js.
+  useEffect(() => {
+    const handleForceLogout = async () => {
+      await api.post('/api/auth/logout', {}).catch(() => { });
+      setUser(null);
+      window.location.href = '/login';
+    };
+    window.addEventListener('auth:logout', handleForceLogout);
+    return () => window.removeEventListener('auth:logout', handleForceLogout);
+  }, []);
 
   const login = async (payload) => {
     const { data } = await api.post('/api/auth/login', payload);
@@ -75,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await api.post('/api/auth/logout');
+    await api.post('/api/auth/logout', {});
     setUser(null);
   };
 

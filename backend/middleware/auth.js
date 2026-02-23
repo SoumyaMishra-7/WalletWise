@@ -1,4 +1,5 @@
 ﻿const { verifyAccessToken } = require('../utils/tokens');
+const currencyMiddleware = require('./currencyConverter.middleware');
 
 const protect = (req, res, next) => {
   try {
@@ -20,7 +21,9 @@ const protect = (req, res, next) => {
     const decoded = verifyAccessToken(token);
     req.userId = decoded.sub;
     req.userEmail = decoded.email;
-    next();
+
+    // Pipe the request through currency middleware after authentication
+    currencyMiddleware(req, res, next);
   } catch (error) {
     res.clearCookie('access_token');
     return res.status(401).json({

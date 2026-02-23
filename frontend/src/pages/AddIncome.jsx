@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import './AddExpense.css'; // Reusing the clean CSS
 
 const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
@@ -10,6 +11,9 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
     sourceNature: 'earned' // New behavioral component
   });
   const [loading, setLoading] = useState(false);
+
+  const { user } = useAuth();
+  const currencySymbol = user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$'));
 
   const incomeCategories = [
     { value: 'pocket_money', label: 'Pocket Money' },
@@ -30,7 +34,7 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.amount || isNaN(formData.amount) || Number(formData.amount) <= 0) {
       alert('Please enter a valid amount');
       return;
@@ -49,7 +53,7 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
     try {
       await onAddIncome(transactionData);
       onClose();
-      
+
       setFormData({
         amount: '',
         category: 'pocket_money',
@@ -86,7 +90,7 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
           <div className="expense-form-group">
             <label htmlFor="amount">Income Amount</label>
             <div className="expense-amount-input">
-              <span className="currency-label" style={{ color: '#16a34a' }}>₹</span>
+              <span className="currency-label" style={{ color: '#16a34a' }}>{currencySymbol}</span>
               <input
                 type="number"
                 id="amount"
@@ -173,9 +177,9 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
             <button type="button" className="btn-secondary" onClick={onClose} disabled={loading}>
               Cancel
             </button>
-            <button 
-              type="submit" 
-              className="btn-primary" 
+            <button
+              type="submit"
+              className="btn-primary"
               disabled={loading}
               style={{ background: '#16a34a' }}
             >

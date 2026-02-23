@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import AppNavbar from '../components/AppNavbar';
+import { useAuth } from '../context/AuthContext';
 import './Budget.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -43,6 +44,7 @@ const slugify = (value) =>
     .replace(/(^-|-$)/g, '');
 
 const Budget = () => {
+  const { user } = useAuth();
   const [categories, setCategories] = useState(initialCategories);
   const [method, setMethod] = useState('copy');
   const [allocations, setAllocations] = useState(allocationPreset);
@@ -180,8 +182,11 @@ const Budget = () => {
   const wantsWidth = totals.totalBudget > 0 ? (wantsTotal / totals.totalBudget) * 100 : 0;
   const savingsWidth = totals.totalBudget > 0 ? (savingsTotal / totals.totalBudget) * 100 : 0;
 
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
+  const formatCurrency = (amount) => {
+    const currency = user?.currency || 'USD';
+    const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
+  };
 
   const getStatus = (percent) => {
     if (percent <= 75) return 'safe';

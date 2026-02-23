@@ -1,0 +1,105 @@
+.skeleton-pulse {
+  display: inline-block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-bg, #f3f4f6) 25%,
+    var(--skeleton-shimmer, #e5e7eb) 50%,
+    var(--skeleton-bg, #f3f4f6) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .skeleton-pulse {
+  --skeleton-bg: #1f2937;
+  --skeleton-shimmer: #374151;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] .skeleton-card {
+  background: #111827;
+  border: 1px solid #374151;
+}
+
+.skeleton-title {
+  height: 1.5rem;
+  width: 60%;
+  margin-bottom: 1rem;
+}
+
+.skeleton-text {
+  height: 1rem;
+  width: 90%;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-text.short {
+  width: 40%;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+}
+
+/* Dashboard Specific Skeletons */
+.dashboard-skeleton {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.skeleton-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.skeleton-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.skeleton-chart-box {
+  height: 300px;
+}
+
+.skeleton-transaction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-transaction-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+}
+
+[data-theme='dark'] .skeleton-transaction-item {
+  background: rgba(31, 41, 55, 0.5);
+}

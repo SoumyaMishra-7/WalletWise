@@ -1,5 +1,5 @@
 /* Auth.css - Stabilized Version */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 
 :root {
   --brand-primary: #6366f1;
@@ -13,7 +13,8 @@
   --text-main: #0f172a;
   --text-muted: #64748b;
   --border-subtle: #f1f5f9;
-  --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-soft:
+    0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 }
 
 body,
@@ -36,7 +37,7 @@ html {
   background: #ffffff;
   /* Unified solid white background matching inner divs */
   padding: 40px;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   color: var(--text-main);
   position: relative;
   overflow: hidden;
@@ -45,7 +46,7 @@ html {
 /* Background decorations */
 .auth-container::before,
 .auth-container::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 400px;
   height: 400px;
@@ -96,7 +97,11 @@ html {
   letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--text-main);
-  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--brand-primary) 0%,
+    var(--brand-secondary) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -118,7 +123,7 @@ html {
 }
 
 .auth-features li::before {
-  content: '+';
+  content: "+";
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -164,7 +169,11 @@ html {
   margin-bottom: 8px;
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--brand-primary) 0%,
+    var(--brand-secondary) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -242,6 +251,22 @@ html {
   padding-right: 48px;
 }
 
+/* Hide browser's default password reveal button */
+.password-input-wrapper input::-ms-reveal,
+.password-input-wrapper input::-ms-clear {
+  display: none;
+}
+
+.password-input-wrapper input::-webkit-credentials-auto-fill-button,
+.password-input-wrapper input::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+  height: 0;
+  width: 0;
+  margin: 0;
+}
+
 .password-toggle {
   position: absolute;
   right: 12px;
@@ -302,7 +327,11 @@ html {
 .auth-btn {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--brand-primary),
+    var(--brand-secondary)
+  );
   color: white;
   border: none;
   border-radius: 12px;
@@ -342,7 +371,7 @@ html {
 
 .auth-divider::before,
 .auth-divider::after {
-  content: '';
+  content: "";
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, transparent, #e5e7eb 50%, transparent);
@@ -485,7 +514,6 @@ html {
 
 /* Desktop / Large Screens: Standard view */
 @media (min-width: 1025px) {
-
   /* Only applied to split-layout (Signup) */
   .auth-container.split-layout {
     flex-direction: row;
@@ -572,7 +600,6 @@ html {
   z-index: 10;
 }
 
-
 /* =========================================
    Dark Mode Overrides
    ========================================= */
@@ -585,7 +612,9 @@ body.theme-dark .auth-container {
 body.theme-dark .auth-card {
   background: var(--bg-card);
   border-color: var(--border-subtle);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* body.theme-dark .auth-header h1 {
@@ -628,7 +657,12 @@ body.theme-dark .demo-btn:hover {
 
 body.theme-dark .auth-divider::before,
 body.theme-dark .auth-divider::after {
-  background: linear-gradient(90deg, transparent, var(--border-subtle) 50%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-subtle) 50%,
+    transparent
+  );
 }
 
 body.theme-dark .auth-footer {
