@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000') + '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -15,11 +15,11 @@ export const refreshClient = axios.create({
 
 // Routes that should NOT trigger global error toasts (they handle their own errors)
 const SILENT_ROUTES = [
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/auth/refresh',
-  '/api/auth/me',
-  '/api/auth/logout',
+  '/auth/login',
+  '/auth/register',
+  '/auth/refresh',
+  '/auth/me',
+  '/auth/logout',
 ];
 
 const isSilentRoute = (url = '') =>
@@ -39,7 +39,7 @@ api.interceptors.response.use(
     if (status === 401 && !originalRequest?._retry) {
       originalRequest._retry = true;
       try {
-        await refreshClient.post('/api/auth/refresh', {});
+        await refreshClient.post('/auth/refresh', {});
         return api(originalRequest);
       } catch {
         // Refresh also failed — dispatch a global event so AuthContext can

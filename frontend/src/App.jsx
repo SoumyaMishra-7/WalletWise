@@ -20,6 +20,7 @@ import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import DecisionHelper from './pages/DecisionHelper';
+import MoodInsight from './pages/MoodInsight';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
 // Import authentication components
@@ -242,6 +243,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <DecisionHelper />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/mood-insight"
+                element={
+                  <ProtectedRoute>
+                    <MoodInsight />
                   </ProtectedRoute>
                 }
               />

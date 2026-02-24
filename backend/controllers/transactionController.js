@@ -305,7 +305,92 @@ const deleteTransaction = catchAsync(async (req, res) => {
                 ? -transaction.amount
                 : transaction.amount;
 
-        await User.findByIdAndUpdate(
+        await User.findByIdAndUpdate(userId, {
+            $inc: { walletBalance: balanceChange }
+        });
+
+        res.json({
+            success: true,
+            message: 'Transaction deleted successfully',
+            deletedTransaction: transaction
+        });
+
+res.json({
+    success: true,
+    message: 'Transaction deleted successfully'
+});
+           } catch (error) {
+        console.error('Delete transaction error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting transaction'
+        });
+    }
+};
+
+const skipNextOccurrence = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid transaction ID format' });
+        }
+
+        const transaction = await Transaction.findOne({ _id: id, userId });
+
+        if (!transaction) {
+            return res.status(404).json({ success: false, message: 'Transaction not found' });
+        }
+
+        if (!transaction.isRecurring || !transaction.nextExecutionDate) {
+            return res.status(400).json({ success: false, message: 'Transaction is not recurring or has no next execution date' });
+        }
+
+        // Calculate the next occurrence date
+        const currentNextDate = new Date(transaction.nextExecutionDate);
+        let updatedNextDate = new Date(currentNextDate);
+
+        if (transaction.recurringInterval === "daily") {
+            updatedNextDate.setDate(updatedNextDate.getDate() + 1);
+        } else if (transaction.recurringInterval === "weekly") {
+            updatedNextDate.setDate(updatedNextDate.getDate() + 7);
+        } else if (transaction.recurringInterval === "monthly") {
+            updatedNextDate.setMonth(updatedNextDate.getMonth() + 1);
+        }
+
+        transaction.nextExecutionDate = updatedNextDate;
+        await transaction.save();
+
+        res.json({
+            success: true,
+            message: 'Next occurrence skipped successfully',
+            newNextExecutionDate: transaction.nextExecutionDate
+        });
+
+    } catch (error) {
+        console.error('Skip next occurrence error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error skipping next occurrence'
+        });
+    }
+};
+
+const undoTransaction = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { deletedTransaction } = req.body;
+
+        if (!deletedTransaction) {
+            return res.status(400).json({
+                success: false,
+                message: 'No transaction data provided for undo'
+            });
+        }
+
+        // Restore transaction
+        const restored = new Transaction({
             userId,
             { $inc: { walletBalance: balanceChange } },
             { session }
@@ -319,8 +404,10 @@ const deleteTransaction = catchAsync(async (req, res) => {
 });
 
 module.exports = {
-    addTransaction,
-    getAllTransactions,
-    updateTransaction,
-    deleteTransaction
+   addTransaction,
+   getAllTransactions,
+   updateTransaction,
+   deleteTransaction,
+   undoTransaction,
+   skipNextOccurrence
 };
