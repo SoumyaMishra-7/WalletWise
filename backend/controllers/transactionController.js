@@ -72,18 +72,18 @@ const addTransaction = async (req, res) => {
             isRecurring,
             recurringInterval
         } = parsed.data;
-const transaction = new Transaction({
-    userId,
-    type,
-    amount,
-    category,
-    description,
-    paymentMethod,
-    mood,
-    ...(date ? { date } : {}),
-    isRecurring,
-    recurringInterval
-});
+        const transaction = new Transaction({
+            userId,
+            type,
+            amount,
+            category,
+            description,
+            paymentMethod,
+            mood,
+            ...(date ? { date } : {}),
+            isRecurring,
+            recurringInterval
+        });
 
         // Duplicate Detection
         const duplicateWindow = 24 * 60 * 60 * 1000;
@@ -106,37 +106,29 @@ const transaction = new Transaction({
         }
 
         await withTransaction(async (session) => {
-            let nextExecutionDate = null;
-
             if (isRecurring && recurringInterval) {
                 const now = new Date();
-
                 if (recurringInterval === "daily") now.setDate(now.getDate() + 1);
                 else if (recurringInterval === "weekly") now.setDate(now.getDate() + 7);
                 else if (recurringInterval === "monthly") now.setMonth(now.getMonth() + 1);
-
-// Update wallet balance
-const balanceChange = type === 'income' ? amount : -amount;
-
-await User.findByIdAndUpdate(userId, {
-    $inc: { walletBalance: balanceChange }
-});
+                transaction.nextExecutionDate = now;
+            }
 
             await transaction.save({ session });
 
+            // Update wallet balance
             const balanceChange = type === 'income' ? amount : -amount;
-
             await User.findByIdAndUpdate(
                 userId,
                 { $inc: { walletBalance: balanceChange } },
                 { session }
             );
+        });
 
-            return res.status(201).json({
-                success: true,
-                message: 'Transaction added successfully',
-                transaction
-            });
+        return res.status(201).json({
+            success: true,
+            message: 'Transaction added successfully',
+            transaction
         });
 
     } catch (error) {
@@ -221,19 +213,16 @@ const getAllTransactions = async (req, res) => {
             ];
         }
 
-        // Cursor logic
-        const mongoose = require("mongoose");
+        if (cursor) {
+            if (!mongoose.Types.ObjectId.isValid(cursor)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid cursor"
+                });
+            }
 
-if (cursor) {
-    if (!mongoose.Types.ObjectId.isValid(cursor)) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid cursor"
-        });
-    }
-
-    query._id = { $lt: new mongoose.Types.ObjectId(cursor) };
-}
+            query._id = { $lt: new mongoose.Types.ObjectId(cursor) };
+        }
 
         const transactions = await Transaction.find(query)
             .sort({ _id: -1 })
@@ -351,11 +340,6 @@ const deleteTransaction = async (req, res) => {
             message: 'Transaction deleted successfully',
             deletedTransaction: transaction
         });
-
-res.json({
-    success: true,
-    message: 'Transaction deleted successfully'
-});
            } catch (error) {
         console.error('Delete transaction error:', error);
         res.status(500).json({
