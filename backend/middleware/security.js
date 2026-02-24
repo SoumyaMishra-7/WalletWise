@@ -27,6 +27,11 @@ const enforceJsonContent = (req, res, next) => {
         return next();
     }
 
+    // Allow multipart/form-data exclusively for the profile update endpoint
+    if (req.is('multipart/form-data') && req.originalUrl.split('?')[0].endsWith('/auth/profile')) {
+        return next();
+    }
+
     // Reject other content types
     return res.status(415).json({
         success: false,

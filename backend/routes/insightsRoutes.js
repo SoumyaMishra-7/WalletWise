@@ -6,7 +6,9 @@ const {
   getSubscriptionAlerts,
   getSeasonal,
   getWeekendWeekday,
-  getInsightsSummary
+  getInsightsSummary,
+  evaluatePurchase,
+  getMoodCorrelation
 } = require('../controllers/insightsController');
 
 router.use(protect);
@@ -16,6 +18,8 @@ router.get('/subscriptions/alerts', getSubscriptionAlerts);
 router.get('/seasonal', getSeasonal);
 router.get('/weekend-weekday', getWeekendWeekday);
 router.get('/summary', getInsightsSummary);
+router.post('/evaluate', evaluatePurchase);
+router.get('/mood-correlation', getMoodCorrelation);
 
 module.exports = router;
 

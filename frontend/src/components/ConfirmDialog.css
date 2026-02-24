@@ -1,0 +1,85 @@
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  animation: fadeIn 0.2s ease;
+}
+
+.confirm-modal {
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 16px;
+  width: 380px;
+  max-width: 90%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  animation: scaleIn 0.2s ease;
+}
+
+.confirm-modal h3 {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.confirm-modal p {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.confirm-actions {
+  position: relative;
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.25s ease;
+}
+
+.action-btn.active {
+  color: #ffffff;
+}
+
+.slider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-radius: 10px;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  z-index: 1;
+}
+
+.slider.confirm {
+  transform: translateX(100%);
+}
+
+.slider.cancel {
+  transform: translateX(0%);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

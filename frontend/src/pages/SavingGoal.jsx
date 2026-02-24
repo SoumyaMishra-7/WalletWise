@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import './SavingGoal.css';
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
+  const [showConfirm, setShowConfirm] = useState(false);
   const [timeline, setTimeline] = useState(6); // default 6 months
   const [formData, setFormData] = useState({
     name: '',
@@ -14,6 +17,10 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const { user } = useAuth();
+  const currencySymbol = user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$'));
+  const locale = user?.currency === 'INR' ? 'en-IN' : 'en-US';
 
   const categories = ['Emergency Fund', 'Travel', 'Education', 'Home', 'Vehicle', 'Retirement', 'Wedding', 'Health', 'Gift', 'Other'];
 
@@ -155,7 +162,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains('savings-modal-overlay')) {
-      onClose();
+      handleClose();
     }
   };
 
@@ -174,12 +181,11 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
     setLoading(false);
   };
 
-  const handleClose = React.useCallback(() => {
+  const handleClose = useCallback(() => {
     if (!loading) {
-      resetForm();
-      if (onClose) onClose();
+      setShowConfirm(true);
     }
-  }, [loading, onClose]);
+  }, [loading]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -216,7 +222,20 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             disabled={loading}
             aria-label="Close"
           >
-            ×
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 16 16" 
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                d="M1 1L15 15M15 1L1 15" 
+                stroke="white" 
+                strokeWidth="2.5" 
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         </div>
 
@@ -281,10 +300,10 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
           {/* Target Amount */}
           <div className="savings-form-group">
             <label htmlFor="targetAmount">
-              Target Amount (₹) *
+              Target Amount ({currencySymbol}) *
             </label>
             <div className="amount-input-group">
-              <span className="currency-label">₹</span>
+              <span className="currency-label">{currencySymbol}</span>
               <input
                 type="number"
                 id="targetAmount"
@@ -303,10 +322,10 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
           {/* Current Savings */}
           <div className="savings-form-group">
             <label htmlFor="currentAmount">
-              Current Savings (₹)
+              Current Savings ({currencySymbol})
             </label>
             <div className="amount-input-group">
-              <span className="currency-label">₹</span>
+              <span className="currency-label">{currencySymbol}</span>
               <input
                 type="number"
                 id="currentAmount"
@@ -386,17 +405,17 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
               <div className="summary-grid">
                 <div className="summary-item">
                   <span className="summary-label">Target:</span>
-                  <span className="summary-value">₹{targetAmountNum.toLocaleString('en-IN')}</span>
+                  <span className="summary-value">{currencySymbol}{targetAmountNum.toLocaleString(locale)}</span>
                 </div>
 
                 <div className="summary-item">
                   <span className="summary-label">Current:</span>
-                  <span className="summary-value">₹{currentAmountNum.toLocaleString('en-IN')}</span>
+                  <span className="summary-value">{currencySymbol}{currentAmountNum.toLocaleString(locale)}</span>
                 </div>
 
                 <div className="summary-item">
                   <span className="summary-label">Remaining:</span>
-                  <span className="summary-value highlight">₹{remaining.toLocaleString('en-IN')}</span>
+                  <span className="summary-value highlight">{currencySymbol}{remaining.toLocaleString(locale)}</span>
                 </div>
 
                 <div className="summary-item">
@@ -407,7 +426,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
 
               <div className="monthly-section">
                 <div className="monthly-label">Monthly savings needed:</div>
-                <div className="monthly-amount">₹{monthlyNeeded.toLocaleString('en-IN')}</div>
+                <div className="monthly-amount">{currencySymbol}{monthlyNeeded.toLocaleString(locale)}</div>
                 <div className="monthly-note">
                   Save this amount each month to reach your goal on time
                 </div>
@@ -449,6 +468,16 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
           )}
         </form>
       </div>
+      <ConfirmDialog
+        isOpen={showConfirm}
+        message="Are you sure you want to close? Any unsaved changes will be lost."
+        onConfirm={() => {
+          setShowConfirm(false);
+          resetForm();
+          onClose();
+        }}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   );
 };

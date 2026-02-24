@@ -107,6 +107,57 @@
   background: var(--bg-app);
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.scan-receipt-btn {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #6366f1 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.25rem;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.scan-receipt-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  filter: brightness(1.05);
+}
+
+.scan-receipt-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.scan-receipt-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ============ FORM ELEMENTS ============ */
 .expense-modal-content form {
   padding: 1.5rem 2rem 2rem;
@@ -175,15 +226,19 @@
 
 /* Dark mode input overrides */
 .dark .expense-header+form input,
-.theme-dark .expense-header+form input {
+.theme-dark .expense-header+form input,
+.dark .expense-form-group input,
+.theme-dark .expense-form-group input,
+.dark .expense-form-group textarea,
+.theme-dark .expense-form-group textarea {
   border-color: #e11d48;
-  color: #fb7185;
+  color: #fb7185 !important;
 }
 
 .dark .income-header+form input,
 .theme-dark .income-header+form input {
   border-color: #16a34a;
-  color: #4ade80;
+  color: #4ade80 !important;
 }
 
 .expense-amount-input input:focus {

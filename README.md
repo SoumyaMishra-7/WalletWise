@@ -389,7 +389,7 @@ The application will open at `http://localhost:3000`.
 ### Phase 2: Intelligence 🚧
 - [ ] Predictive budgeting engine
 - [ ] AI behaviour analysis
-- [ ] Decision helper module
+- [x] Decision helper module
 
 ### Phase 3: Advanced Features 📅
 - [ ] Multi-user support (family accounts)
