@@ -53,7 +53,9 @@ const updateProfileSchema = z.object({
   incomeFrequency: z.string().optional(),
   incomeSources: z.string().optional(),
   priorities: z.string().optional(),
-  riskTolerance: z.string().optional()
+  riskTolerance: z.string().optional(),
+  billRemindersEnabled: z.union([z.boolean(), z.string()]).transform(v => v === true || v === 'true').optional(),
+  reminderDaysBefore: z.union([z.number(), z.string()]).transform(Number).refine(v => [1, 3, 7].includes(v), 'Must be 1, 3, or 7').optional()
 });
 
 const cookieOptions = () => {
@@ -177,6 +179,7 @@ const sendPasswordResetInstructions = async (user, { skipEmail } = {}) => {
   return { otp, token, resetLink, delivered: true };
 };
 
+
 const register = asyncHandler(async (req, res) => {
   console.log('📝 Incoming Registration Request:', JSON.stringify(req.body, null, 2));
 
@@ -264,6 +267,7 @@ const login = asyncHandler(async (req, res) => {
 
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
+
   user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
   await user.save();
 
@@ -279,7 +283,10 @@ const login = asyncHandler(async (req, res) => {
 
 const logout = asyncHandler(async (req, res) => {
   clearAuthCookies(res);
-  return res.json({ success: true, message: 'Logged out successfully' });
+  return res.json({
+    success: true,
+    message: 'Logged out successfully'
+  });
 });
 
 const refresh = asyncHandler(async (req, res) => {
@@ -521,10 +528,11 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
 
   const {
-    fullName, phoneNumber, department, year,
-    currency, dateFormat, language, theme,
-    incomeFrequency, incomeSources, priorities, riskTolerance
-  } = parsed.data;
+  fullName, phoneNumber, department, year,
+  currency, dateFormat, language, theme,
+  incomeFrequency, incomeSources, priorities, riskTolerance,
+  billRemindersEnabled, reminderDaysBefore
+} = parsed.data;
 
   if (fullName !== undefined) user.fullName = fullName.trim();
   if (phoneNumber !== undefined) user.phoneNumber = phoneNumber.trim();
@@ -539,6 +547,14 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (incomeSources !== undefined) user.incomeSources = incomeSources;
   if (priorities !== undefined) user.priorities = priorities;
   if (riskTolerance !== undefined) user.riskTolerance = riskTolerance;
+
+  if (billRemindersEnabled !== undefined || reminderDaysBefore !== undefined) {
+    if (!user.notificationPrefs) {
+      user.notificationPrefs = {};
+    }
+    if (billRemindersEnabled !== undefined) user.notificationPrefs.billRemindersEnabled = billRemindersEnabled;
+    if (reminderDaysBefore !== undefined) user.notificationPrefs.reminderDaysBefore = reminderDaysBefore;
+  }
 
   await user.save();
 
