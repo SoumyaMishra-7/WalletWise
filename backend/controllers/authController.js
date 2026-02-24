@@ -178,7 +178,6 @@ const sendPasswordResetInstructions = async (user, { skipEmail } = {}) => {
   await sendEmail({ to: user.email, subject, text, html });
   return { otp, token, resetLink, delivered: true };
 };
-
 const register = asyncHandler(async (req, res) => {
   console.log('📝 Incoming Registration Request:', JSON.stringify(req.body, null, 2));
 
@@ -196,29 +195,39 @@ const register = asyncHandler(async (req, res) => {
   if (existing) {
     return res.status(400).json({
       success: false,
-      message: 'Registration failed. Please check your details.'
+      message: 'User already exists with this email or student ID'
     });
-    await user.setPassword(password);
-    await User.saveWithUniqueStudentId(user);
+  }
 
-    // ✅ Skip email verification for local testing
-    user.emailVerified = true;
-    await user.save();
+  // ✅ Create user properly
+  const user = new User({
+    studentId,
+    fullName,
+    email,
+    phoneNumber,
+    department,
+    year,
+    emailVerified: true   // skip verification for local testing
+  });
 
-    const accessToken = signAccessToken(user);
-    const refreshToken = signRefreshToken(user);
-    user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-    await user.save();
+  await user.setPassword(password);
+  await User.saveWithUniqueStudentId(user);
 
-    setAuthCookies(res, accessToken, refreshToken);
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
 
-    return res.status(201).json({
-      success: true,
-      message: 'Registration successful',
-      token: accessToken,
-      user: safeUser(user)
-    });
+  user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+  await user.save();
 
+  setAuthCookies(res, accessToken, refreshToken);
+
+  return res.status(201).json({
+    success: true,
+    message: 'Registration successful',
+    token: accessToken,
+    user: safeUser(user)
+  });
+});
 const login = asyncHandler(async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -257,8 +266,9 @@ const login = asyncHandler(async (req, res) => {
 
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
+
   user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-  await User.saveWithUniqueStudentId(user);
+  await user.save();
 
   setAuthCookies(res, accessToken, refreshToken);
 
@@ -269,23 +279,7 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-    return res.json({
-      success: true,
-      message: 'Login successful',
-      token: accessToken,
-      user: safeUser(user)
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error during login'
-    });
-  }
-
-  clearAuthCookies(res);
-  return res.json({ success: true, message: 'Logged out successfully' });
-});
+   
 
 const refresh = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies.refresh_token;
@@ -525,11 +519,17 @@ const updateProfile = asyncHandler(async (req, res) => {
     user.avatar = myCloud.secure_url;
   }
 
+  // const {
+  //   fullName, phoneNumber, department, year,
+  //   currency, dateFormat, language, theme,
+  //   incomeFrequency, incomeSources, priorities, riskTolerance
+  // } = parsed.data;
   const {
-    fullName, phoneNumber, department, year,
-    currency, dateFormat, language, theme,
-    incomeFrequency, incomeSources, priorities, riskTolerance
-  } = parsed.data;
+  fullName, phoneNumber, department, year,
+  currency, dateFormat, language, theme,
+  incomeFrequency, incomeSources, priorities, riskTolerance,
+  billRemindersEnabled, reminderDaysBefore
+} = parsed.data;
 
   if (fullName !== undefined) user.fullName = fullName.trim();
   if (phoneNumber !== undefined) user.phoneNumber = phoneNumber.trim();
@@ -626,7 +626,13 @@ const verifyPasswordResetOtp = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
+const logout = asyncHandler(async (req, res) => {
+  clearAuthCookies(res);
+  return res.json({
+    success: true,
+    message: 'Logged out successfully'
+  });
+});
 module.exports = {
   register,
   login,

@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Transaction = require('../models/Transactions');
 const User = require('../models/User');
+
+const STRICT_MODE = process.env.STRICT_WALLET_BALANCE === "true";
 const { z } = require('zod');
 const { isValidObjectId } = require('../utils/validation');
 
@@ -42,7 +44,7 @@ const withTransaction = async (operation) => {
         session.endSession();
     }
 };
-
+let newBalance = null;
 // Add Transaction
 const addTransaction = async (req, res) => {
     try {
@@ -72,6 +74,30 @@ const addTransaction = async (req, res) => {
             isRecurring,
             recurringInterval
         } = parsed.data;
+
+        const user = await User.findById(userId);
+
+if (!user) {
+    return res.status(404).json({
+        success: false,
+        message: "User not found"
+    });
+}
+
+if (type === "expense") {
+    newBalance = user.walletBalance - amount;
+
+    if (STRICT_MODE && newBalance < 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Insufficient wallet balance"
+        });
+    }
+
+    if (!STRICT_MODE && newBalance < 0) {
+        console.warn("Wallet going negative");
+    }
+}
 const transaction = new Transaction({
     userId,
     type,
@@ -105,31 +131,35 @@ const transaction = new Transaction({
             });
         }
 
-        await withTransaction(async (session) => {
-            if (isRecurring && recurringInterval) {
-                const now = new Date();
-                if (recurringInterval === "daily") now.setDate(now.getDate() + 1);
-                else if (recurringInterval === "weekly") now.setDate(now.getDate() + 7);
-                else if (recurringInterval === "monthly") now.setMonth(now.getMonth() + 1);
-                transaction.nextExecutionDate = now;
-            }
 
-            await transaction.save({ session });
+// Only validate for expense
 
-            const balanceChange = type === 'income' ? amount : -amount;
+        if (isRecurring && recurringInterval) {
+    const now = new Date();
+    if (recurringInterval === "daily") now.setDate(now.getDate() + 1);
+    else if (recurringInterval === "weekly") now.setDate(now.getDate() + 7);
+    else if (recurringInterval === "monthly") now.setMonth(now.getMonth() + 1);
+    transaction.nextExecutionDate = now;
+}
 
-            await User.findByIdAndUpdate(
-                userId,
-                { $inc: { walletBalance: balanceChange } },
-                { session }
-            );
+await transaction.save();
 
-            return res.status(201).json({
-                success: true,
-                message: 'Transaction added successfully',
-                transaction
-            });
-        });
+const balanceChange = type === 'income' ? amount : -amount;
+
+await User.findByIdAndUpdate(
+    userId,
+    { $inc: { walletBalance: balanceChange } }
+);
+
+return res.status(201).json({
+    success: true,
+    message: 'Transaction added successfully',
+    transaction,
+...( !STRICT_MODE && newBalance !== null && newBalance < 0
+        ? { warning: "Wallet balance became negative" }
+        : {}
+    )
+});
 
     } catch (error) {
         console.error('Add transaction error:', error);
@@ -254,7 +284,33 @@ const updateData = parsed.data;
 
 Object.assign(oldTransaction, updateData);
 
+const user = await User.findById(userId);
+
+let balanceChange = 0;
+
+if (oldTransaction.type === "expense") {
+    balanceChange += oldTransaction.amount;
+} else {
+    balanceChange -= oldTransaction.amount;
+}
+
+if (updateData.type === "expense") {
+    balanceChange -= updateData.amount || oldTransaction.amount;
+} else {
+    balanceChange += updateData.amount || oldTransaction.amount;
+}
+
+const newBalance = user.walletBalance + balanceChange;
+
+if (STRICT_MODE && newBalance < 0) {
+    return res.status(400).json({
+        success: false,
+        message: "Insufficient wallet balance for update"
+    });
+}
+
 await oldTransaction.save();
+
 
 res.json({
     success: true,
@@ -395,8 +451,21 @@ const undoTransaction = async (req, res) => {
             mood: deletedTransaction.mood,
             date: deletedTransaction.date || new Date()
         });
+const user = await User.findById(userId);
 
+if (restored.type === "expense") {
+    const newBalance = user.walletBalance - restored.amount;
+
+    if (STRICT_MODE && newBalance < 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Insufficient wallet balance to restore transaction"
+        });
+    }
+}
         await restored.save();
+
+        
 
         // Restore wallet balance
         const balanceChange =
