@@ -264,8 +264,8 @@ app.use(errHandler);
 // ==================== START SERVER ====================
 // Initialize Scheduler
 if (process.env.NODE_ENV !== 'test') {
-    const { initScheduler } = require('./utils/scheduler');
-    initScheduler();
+    //const { initScheduler } = require('./utils/scheduler');
+    //initScheduler();
 }
 
 const PORT = process.env.PORT || 5000;

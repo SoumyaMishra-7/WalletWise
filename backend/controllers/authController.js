@@ -198,27 +198,39 @@ const register = asyncHandler(async (req, res) => {
       success: false,
       message: 'Registration failed. Please check your details.'
     });
-    await user.setPassword(password);
-    await User.saveWithUniqueStudentId(user);
+  }
 
-    // ✅ Skip email verification for local testing
-    user.emailVerified = true;
-    await user.save();
+  const user = new User({
+    studentId,
+    fullName,
+    email,
+    phoneNumber,
+    department,
+    year
+  });
 
-    const accessToken = signAccessToken(user);
-    const refreshToken = signRefreshToken(user);
-    user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-    await user.save();
+  await user.setPassword(password);
+  await User.saveWithUniqueStudentId(user);
 
-    setAuthCookies(res, accessToken, refreshToken);
+  // Skip email verification for local testing
+  user.emailVerified = true;
+  await user.save();
 
-    return res.status(201).json({
-      success: true,
-      message: 'Registration successful',
-      token: accessToken,
-      user: safeUser(user)
-    });
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
 
+  user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+  await user.save();
+
+  setAuthCookies(res, accessToken, refreshToken);
+
+  return res.status(201).json({
+    success: true,
+    message: 'Registration successful',
+    token: accessToken,
+    user: safeUser(user)
+  });
+});
 const login = asyncHandler(async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -257,8 +269,9 @@ const login = asyncHandler(async (req, res) => {
 
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
+
   user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-  await User.saveWithUniqueStudentId(user);
+  await user.save();
 
   setAuthCookies(res, accessToken, refreshToken);
 
@@ -269,24 +282,13 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-    return res.json({
-      success: true,
-      message: 'Login successful',
-      token: accessToken,
-      user: safeUser(user)
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error during login'
-    });
-  }
-
+const logout = asyncHandler(async (req, res) => {
   clearAuthCookies(res);
-  return res.json({ success: true, message: 'Logged out successfully' });
+  return res.json({
+    success: true,
+    message: 'Logged out successfully'
+  });
 });
-
 const refresh = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies.refresh_token;
   if (!refreshToken) {

@@ -3,6 +3,8 @@ const Transaction = require('../models/Transactions');
 const User = require('../models/User');
 const { z } = require('zod');
 const { isValidObjectId } = require('../utils/validation');
+const logTransactionActivity = require("../utils/activityLogger");
+const TransactionActivity = require("../models/TransactionActivity");
 
 
 const transactionSchema = z.object({
@@ -28,19 +30,23 @@ const transactionSchema = z.object({
 });
 
 // Helper to handle transaction cleanup
+// const withTransaction = async (operation) => {
+//     const session = await mongoose.startSession();
+//     try {
+//         session.startTransaction();
+//         const result = await operation(session);
+//         await session.commitTransaction();
+//         return result;
+//     } catch (error) {
+//         await session.abortTransaction();
+//         throw error;
+//     } finally {
+//         session.endSession();
+//     }
+// };
 const withTransaction = async (operation) => {
-    const session = await mongoose.startSession();
-    try {
-        session.startTransaction();
-        const result = await operation(session);
-        await session.commitTransaction();
-        return result;
-    } catch (error) {
-        await session.abortTransaction();
-        throw error;
-    } finally {
-        session.endSession();
-    }
+    // Local development fallback (no MongoDB replica set)
+    return await operation(null);
 };
 
 // Add Transaction
@@ -114,14 +120,20 @@ const transaction = new Transaction({
                 transaction.nextExecutionDate = now;
             }
 
-            await transaction.save({ session });
+            await transaction.save();
+
+            await logTransactionActivity({
+    userId,
+    transactionId: transaction._id,
+    action: "CREATED"
+});
 
             const balanceChange = type === 'income' ? amount : -amount;
 
             await User.findByIdAndUpdate(
                 userId,
                 { $inc: { walletBalance: balanceChange } },
-                { session }
+                
             );
 
             return res.status(201).json({
@@ -256,13 +268,21 @@ Object.assign(oldTransaction, updateData);
 
 await oldTransaction.save();
 
+await logTransactionActivity({
+    userId,
+    transactionId: oldTransaction._id,
+    action: "UPDATED",
+    changes: updateData
+});
+
 res.json({
     success: true,
     message: 'Transaction updated successfully',
     transaction: oldTransaction
 });
        
-    } catch (error) {
+    }
+     catch (error) {
         console.error('Update transaction error:', error);
         if (!res.headersSent) {
             res.status(error.status || 500).json({ success: false, message: error.message || 'Error updating transaction' });
@@ -303,6 +323,11 @@ const deleteTransaction = async (req, res) => {
         await User.findByIdAndUpdate(userId, {
             $inc: { walletBalance: balanceChange }
         });
+        await logTransactionActivity({
+    userId,
+    transactionId: transaction._id,
+    action: "DELETED"
+});
 
         res.json({
             success: true,
@@ -310,11 +335,7 @@ const deleteTransaction = async (req, res) => {
             deletedTransaction: transaction
         });
 
-res.json({
-    success: true,
-    message: 'Transaction deleted successfully'
-});
-           } catch (error) {
+       } catch (error) {
         console.error('Delete transaction error:', error);
         res.status(500).json({
             success: false,
@@ -398,6 +419,12 @@ const undoTransaction = async (req, res) => {
 
         await restored.save();
 
+        await logTransactionActivity({
+    userId,
+    transactionId: restored._id,
+    action: "RESTORED"
+});
+
         // Restore wallet balance
         const balanceChange =
             restored.type === 'income'
@@ -423,11 +450,43 @@ const undoTransaction = async (req, res) => {
     }
 };
 
+const getTransactionActivity = async (req, res) => {
+    try {
+        const { transactionId } = req.params;
+        const userId = req.userId;
+
+        if (!isValidObjectId(transactionId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid transaction ID"
+            });
+        }
+
+        const activities = await TransactionActivity.find({
+            transactionId,
+            userId
+        })
+        .sort({ timestamp: -1 });
+
+        res.json({
+            success: true,
+            activities
+        });
+
+    } catch (error) {
+        console.error("Get activity error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching activity history"
+        });
+    }
+};
 module.exports = {
    addTransaction,
    getAllTransactions,
    updateTransaction,
    deleteTransaction,
    undoTransaction,
-   skipNextOccurrence
+   skipNextOccurrence,
+   getTransactionActivity 
 };
