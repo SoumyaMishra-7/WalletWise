@@ -605,11 +605,12 @@ const Dashboard = () => {
 
               <div className="dropdown-divider"></div>
 
-              <Link
+             <Link
                 to="/profile"
                 className="dropdown-item"
                 role="menuitem"
                 onClick={() => setShowUserMenu(false)}
+                title="View profile"
               >
                 <FaUserCircle />
                 <span>Profile</span>
@@ -620,6 +621,7 @@ const Dashboard = () => {
                 className="dropdown-item"
                 role="menuitem"
                 onClick={() => setShowUserMenu(false)}
+                title="Open settings"
               >
                 <FaCog />
                 <span>Settings</span>
@@ -629,10 +631,11 @@ const Dashboard = () => {
               <div className="dropdown-divider"></div>
 
               <button
-                onClick={handleLogout}
-                className="dropdown-item logout"
-                role="menuitem"
-              >
+                  onClick={handleLogout}
+                  className="dropdown-item logout"
+                  role="menuitem"
+                  title="Logout"
+                >
                 <FaSignOutAlt />
                 <span>Logout</span>
               </button>

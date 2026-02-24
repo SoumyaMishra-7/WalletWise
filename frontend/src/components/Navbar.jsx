@@ -5,8 +5,8 @@ import { useTheme } from "../context/ThemeContext";
 const Navbar = ({ isMenuOpen, setIsMenuOpen, navigate }) => {
   const { isDark, toggleTheme } = useTheme();
   return (
-    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-b border-zinc-200 dark:border-slate-700">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="fixed top-4 left-0 w-full z-50 flex justify-center px-4 ">
+      <div className="w-full max-w-6xl px-6 py-2.5 flex items-center justify-between rounded-full backdrop-blur-md bg-white/80 dark:bg-slate-900/70 border border-zinc-200 dark:border-slate-700 shadow-lg">
         {/* Logo */}
         <a
           href="#top"
@@ -18,6 +18,12 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen, navigate }) => {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
+          <a
+            href="#home"
+            className="text-zinc-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition relative pb-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-black dark:after:bg-white after:transition-all after:duration-300 hover:after:w-full focus:outline-none"
+          >
+            Home
+          </a>
           <a
             href="#about"
             className="text-zinc-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition relative pb-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-black dark:after:bg-white after:transition-all after:duration-300 hover:after:w-full focus:outline-none"
@@ -31,6 +37,14 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen, navigate }) => {
           >
             Features
           </a>
+
+          <a
+            href="#how"
+            className="text-zinc-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition relative pb-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-black dark:after:bg-white after:transition-all after:duration-300 hover:after:w-full focus:outline-none"
+          >
+            How it Works
+          </a>
+
 
           <button
             onClick={() => navigate("/signup")}
@@ -67,6 +81,13 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen, navigate }) => {
       {isMenuOpen && (
         <div className="md:hidden bg-white dark:bg-slate-900 border-t border-zinc-200 dark:border-slate-700 px-4 py-4 space-y-4">
           <a
+            href="#home"
+            onClick={() => setIsMenuOpen(false)}
+            className="block w-full text-left text-zinc-700 dark:text-slate-200 focus:outline-none"
+          >
+            Home
+          </a>
+          <a
             href="#about"
             onClick={() => setIsMenuOpen(false)}
             className="block w-full text-left text-zinc-700 dark:text-slate-200 focus:outline-none"
@@ -79,6 +100,13 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen, navigate }) => {
             className="block w-full text-left text-zinc-700 dark:text-slate-200 focus:outline-none"
           >
             Features
+          </a>
+          <a
+            href="#how"
+            onClick={() => setIsMenuOpen(false)}
+            className="block w-full text-left text-zinc-700 dark:text-slate-200 focus:outline-none"
+          >
+            How it Works
           </a>
           <button
             onClick={() => navigate("/signup")}

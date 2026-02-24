@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
+
 const { protect } = require('../middleware/auth');
 const transactionController = require('../controllers/transactionController');
 
+router.get(
+    "/activity/:transactionId",
+    protect,
+    transactionController.getTransactionActivity
+);
 // Add transaction
 router.post('/', protect, transactionController.addTransaction);
 

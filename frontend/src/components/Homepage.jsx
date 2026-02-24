@@ -90,7 +90,7 @@ const Homepage = () => {
   );
 
   return (
-    <div className="ww-page">
+    <div className="ww-page" id="home">
       <Navbar
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
