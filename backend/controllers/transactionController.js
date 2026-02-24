@@ -149,7 +149,8 @@ const getAllTransactions = async (req, res) => {
 
         const {
             limit = 10,
-            cursor,
+            page = 1,
+            sort = 'newest',
             type,
             startDate,
             endDate,
@@ -180,35 +181,28 @@ const getAllTransactions = async (req, res) => {
             ];
         }
 
-        // Cursor logic
-        const mongoose = require("mongoose");
+        let sortOption = { date: -1, _id: -1 };
+        if (sort === 'oldest') sortOption = { date: 1, _id: 1 };
+        else if (sort === 'amount-high') sortOption = { amount: -1, _id: -1 };
+        else if (sort === 'amount-low') sortOption = { amount: 1, _id: 1 };
 
-        if (cursor) {
-            if (!mongoose.Types.ObjectId.isValid(cursor)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid cursor"
-                });
-            }
+        const skip = (parseInt(page) - 1) * parseInt(limit);
 
-            query._id = { $lt: new mongoose.Types.ObjectId(cursor) };
-        }
+        const total = await Transaction.countDocuments(query);
+        const pages = Math.ceil(total / parseInt(limit));
 
         const transactions = await Transaction.find(query)
-            .sort({ _id: -1 })
+            .sort(sortOption)
+            .skip(skip)
             .limit(parseInt(limit));
-
-        let nextCursor = null;
-
-        if (transactions.length === parseInt(limit)) {
-            nextCursor = transactions[transactions.length - 1]._id;
-        }
 
         res.json({
             success: true,
             transactions,
             pagination: {
-                nextCursor,
+                page: parseInt(page),
+                pages,
+                total,
                 limit: parseInt(limit)
             }
         });
@@ -309,11 +303,6 @@ const deleteTransaction = async (req, res) => {
             success: true,
             message: 'Transaction deleted successfully',
             deletedTransaction: transaction
-        });
-
-        res.json({
-            success: true,
-            message: 'Transaction deleted successfully'
         });
     } catch (error) {
         console.error('Delete transaction error:', error);
