@@ -36,6 +36,34 @@
 }
 
 /* ==========================================================================
+   1b. DARK THEME OVERRIDES
+   ========================================================================== */
+.dark {
+  --bg-app: #0b0f1a;
+  --bg-card: #111827;
+  --bg-card-hover: #1a2235;
+  --bg-card-alt: #151e2e;
+  --text-main: #f1f5f9;
+  --text-muted: #8b9ab5;
+  --border-subtle: #1e2d45;
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+
+  /* Action icon backgrounds — darker tints */
+  --icon-blue-bg: rgba(37, 99, 235, 0.15);
+  --icon-green-bg: rgba(16, 185, 129, 0.15);
+  --icon-red-bg: rgba(239, 68, 68, 0.15);
+  --icon-purple-bg: rgba(139, 92, 246, 0.15);
+  --icon-orange-bg: rgba(234, 88, 12, 0.15);
+  --icon-pink-bg: rgba(219, 39, 119, 0.15);
+  --icon-teal-bg: rgba(13, 148, 136, 0.15);
+
+  /* Progress bar track */
+  --progress-track: #1e2d45;
+}
+
+/* ==========================================================================
    2. GLOBAL LAYOUT
    ========================================================================== */
 .dashboard {

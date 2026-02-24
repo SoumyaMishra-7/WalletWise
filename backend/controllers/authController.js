@@ -53,7 +53,9 @@ const updateProfileSchema = z.object({
   incomeFrequency: z.string().optional(),
   incomeSources: z.string().optional(),
   priorities: z.string().optional(),
-  riskTolerance: z.string().optional()
+  riskTolerance: z.string().optional(),
+  billRemindersEnabled: z.union([z.boolean(), z.string()]).transform(v => v === true || v === 'true').optional(),
+  reminderDaysBefore: z.union([z.number(), z.string()]).transform(Number).refine(v => [1, 3, 7].includes(v), 'Must be 1, 3, or 7').optional()
 });
 
 const cookieOptions = () => {
@@ -538,6 +540,14 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (incomeSources !== undefined) user.incomeSources = incomeSources;
   if (priorities !== undefined) user.priorities = priorities;
   if (riskTolerance !== undefined) user.riskTolerance = riskTolerance;
+
+  if (billRemindersEnabled !== undefined || reminderDaysBefore !== undefined) {
+    if (!user.notificationPrefs) {
+      user.notificationPrefs = {};
+    }
+    if (billRemindersEnabled !== undefined) user.notificationPrefs.billRemindersEnabled = billRemindersEnabled;
+    if (reminderDaysBefore !== undefined) user.notificationPrefs.reminderDaysBefore = reminderDaysBefore;
+  }
 
   await user.save();
 

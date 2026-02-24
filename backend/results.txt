@@ -1,0 +1,91 @@
+  console.log
+    ⏳ Checking for upcoming bills...
+
+      at log (utils/scheduler.js:7:13)
+
+  console.log
+    🔎 Found 4 active bills due within 7 days.
+
+      at log (utils/scheduler.js:25:17)
+
+  console.log
+    ✅ Email sent to user1@example.com for Netflix
+
+      at log (utils/scheduler.js:78:25)
+
+  console.log
+    ✅ Email sent to user2@example.com for Gym
+
+      at log (utils/scheduler.js:78:25)
+
+  console.log
+    ⏳ Checking for upcoming bills...
+
+      at log (utils/scheduler.js:7:13)
+
+  console.log
+    🔎 Found 0 active bills due within 7 days.
+
+      at log (utils/scheduler.js:25:17)
+
+
+PASS tests/scheduler.test.js
+  Scheduler Utility - checkUpcomingBills
+    √ should correctly detect and email users within appropriate reminder targets (100 ms)
+    √ should ignore subscriptions outside the 7-day future window regardless of configuration (10 ms)
+
+FAIL tests/transactionController.test.js
+  Transaction Controller
+    addTransaction
+      √ should add income transaction and update balance (41 ms)
+      √ should add expense transaction and update balance (16 ms)
+      √ should reject non-positive amounts (12 ms)
+      √ should prevent exact duplicate transactions within 24 hours (14 ms)
+      √ should compute nextExecutionDate for recurring transaction (22 ms)
+    updateTransaction
+      × should correctly revert old balance effect and apply new one (12 ms)
+    deleteTransaction
+      × should properly revert balance on delete (13 ms)
+    getAllTransactions and recurring triggers
+      √ should trigger recurring transactions and update dates (26 ms)
+      √ should correctly filter and sort transactions (20 ms)
+
+  ● Transaction Controller › updateTransaction › should correctly revert old balance effect and apply new one
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    [0m [90m 172 |[39m             [36mawait[39m updateTransaction(req[33m,[39m res)[33m;[39m
+     [90m 173 |[39m
+    [31m[1m>[22m[39m[90m 174 |[39m             expect(res[33m.[39mjson[33m.[39mmock[33m.[39mresults[[35m0[39m][33m.[39mvalue[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m     |[39m                                                            [31m[1m^[22m[39m
+     [90m 175 |[39m             [36mconst[39m updatedUser [33m=[39m [36mawait[39m [33mUser[39m[33m.[39mfindById(user[33m.[39m_id)[33m;[39m
+     [90m 176 |[39m             expect(updatedUser[33m.[39mwalletBalance)[33m.[39mtoBe([35m1300[39m)[33m;[39m [90m// 1000 + 100 + 200[39m
+     [90m 177 |[39m         })[33m;[39m[0m
+
+      at Object.toBe (tests/transactionController.test.js:174:60)
+
+  ● Transaction Controller › deleteTransaction › should properly revert balance on delete
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    [0m [90m 198 |[39m             [36mawait[39m deleteTransaction(req[33m,[39m res)[33m;[39m
+     [90m 199 |[39m
+    [31m[1m>[22m[39m[90m 200 |[39m             expect(res[33m.[39mjson[33m.[39mmock[33m.[39mresults[[35m0[39m][33m.[39mvalue[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m     |[39m                                                            [31m[1m^[22m[39m
+     [90m 201 |[39m             [36mconst[39m updatedUser [33m=[39m [36mawait[39m [33mUser[39m[33m.[39mfindById(user[33m.[39m_id)[33m;[39m
+     [90m 202 |[39m             expect(updatedUser[33m.[39mwalletBalance)[33m.[39mtoBe([35m1150[39m)[33m;[39m
+     [90m 203 |[39m         })[33m;[39m[0m
+
+      at Object.toBe (tests/transactionController.test.js:200:60)
+
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       2 failed, 9 passed, 11 total
+Snapshots:   0 total
+Time:        1.839 s, estimated 2 s
+Ran all test suites.
