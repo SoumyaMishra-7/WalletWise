@@ -133,6 +133,14 @@ const userSchema = new mongoose.Schema({
   refreshTokenHash: {
     type: String
   },
+  // Privacy Vault Fields
+  vaultEnabled: {
+    type: Boolean,
+    default: false
+  },
+  vaultSalt: {
+    type: String
+  },
   createdAt: {
     type: Date,
     default: Date.now

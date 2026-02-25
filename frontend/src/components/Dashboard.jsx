@@ -9,6 +9,10 @@ import AddExpense from '../pages/AddExpense';
 import AddIncome from '../pages/AddIncome';
 import SetBudget from '../pages/SetBudget';
 import SavingGoal from '../pages/SavingGoal';
+import { useTheme } from '../context/ThemeContext';
+import { useVault } from '../context/VaultContext';
+import { decryptNote } from '../services/encryption';
+import VaultUnlock from './Vault/VaultUnlock';
 import {
   FaWallet, FaSignOutAlt, FaUserCircle, FaChevronDown,
   FaMoneyBillWave, FaChartLine, FaPiggyBank,
@@ -16,7 +20,7 @@ import {
   FaBrain, FaArrowUp, FaCalendarAlt,
   FaSync, FaHome, FaExchangeAlt,
   FaCog, FaChartPie,
-  FaMagic
+  FaMagic, FaTrophy, FaSun, FaMoon, FaLock, FaUnlock
 } from 'react-icons/fa';
 import { Line, Pie } from 'react-chartjs-2';
 import { toast } from 'react-hot-toast';
@@ -68,7 +72,7 @@ const Dashboard = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const { isDark, toggleTheme } = useTheme();
+  // const { isDark, toggleTheme } = useTheme(); // CACHE BUST TEMPORARY COMMENT
 
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
@@ -111,6 +115,29 @@ const Dashboard = () => {
   const [showAddIncomeModal, setShowAddIncomeModal] = useState(false);
   const [showSetBudgetModal, setShowSetBudgetModal] = useState(false);
   const [showSavingsGoalModal, setShowSavingsGoalModal] = useState(false);
+  const [showVaultUnlock, setShowVaultUnlock] = useState(false);
+
+  // Vault mechanics
+  const { isVaultEnabled, isUnlocked, cryptoKey } = useVault();
+  const [decryptedNotes, setDecryptedNotes] = useState({}); // { txId: "Decrypted Text" }
+
+  const handleUnlockVaultSuccess = async () => {
+    // Automatic decryption handled by a useEffect relying on cryptoKey state change 
+    // or we could manually iterate. We'll leave it to user interaction for now.
+  };
+
+  const handleDecryptClick = async (tx) => {
+    if (!isUnlocked || !cryptoKey) {
+      setShowVaultUnlock(true);
+      return;
+    }
+    try {
+      const plainText = await decryptNote(tx.encryptedData, cryptoKey);
+      setDecryptedNotes(prev => ({ ...prev, [tx._id]: plainText }));
+    } catch (err) {
+      toast.error("Decryption failed. Invalid vault session.");
+    }
+  };
 
   // Data states
   // const [stats, setStats] = useState({
@@ -563,6 +590,7 @@ const Dashboard = () => {
 
         {/* Right: User Profile */}
         <div className="nav-right" ref={userMenuRef}>
+          {/*
           <button
             className="theme-toggle"
             onClick={toggleTheme}
@@ -573,6 +601,7 @@ const Dashboard = () => {
           >
             {isDark ? <FaSun /> : <FaMoon />}
           </button>
+          */}
           <button
             className="user-profile-trigger"
             onClick={() => setShowUserMenu(!showUserMenu)}
@@ -605,7 +634,7 @@ const Dashboard = () => {
 
               <div className="dropdown-divider"></div>
 
-             <Link
+              <Link
                 to="/profile"
                 className="dropdown-item"
                 role="menuitem"
@@ -631,11 +660,11 @@ const Dashboard = () => {
               <div className="dropdown-divider"></div>
 
               <button
-                  onClick={handleLogout}
-                  className="dropdown-item logout"
-                  role="menuitem"
-                  title="Logout"
-                >
+                onClick={handleLogout}
+                className="dropdown-item logout"
+                role="menuitem"
+                title="Logout"
+              >
                 <FaSignOutAlt />
                 <span>Logout</span>
               </button>
@@ -898,7 +927,7 @@ const Dashboard = () => {
             </div>
             <div className="chart-wrapper">
               {weeklyExpenses.length > 0 &&
-              weeklyExpenses.some((exp) => exp.amount > 0) ? (
+                weeklyExpenses.some((exp) => exp.amount > 0) ? (
                 <Line data={weeklyExpensesChart} options={chartOptions} />
               ) : (
                 <div className="chart-empty-state">
@@ -922,7 +951,7 @@ const Dashboard = () => {
             </div>
             <div className="chart-wrapper">
               {categorySpending.length > 0 &&
-              categorySpending.some((cat) => cat.amount > 0) ? (
+                categorySpending.some((cat) => cat.amount > 0) ? (
                 <Pie data={spendingByCategoryChart} options={chartOptions} />
               ) : (
                 <div className="chart-empty-state">
@@ -968,9 +997,22 @@ const Dashboard = () => {
                   </div>
                   <div className="transaction-details">
                     <h4>
-                      {transaction.description ||
-                        transaction.category ||
-                        "Transaction"}
+                      {transaction.isEncrypted ? (
+                        <div className="encrypted-note-preview">
+                          {decryptedNotes[transaction._id] ? (
+                            <>
+                              <FaUnlock className="vault-tiny-icon text-green-500" />
+                              {decryptedNotes[transaction._id]}
+                            </>
+                          ) : (
+                            <button onClick={() => handleDecryptClick(transaction)} className="unlock-note-btn">
+                              <FaLock className="vault-tiny-icon" /> Locked Note
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        transaction.description || transaction.category || "Transaction"
+                      )}
                     </h4>
                     <p className="transaction-category">
                       {transaction.category}
@@ -1078,6 +1120,13 @@ const Dashboard = () => {
         onClose={() => setShowSavingsGoalModal(false)}
         onGoalCreated={handleCreateSavingsGoal}
       />
+
+      {showVaultUnlock && (
+        <VaultUnlock
+          onClose={() => setShowVaultUnlock(false)}
+          onSuccess={handleUnlockVaultSuccess}
+        />
+      )}
     </div>
   );
 };
