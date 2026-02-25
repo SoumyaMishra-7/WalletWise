@@ -1,6 +1,47 @@
 const SavingsGoal = require('../models/SavingGoal');
 const { isValidObjectId } = require('../utils/validation');
 
+// Calculate predictive fields helper
+const calculatePredictiveFields = (goal) => {
+    const now = new Date();
+    const targetDate = new Date(goal.targetDate);
+    const createdAt = goal.createdAt ? new Date(goal.createdAt) : now;
+    
+    const timeRemaining = targetDate.getTime() - now.getTime();
+    let daysRemaining = Math.max(0, Math.ceil(timeRemaining / (1000 * 3600 * 24)));
+
+    const remainingAmount = Math.max(0, goal.targetAmount - goal.currentAmount);
+
+    let requiredDailySavings = 0;
+    let requiredWeeklySavings = 0;
+
+    if (daysRemaining > 0 && remainingAmount > 0) {
+        requiredDailySavings = remainingAmount / daysRemaining;
+        requiredWeeklySavings = requiredDailySavings * 7;
+    }
+
+    let status = 'Lagging';
+    if (goal.currentAmount >= goal.targetAmount) {
+        status = 'Completed';
+    } else {
+        const totalDurationDays = Math.max(1, Math.ceil((targetDate.getTime() - createdAt.getTime()) / (1000 * 3600 * 24)));
+        const daysElapsed = Math.max(0, Math.ceil((now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24)));
+        
+        const expectedAmount = (goal.targetAmount / totalDurationDays) * daysElapsed;
+
+        if (goal.currentAmount >= expectedAmount) {
+            status = 'On track';
+        }
+    }
+
+    return {
+        daysRemaining,
+        requiredDailySavings: Number(requiredDailySavings.toFixed(2)),
+        requiredWeeklySavings: Number(requiredWeeklySavings.toFixed(2)),
+        status
+    };
+};
+
 // Create Savings Goal
 const createGoal = async (req, res) => {
     try {
@@ -61,7 +102,8 @@ const createGoal = async (req, res) => {
                 targetAmount: savingsGoal.targetAmount,
                 currentAmount: savingsGoal.currentAmount,
                 targetDate: savingsGoal.targetDate,
-                progress: savingsGoal.progress
+                progress: savingsGoal.progress,
+                ...calculatePredictiveFields(savingsGoal)
             }
         });
 
@@ -98,7 +140,8 @@ const getAllGoals = async (req, res) => {
                 targetAmount: g.targetAmount,
                 currentAmount: g.currentAmount,
                 targetDate: g.targetDate,
-                progress: g.progress
+                progress: g.progress,
+                ...calculatePredictiveFields(g)
             })),
             count: goals.length
         });
@@ -161,7 +204,8 @@ const addAmount = async (req, res) => {
                 targetDate: goal.targetDate,
                 progress: goal.progress,
                 category: goal.category,
-                isActive: goal.isActive
+                isActive: goal.isActive,
+                ...calculatePredictiveFields(goal)
             }
         });
     } catch (error) {
