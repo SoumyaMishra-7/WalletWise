@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import useDebounce from '../hooks/useDebounce';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
@@ -75,8 +75,15 @@ const Transactions = () => {
   const [endDate, setEndDate] = useState('');
   const [tagFilter, setTagFilter] = useState(''); // Not active in backend yet, keeping UI
   const [sortMode, setSortMode] = useState('newest');
+  const abortControllerRef = useRef(null);
 
   const fetchTransactions = useCallback(async () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     setLoading(true);
     try {
       const params = {
@@ -104,7 +111,7 @@ const Transactions = () => {
 
       console.log('Fetching with params:', params);
 
-      const response = await api.get('/api/transactions', { params });
+      const response = await api.get('/api/transactions', { params, signal });
 
       if (response.data?.success) {
         setTransactions(response.data.transactions || []);
@@ -115,6 +122,10 @@ const Transactions = () => {
         setError('Failed to load transactions.');
       }
     } catch (err) {
+      if (err.name === 'CanceledError' || err.name === 'AbortError') {
+        console.log('Request aborted');
+        return; // Early return to avoid updating state
+      }
       console.error('Transactions fetch error:', err);
       if (err.response?.status === 401) {
         navigate('/login');
@@ -129,6 +140,11 @@ const Transactions = () => {
 
   useEffect(() => {
     fetchTransactions();
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchTransactions]);
 
   // Reset to page 1 when debounced search or filters change

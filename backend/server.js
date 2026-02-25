@@ -12,6 +12,7 @@ const authRoutes = require("./routes/authRoutes");
 const oauthRoutes = require("./routes/oauthRoutes");
 const { protect } = require("./middleware/auth");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const asyncHandler = require("./middleware/asyncHandler");
 dotenv.config();
 
 // Initialize Express app
@@ -264,8 +265,8 @@ app.use(errHandler);
 // ==================== START SERVER ====================
 // Initialize Scheduler
 if (process.env.NODE_ENV !== 'test') {
-    const { initScheduler } = require('./utils/scheduler');
-    initScheduler();
+    //const { initScheduler } = require('./utils/scheduler');
+    //initScheduler();
 }
 
 const PORT = process.env.PORT || 5000;
