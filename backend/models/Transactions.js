@@ -64,6 +64,13 @@ nextExecutionDate: {
   paidBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+  // Privacy Vault Fields
+  isEncrypted: {
+    type: Boolean,
+    default: false
+  },
+  encryptedData: {
+    type: String, // Stores Base64 encoded JSON of { ciphertext, iv }
     default: null
   }
 }, { timestamps: true });

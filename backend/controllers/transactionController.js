@@ -27,6 +27,8 @@ const transactionSchema = z.object({
   walletId: z.string().nullable().optional(),
   isEncrypted: z.boolean().optional().default(false),
   encryptedData: z.string().optional()
+  isEncrypted: z.boolean().optional().default(false),
+  encryptedData: z.string().nullable().optional()
 });
 
 const withTransaction = async (operation) => {

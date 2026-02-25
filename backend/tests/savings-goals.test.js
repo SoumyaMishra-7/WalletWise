@@ -14,7 +14,7 @@ describe('Savings Goals Protected Routes', () => {
             department: 'Computer Science',
             year: '3rd'
         };
-        const regRes = await request(app).post('/api/auth/register').send(userData);
+        const regRes = await request(app).post('/api/v1/auth/register').send(userData);
         token = regRes.body.token;
     });
 
@@ -32,18 +32,21 @@ describe('Savings Goals Protected Routes', () => {
         };
 
         const res = await request(app)
-            .post('/api/savings-goals')
+            .post('/api/v1/savings-goals')
             .set('Authorization', `Bearer ${token}`)
             .send(goalData);
-
         expect(res.statusCode).toBe(201);
         expect(res.body).toHaveProperty('success', true);
         expect(res.body.goal).toHaveProperty('name', 'New Laptop');
+        expect(res.body.goal).toHaveProperty('daysRemaining');
+        expect(res.body.goal).toHaveProperty('requiredDailySavings');
+        expect(res.body.goal).toHaveProperty('requiredWeeklySavings');
+        expect(res.body.goal).toHaveProperty('status');
     });
 
-    it('GET /api/savings-goals should list goals (protected)', async () => {
+    it('GET /api/v1/savings-goals should list goals (protected)', async () => {
         const res = await request(app)
-            .get('/api/savings-goals')
+            .get('/api/v1/savings-goals')
             .set('Authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toBe(200);
@@ -51,9 +54,9 @@ describe('Savings Goals Protected Routes', () => {
         expect(Array.isArray(res.body.goals)).toBe(true);
     });
 
-    it('POST /api/savings-goals should fail without token', async () => {
+    it('POST /api/v1/savings-goals should fail without token', async () => {
         const res = await request(app)
-            .post('/api/savings-goals')
+            .post('/api/v1/savings-goals')
             .send({});
 
         expect(res.statusCode).toBe(401);
