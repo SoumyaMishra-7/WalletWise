@@ -207,23 +207,15 @@ const register = asyncHandler(async (req, res) => {
     email,
     phoneNumber,
     department,
-    year
+    year,
+    emailVerified: true // ✅ Skip email verification for local testing
   });
 
   await user.setPassword(password);
-
   await User.saveWithUniqueStudentId(user);
-
-  // Skip email verification for local testing
-  user.emailVerified = true;
-  await user.save();
 
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
-
-
-
-
   user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
   await user.save();
 
@@ -236,6 +228,7 @@ const register = asyncHandler(async (req, res) => {
     user: safeUser(user)
   });
 });
+
 const login = asyncHandler(async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -283,10 +276,10 @@ const login = asyncHandler(async (req, res) => {
   return res.json({
     success: true,
     message: 'Login successful',
+    token: accessToken,
     user: safeUser(user)
   });
 });
-
 
 const logout = asyncHandler(async (req, res) => {
   clearAuthCookies(res);
