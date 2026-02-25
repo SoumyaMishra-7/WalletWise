@@ -7,6 +7,10 @@ import Pagination from '../components/Pagination';
 import EmptyState from '../components/EmptyState';
 import { ShoppingBag, SearchX } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useVault } from '../context/VaultContext';
+import { decryptNote } from '../services/encryption';
+import VaultUnlock from '../components/Vault/VaultUnlock';
+import { FaLock, FaUnlock } from 'react-icons/fa';
 import './Transactions.css';
 
 const categoryLabelMap = {
@@ -58,6 +62,24 @@ const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Vault Mechanics
+  const { isVaultEnabled, isUnlocked, cryptoKey } = useVault();
+  const [showVaultUnlock, setShowVaultUnlock] = useState(false);
+  const [decryptedNotes, setDecryptedNotes] = useState({});
+
+  const handleDecryptClick = async (tx) => {
+    if (!isUnlocked || !cryptoKey) {
+      setShowVaultUnlock(true);
+      return;
+    }
+    try {
+      const plainText = await decryptNote(tx.encryptedData, cryptoKey);
+      setDecryptedNotes(prev => ({ ...prev, [tx._id || tx.id]: plainText }));
+    } catch (err) {
+      setError("Decryption failed. Invalid vault session.");
+    }
+  };
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -168,13 +190,20 @@ const Transactions = () => {
 
 
   const buildExportRows = () => {
-    return transactions.map((tx) => ({
-      date: formatDate(tx.date),
-      category: tx.category || 'others',
-      description: tx.description || '.',
-      amount: tx.amount,
-      mood: moodMeta[normalizeMood(tx.mood)]?.label || 'Neutral'
-    }));
+    return transactions.map((tx) => {
+      let exportNote = tx.description || '.';
+      if (tx.isEncrypted) {
+        exportNote = decryptedNotes[tx.id || tx._id] || '[LOCKED NOTE]';
+      }
+
+      return {
+        date: formatDate(tx.date),
+        category: tx.category || 'others',
+        description: exportNote,
+        amount: tx.amount,
+        mood: moodMeta[normalizeMood(tx.mood)]?.label || 'Neutral'
+      };
+    });
   };
 
   const escapeCsv = (value) => {
@@ -363,11 +392,28 @@ const Transactions = () => {
                   const categoryKey = (tx.category || 'others').toLowerCase();
                   const categoryLabel = categoryLabelMap[categoryKey] || tx.category || 'Other';
                   const noteText = tx.description && `${tx.description}`.trim() ? tx.description : '.';
+
+                  let displayNote;
+                  if (tx.isEncrypted) {
+                    displayNote = decryptedNotes[tx.id || tx._id] ? (
+                      <div className="encrypted-note-preview">
+                        <FaUnlock className="vault-tiny-icon text-green-500" />
+                        {decryptedNotes[tx.id || tx._id]}
+                      </div>
+                    ) : (
+                      <button onClick={() => handleDecryptClick(tx)} className="unlock-note-btn">
+                        <FaLock className="vault-tiny-icon" /> Locked Note
+                      </button>
+                    );
+                  } else {
+                    displayNote = noteText;
+                  }
+
                   return (
                     <tr key={tx.id || tx._id}>
                       <td>{formatDate(tx.date)}</td>
                       <td>{categoryLabel}</td>
-                      <td className="note">{noteText}</td>
+                      <td className="note">{displayNote}</td>
                       <td className={`amount ${tx.type}`}>{formatCurrency(tx.amount)}</td>
                       <td>
                         <span className="mood-pill" style={{ '--mood-color': mood.color }}>
@@ -391,6 +437,12 @@ const Transactions = () => {
           </>
         )}
       </section>
+
+      {showVaultUnlock && (
+        <VaultUnlock
+          onClose={() => setShowVaultUnlock(false)}
+        />
+      )}
     </div>
   );
 };

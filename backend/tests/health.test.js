@@ -8,6 +8,13 @@ describe('Health Check Endpoint', () => {
         expect(res.body).toHaveProperty('status', 'v1 healthy');
     });
 
+    it('GET /api/v1/health should return 200, healthy status, and CSP headers', async () => {
+        const res = await request(app).get('/api/v1/health');
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('status', 'v1 healthy');
+        expect(res.headers).toHaveProperty('content-security-policy');
+    });
+
     it('GET / should return 200 and running message', async () => {
         const res = await request(app).get('/');
         expect(res.statusCode).toBe(200);
