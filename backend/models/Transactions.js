@@ -54,6 +54,15 @@ nextExecutionDate: {
     type: String,
     enum: ['happy', 'stressed', 'bored', 'sad', 'calm', 'neutral'],
     default: 'neutral'
+  },
+  // Privacy Vault Fields
+  isEncrypted: {
+    type: Boolean,
+    default: false
+  },
+  encryptedData: {
+    type: String, // Stores Base64 encoded JSON of { ciphertext, iv }
+    default: null
   }
 }, { timestamps: true });
 
