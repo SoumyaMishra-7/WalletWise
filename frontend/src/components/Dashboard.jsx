@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { DashboardSkeleton } from './SkeletonLoader';
 import './dashboard.css';
 import AddExpense from '../pages/AddExpense';
@@ -169,6 +170,7 @@ const Dashboard = () => {
     { id: "budget", label: "Budget", icon: FaChartPie, path: "/budget" },
     { id: "simulator", label: "Simulator", icon: FaChartLine, path: "/simulator" },
     { id: "goals", label: "Goals", icon: FaBullseye, path: "/goals" },
+    { id: "wallets", label: "Shared Wallets", icon: FaWallet, path: "/wallets" },
     { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
     { id: "subscriptions", label: "Subscriptions", icon: FaCog, path: "/subscriptions" },
     { id: "settings", label: "Settings", icon: FaCog, path: "/settings" },

@@ -23,6 +23,8 @@ import Profile from './pages/Profile';
 import DecisionHelper from './pages/DecisionHelper';
 import MoodInsight from './pages/MoodInsight';
 import InvestmentSimulator from './pages/InvestmentSimulator';
+import SharedWallets from './pages/SharedWallets';
+import WalletDetails from './pages/WalletDetails';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
 // Import authentication components
@@ -272,6 +274,19 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <InvestmentSimulator />
+                path="/wallets"
+                element={
+                  <ProtectedRoute>
+                    <SharedWallets />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/wallets/:id"
+                element={
+                  <ProtectedRoute>
+                    <WalletDetails />
                   </ProtectedRoute>
                 }
               />

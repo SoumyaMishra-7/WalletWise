@@ -752,24 +752,46 @@ const Homepage = () => {
         </section>
       </main>
 
-      <footer className="ww-footer">
-        <div className="ww-container">
-          <div className="ww-footer-content">
-            <div className="ww-brand-footer">
-              <Wallet size={18} /> WalletWise
-            </div>
-            <div className="ww-footer-links">
-              <a href="#about">About</a>
-              <a href="#features">Features</a>
-              <a href="#testimonials">Stories</a>
-            </div>
-            <div className="ww-copy">
-              <p>Made with ❤️ in India</p>
-              <p className="copy-year">© 2026 WalletWise.</p>
-            </div>
-          </div>
+  <footer className="ww-footer">
+  <div className="ww-container">
+    <div className="ww-footer-grid">
+
+      <div className="ww-footer-brand">
+        <div className="ww-brand-footer">
+          <Wallet size={20} />
+          <span>WalletWise</span>
         </div>
-      </footer>
+        <p className="ww-footer-text">
+          Smart finance tracking made simple. Manage expenses, track goals,
+          and grow financially with confidence.
+        </p>
+      </div>
+
+      <div className="ww-footer-links">
+        <h4>Quick Links</h4>
+        <a href="#about">About</a>
+        <a href="#features">Features</a>
+        <a href="#testimonials">Stories</a>
+        <a href="#contact">Contact</a>
+      </div>
+
+      <div className="ww-footer-social">
+        <h4>Follow Us</h4>
+        <div className="social-icons">
+          <a href="https://github.com/SoumyaMishra-7/WalletWise"><i className="fab fa-github"></i></a>
+          <a href="https://www.linkedin.com/in/soumya-mishra-0828a529a/"><i className="fab fa-linkedin"></i></a>
+          <a href="2400031768@kluniversity.in"><i className="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+
+    </div>
+
+      <div className="ww-footer-bottom">
+        <p>Made with ❤️ in India</p>
+        <p>© 2026 WalletWise. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
     </div>
   );
 };
