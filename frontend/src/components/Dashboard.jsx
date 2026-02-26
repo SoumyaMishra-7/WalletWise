@@ -169,6 +169,7 @@ const Dashboard = () => {
     },
     { id: "budget", label: "Budget", icon: FaChartPie, path: "/budget" },
     { id: "goals", label: "Goals", icon: FaBullseye, path: "/goals" },
+    { id: "wallets", label: "Shared Wallets", icon: FaWallet, path: "/wallets" },
     { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
     { id: "subscriptions", label: "Subscriptions", icon: FaCog, path: "/subscriptions" },
     { id: "settings", label: "Settings", icon: FaCog, path: "/settings" },
