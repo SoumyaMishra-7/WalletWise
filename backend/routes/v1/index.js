@@ -13,6 +13,8 @@ const investmentRoutes = require('../investmentRoutes');
 const walletRoutes = require('../routes/walletRoutes'); // Using the correct path relative to v1/index.js if needed or just ../walletRoutes if it's in routes folder
 const vaultRoutes = require('../vaultRoutes');
 
+const gamificationRoutes = require('../gamificationRoutes');
+
 // Health check inside v1
 router.get('/health', (req, res) => {
     res.json({ status: 'v1 healthy' });
@@ -26,7 +28,7 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/insights', insightsRoutes);
 router.use('/analytics', analyticsRoutes);
-router.use('/investments', investmentRoutes);
+router.use('/gamification', gamificationRoutes);
 router.use('/wallets', walletRoutes);
 router.use('/vault', vaultRoutes);
 

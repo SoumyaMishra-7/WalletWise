@@ -7,6 +7,7 @@ const logTransactionActivity = require("../utils/activityLogger");
 const TransactionActivity = require("../models/TransactionActivity");
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const gamification = require('../utils/gamification');
 const { escapeRegex } = require('../utils/helpers');
 
 // Local development fallback (no MongoDB replica set)
@@ -149,13 +150,27 @@ const addTransaction = catchAsync(async (req, res, next) => {
       action: "CREATED"
     });
 
-    return transaction;
+    // Gamification Hook
+    const gamificationResult = await gamification.recordUserActivity(userId);
+    let badgeAwarded = null;
+    
+    // Check for "First Transaction" badge
+    const count = await Transaction.countDocuments({ userId });
+    if (count === 1) {
+       badgeAwarded = await gamification.awardBadge(userId, 'FIRST_TRANSACTION');
+    }
+
+    return { transaction, gamificationResult, badgeAwarded };
   });
 
   return res.status(201).json({
     success: true,
     message: 'Transaction added successfully',
-    transaction: result
+    transaction: result.transaction,
+    gamification: {
+      activity: result.gamificationResult,
+      badge: result.badgeAwarded
+    }
   });
 });
 

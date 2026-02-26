@@ -1,5 +1,6 @@
 const SavingsGoal = require('../models/SavingGoal');
 const { isValidObjectId } = require('../utils/validation');
+const gamification = require('../utils/gamification');
 
 // Calculate predictive fields helper
 const calculatePredictiveFields = (goal) => {
@@ -93,9 +94,13 @@ const createGoal = async (req, res) => {
 
         await savingsGoal.save();
 
+        // Gamification Hook: Award First Savings Goal badge if applicable
+        const badgeAwarded = await gamification.awardBadge(req.userId, 'SAVINGS_GOAL_STARTED');
+
         res.status(201).json({
             success: true,
             message: 'Savings goal created successfully',
+            gamification: badgeAwarded ? { badge: badgeAwarded.badge } : null,
             goal: {
                 id: savingsGoal._id,
                 name: savingsGoal.name,
