@@ -1,0 +1,15 @@
+e250d2f fix(frontend): stop infinite reload by preventing redirect loop on public routes
+f96f948 fix: resolve frontend to backend API routing mismatch
+771dece fix(frontend): resolve missing imports in Gamification and Dashboard
+5413529 merge: feature/budget-forecasting into main and resolve conflicts
+c4fbe91 chore: resolve merge conflicts and integrate activity logging with forecasting
+1ee5439 feat: implement predictive budget forecasting and smart suggest with documentation
+a05f808 Change label from 'OSCG' to 'OSCG26' in workflow
+41e7756 Merge pull request #303 from Akash972004/fix/enhancement
+3f4fc70 Merge pull request #300 from KhairnarLokesh/search-box
+7e0ff1a Merge pull request #293 from AnkithaMadhyastha/feature/transaction-activity-log
+565c0ac Merge branch 'main' into feature/transaction-activity-log
+f8b802d Merge branch 'main' into fix/enhancement
+0020a29 Forgot password page added
+fd2a3b2 Merge pull request #269 from Akshi-332/add-tooltips-dashboard-icons
+12d93ce Merge branch 'main' into add-tooltips-dashboard-icons

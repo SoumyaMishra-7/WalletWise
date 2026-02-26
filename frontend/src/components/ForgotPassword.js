@@ -58,6 +58,14 @@ const ForgotPassword = () => {
           navigate(`/reset-password?email=${encodeURIComponent(email)}`);
         }, 2000);
       } else {
+        toast.error(data.message || 'Failed to send OTP. Please try again.');
+        
+        // Fallback for mock dev test if needed
+        const devResetLink = data.devResetLink;
+        if (devResetLink) {
+          toast.info('Email service is not configured. Opening development reset link.');
+          window.location.href = devResetLink;
+        }
         // Fallback or secondary check for development links
         if (data.devResetLink) {
           toast.info('Email service is not configured. Opening development reset link.');

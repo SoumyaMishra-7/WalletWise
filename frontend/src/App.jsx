@@ -302,6 +302,8 @@ function App() {
             </Routes>
           </div>
         </Router>
+      </AuthProvider>
+    </ThemeProvider>
                 {/* Redirect unknown routes to homepage */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

@@ -18,7 +18,7 @@ import {
   FaWallet, FaSignOutAlt, FaUserCircle, FaChevronDown,
   FaMoneyBillWave, FaChartLine, FaPiggyBank,
   FaHandHoldingUsd, FaBullseye, FaChartBar, FaExclamationTriangle,
-  FaBrain, FaArrowUp, FaCalendarAlt,
+  FaBrain, FaArrowUp, FaCalendarAlt, FaSun, FaMoon,
   FaSync, FaHome, FaExchangeAlt,
   FaCog, FaChartPie,
   FaMagic, FaTrophy, FaSun, FaMoon
@@ -180,6 +180,7 @@ const Dashboard = () => {
     { id: "wallets", label: "Shared Wallets", icon: FaWallet, path: "/wallets" },
     { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
     { id: "subscriptions", label: "Subscriptions", icon: FaCog, path: "/subscriptions" },
+    { id: "investments", label: "Investments", icon: FaChartLine, path: "/investments" },
     { id: "settings", label: "Settings", icon: FaCog, path: "/settings" },
   ];
 

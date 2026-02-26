@@ -130,6 +130,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  wwcBalance: {
+    type: Number,
+    default: 10000
+  },
   refreshTokenHash: {
     type: String
   },
