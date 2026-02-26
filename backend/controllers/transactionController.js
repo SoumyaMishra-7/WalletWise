@@ -3,6 +3,7 @@ const Transaction = require('../models/Transactions');
 const User = require('../models/User');
 const { z } = require('zod');
 const { isValidObjectId } = require('../utils/validation');
+const jwt = require('jsonwebtoken');
 
 
 const transactionSchema = z.object({
@@ -247,9 +248,23 @@ const updateTransaction = async (req, res) => {
 
         const updateData = parsed.data;
 
+        // Calculate the difference between the old and new balance change
+        const oldAmount = oldTransaction.amount;
+        const oldType = oldTransaction.type;
+        const newAmount = updateData.amount !== undefined ? updateData.amount : oldAmount;
+        const newType = updateData.type !== undefined ? updateData.type : oldType;
+
+        const oldBalanceChange = oldType === 'income' ? oldAmount : -oldAmount;
+        const newBalanceChange = newType === 'income' ? newAmount : -newAmount;
+        const balanceDiff = newBalanceChange - oldBalanceChange;
+
         Object.assign(oldTransaction, updateData);
 
         await oldTransaction.save();
+
+        if (balanceDiff !== 0) {
+            await User.findByIdAndUpdate(userId, { $inc: { walletBalance: balanceDiff } });
+        }
 
         res.json({
             success: true,
@@ -299,10 +314,18 @@ const deleteTransaction = async (req, res) => {
             $inc: { walletBalance: balanceChange }
         });
 
+        // Securely sign the deleted transaction payload to prevent client-sided forgery
+        const undoToken = jwt.sign(
+            { transaction: transaction.toObject() },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '15m' }
+        );
+
         res.json({
             success: true,
             message: 'Transaction deleted successfully',
-            deletedTransaction: transaction
+            deletedTransaction: transaction,
+            undoToken
         });
     } catch (error) {
         console.error('Delete transaction error:', error);
@@ -365,25 +388,41 @@ const skipNextOccurrence = async (req, res) => {
 const undoTransaction = async (req, res) => {
     try {
         const userId = req.userId;
-        const { deletedTransaction } = req.body;
+        const { undoToken } = req.body;
 
-        if (!deletedTransaction) {
+        if (!undoToken) {
             return res.status(400).json({
                 success: false,
-                message: 'No transaction data provided for undo'
+                message: 'No undo token provided for undo'
             });
         }
 
-        // Restore transaction
+        // Verify that the payload hasn't been forged by the client
+        let decoded;
+        try {
+            decoded = jwt.verify(undoToken, process.env.JWT_SECRET || 'secret');
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired undo token'
+            });
+        }
+
+        const deletedTx = decoded.transaction;
+
+        // Prevent Replay Attacks: Make sure we haven't already restored this exact transaction ID
+        const existingTx = await Transaction.findById(deletedTx._id);
+        if (existingTx) {
+            return res.status(400).json({
+                success: false,
+                message: 'Transaction already restored. Cannot duplicate undo.'
+            });
+        }
+
+        // Restore transaction with exact previous attributes including _id
         const restored = new Transaction({
-            userId,
-            type: deletedTransaction.type,
-            amount: deletedTransaction.amount,
-            category: deletedTransaction.category,
-            description: deletedTransaction.description,
-            paymentMethod: deletedTransaction.paymentMethod,
-            mood: deletedTransaction.mood,
-            date: deletedTransaction.date || new Date()
+            ...deletedTx,
+            _id: deletedTx._id
         });
 
         await restored.save();
