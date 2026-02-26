@@ -27,6 +27,11 @@ import {
 } from 'react-icons/fa';
 import { Line, Pie } from 'react-chartjs-2';
 import { toast } from 'react-hot-toast';
+import { handleGamificationReward } from '../utils/RewardCelebration';
+import { calculateLevel } from '../utils/gamificationConstants';
+import { FaFire, FaStar, FaSun, FaMoon } from 'react-icons/fa';
+import { useTheme } from '../context/ThemeContext';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -81,7 +86,7 @@ const Dashboard = () => {
   const mobileMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user: authUser, loading: authLoading, logout } = useAuth();
+  const { user: authUser, loading: authLoading, logout, reloadUser } = useAuth();
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -318,6 +323,10 @@ const Dashboard = () => {
       if (response.data.success) {
         setShowAddExpenseModal(false);
         await fetchDashboardData(true);
+        if (response.data.gamification) {
+          handleGamificationReward(response.data.gamification);
+          if (reloadUser) await reloadUser();
+        }
         toast.success('Expenses added successfully.', {
           style: {
             background: "#16a34a",
@@ -346,6 +355,10 @@ const Dashboard = () => {
       if (response.data.success) {
         setShowAddIncomeModal(false);
         await fetchDashboardData(true);
+        if (response.data.gamification) {
+          handleGamificationReward(response.data.gamification);
+          if (reloadUser) await reloadUser();
+        }
         toast.success('Income Added Successfully.', {
           style: {
             background: "#16a34a",
@@ -593,6 +606,8 @@ const Dashboard = () => {
     });
   };
 
+  const currentLevelInfo = calculateLevel(user?.totalXP || 0);
+
   // ============ RENDERING ============
   if (loading) {
     return <DashboardSkeleton />;
@@ -678,8 +693,18 @@ const Dashboard = () => {
           </ul>
         </nav>
 
-        {/* Right: User Profile */}
+        {/* Right: User Profile & Gamification */}
         <div className="nav-right" ref={userMenuRef}>
+          <div className="gamification-stats" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginRight: '15px', color: 'var(--text-secondary)' }}>
+            <div className="gamification-streak" title="Transaction Streak" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <FaFire color="#f97316" />
+              <span style={{ fontWeight: 600 }}>{user?.currentStreak || 0}</span>
+            </div>
+            <div className="gamification-level" title={`Level ${currentLevelInfo.level}: ${currentLevelInfo.title}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <FaStar color="#eab308" />
+              <span style={{ fontWeight: 600 }}>Lvl {currentLevelInfo.level}</span>
+            </div>
+          </div>
           {/*
           <button
             className="theme-toggle"

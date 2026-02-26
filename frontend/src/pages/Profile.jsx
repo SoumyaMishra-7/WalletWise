@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import AppNavbar from '../components/AppNavbar';
+import BadgeGallery from '../components/Gamification/BadgeGallery';
 
 import './Settings.css';
 import { FaUserCircle, FaArrowLeft, FaCamera, FaCheck, FaExclamationTriangle, FaTimes, FaBell } from 'react-icons/fa';
@@ -384,6 +385,8 @@ const Profile = () => {
                         </div>
                     </section>
                 </form>
+
+                <BadgeGallery />
 
                 <div className="settings-footer">
                     <div className="footer-content">

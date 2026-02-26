@@ -43,7 +43,11 @@ export const AuthProvider = ({ children }) => {
     const handleForceLogout = async () => {
       await api.post('/auth/logout', {}).catch(() => { });
       setUser(null);
-      window.location.href = '/login';
+
+      const publicPaths = ['/login', '/signup', '/forgot-password', '/forgot-password/verify', '/forgot-password/reset', '/verify-email', '/'];
+      if (!publicPaths.includes(window.location.pathname)) {
+        window.location.href = '/login';
+      }
     };
     window.addEventListener('auth:logout', handleForceLogout);
     return () => window.removeEventListener('auth:logout', handleForceLogout);
@@ -78,6 +82,10 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUserLocally = useCallback((updates) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -89,7 +97,8 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         logout,
         refreshSession,
-        reloadUser: loadUser
+        reloadUser: loadUser,
+        updateUserLocally
       }}
     >
       {children}

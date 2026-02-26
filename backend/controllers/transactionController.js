@@ -5,6 +5,7 @@ const { z } = require('zod');
 const { isValidObjectId } = require('../utils/validation');
 const logTransactionActivity = require("../utils/activityLogger");
 const TransactionActivity = require("../models/TransactionActivity");
+const { processEvent } = require("../utils/gamificationEngine");
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const gamification = require('../utils/gamification');
