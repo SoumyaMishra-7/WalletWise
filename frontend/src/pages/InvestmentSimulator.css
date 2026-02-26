@@ -1,0 +1,259 @@
+.simulator-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.simulator-topbar {
+  margin-bottom: 2rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #8b5cf6;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.simulator-topbar h1 {
+  font-size: 2rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.simulator-topbar p {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.simulator-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+.card h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+}
+
+.balances {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.balance-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.balance-item .label {
+  font-size: 0.875rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.balance-item .value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.holdings-table th, .holdings-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.holdings-table th {
+  font-weight: 600;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.positive {
+  color: #10b981;
+}
+
+.negative {
+  color: #ef4444;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-sell {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.btn-sell:hover {
+  background-color: #fca5a5;
+}
+
+.btn-buy {
+  background-color: #d1fae5;
+  color: #059669;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-buy:hover {
+  background-color: #a7f3d0;
+}
+
+.terms-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.term-chip {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: help;
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1e293b;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  width: 200px;
+  text-align: center;
+  z-index: 10;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #f1f5f9;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  outline: none;
+  font-size: 1rem;
+}
+
+.stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stock-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.stock-card:hover {
+  border-color: #94a3b8;
+}
+
+.stock-info h3 {
+  font-size: 1.125rem;
+  color: #0f172a;
+  margin: 0;
+}
+
+.stock-info span {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.stock-price {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.stock-price .price {
+  font-size: 1.125rem;
+  color: #1e293b;
+}
+
+.stock-price .change {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .simulator-grid {
+    grid-template-columns: 1fr;
+  }
+}

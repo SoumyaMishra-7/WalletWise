@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useVault } from '../context/VaultContext';
+import { encryptNote } from '../services/encryption';
+import VaultSetup from '../components/Vault/VaultSetup';
+import VaultUnlock from '../components/Vault/VaultUnlock';
+import { Lock, Unlock } from 'lucide-react';
 import './AddExpense.css'; // Reusing the clean CSS
 
-const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
+import api from '../api/client';
+
+const AddIncome = ({ isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     amount: '',
     category: 'pocket_money',
@@ -11,6 +18,12 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
     sourceNature: 'earned' // New behavioral component
   });
   const [loading, setLoading] = useState(false);
+
+  // Vault States
+  const { isVaultEnabled, isUnlocked, cryptoKey } = useVault();
+  const [isEncrypted, setIsEncrypted] = useState(false);
+  const [showVaultSetup, setShowVaultSetup] = useState(false);
+  const [showVaultUnlock, setShowVaultUnlock] = useState(false);
 
   const { user } = useAuth();
   const currencySymbol = user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$'));
@@ -44,12 +57,36 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
       type: 'income',
       amount: Number(formData.amount),
       category: formData.category,
-      description: formData.description || '',
       date: formData.date,
       sourceNature: formData.sourceNature // Behavioral context
     };
 
     setLoading(true);
+
+    if (isEncrypted) {
+      if (!isUnlocked || !cryptoKey) {
+        setLoading(false);
+        setShowVaultUnlock(true);
+        return;
+      }
+      try {
+        const cipherBlob = await encryptNote(formData.description || '', cryptoKey);
+        transactionData.isEncrypted = true;
+        transactionData.encryptedData = cipherBlob;
+        transactionData.description = ''; // never send plaintext
+        finalizeSubmit(transactionData);
+      } catch (err) {
+        setLoading(false);
+        alert("Encryption failed.");
+      }
+    } else {
+      transactionData.isEncrypted = false;
+      transactionData.description = formData.description || '';
+      finalizeSubmit(transactionData);
+    }
+  };
+
+  const finalizeSubmit = async (transactionData) => {
     try {
       await onAddIncome(transactionData);
       onClose();
@@ -59,10 +96,12 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
         category: 'pocket_money',
         date: new Date().toISOString().split('T')[0],
         description: '',
+        description: '',
         sourceNature: 'earned'
       });
+      setIsEncrypted(false);
     } catch (err) {
-      console.error('Error adding income:', err);
+      // Interceptor handles the toast
     } finally {
       setLoading(false);
     }
@@ -160,13 +199,35 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
 
           {/* Description */}
           <div className="expense-form-group">
-            <label htmlFor="description">Notes (Optional)</label>
+            <div className="vault-toggle-header">
+              <label htmlFor="description">Notes (Optional)</label>
+
+              {isVaultEnabled ? (
+                <button
+                  type="button"
+                  onClick={() => setIsEncrypted(!isEncrypted)}
+                  className={`vault-toggle-btn ${isEncrypted ? 'encrypted-active' : ''}`}
+                >
+                  {isEncrypted ? <Lock size={14} /> : <Unlock size={14} />}
+                  {isEncrypted ? 'Encrypted' : 'Encrypt Note'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowVaultSetup(true)}
+                  className="vault-setup-prompt-btn"
+                >
+                  <Lock size={14} /> Enable Privacy Vault
+                </button>
+              )}
+            </div>
             <textarea
               id="description"
               name="description"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Source details or upcoming plans for this money..."
+              placeholder={isEncrypted ? "This note will be encrypted on your device." : "Source details or upcoming plans for this money..."}
+              className={isEncrypted ? "encrypted-textarea-bg" : ""}
               rows="2"
               disabled={loading}
             />
@@ -188,6 +249,19 @@ const AddIncome = ({ isOpen, onClose, onAddIncome }) => {
           </div>
         </form>
       </div>
+
+      {showVaultSetup && (
+        <VaultSetup
+          onClose={() => setShowVaultSetup(false)}
+          onSuccess={() => setIsEncrypted(true)}
+        />
+      )}
+
+      {showVaultUnlock && (
+        <VaultUnlock
+          onClose={() => setShowVaultUnlock(false)}
+        />
+      )}
     </div>
   );
 };

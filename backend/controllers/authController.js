@@ -104,7 +104,11 @@ const safeUser = (user) => ({
   incomeSources: user.incomeSources,
   priorities: user.priorities,
   riskTolerance: user.riskTolerance,
-  theme: user.theme || 'light'
+  theme: user.theme || 'light',
+  totalXP: user.totalXP || 0,
+  currentStreak: user.currentStreak || 0,
+  highestStreak: user.highestStreak || 0,
+  unlockedBadges: user.unlockedBadges || []
 });
 
 const sendVerificationOtp = async (user) => {
@@ -209,7 +213,7 @@ const register = asyncHandler(async (req, res) => {
     phoneNumber,
     department,
     year,
-    emailVerified: true   // skip verification for local testing
+    emailVerified: true // ✅ Skip email verification for local testing
   });
 
   await user.setPassword(password);
@@ -217,29 +221,6 @@ const register = asyncHandler(async (req, res) => {
 
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
-
-  user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-  await user.save();
-
-  setAuthCookies(res, accessToken, refreshToken);
-
-    year
-  });
-
-  await user.setPassword(password);
-
-  await User.saveWithUniqueStudentId(user);
-
-  // Skip email verification for local testing
-  user.emailVerified = true;
-  await user.save();
-
-  const accessToken = signAccessToken(user);
-  const refreshToken = signRefreshToken(user);
-
-
-
-
   user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
   await user.save();
 
@@ -252,6 +233,7 @@ const register = asyncHandler(async (req, res) => {
     user: safeUser(user)
   });
 });
+
 const login = asyncHandler(async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -299,11 +281,10 @@ const login = asyncHandler(async (req, res) => {
   return res.json({
     success: true,
     message: 'Login successful',
+    token: accessToken,
     user: safeUser(user)
   });
 });
-
-   
 
 const logout = asyncHandler(async (req, res) => {
   clearAuthCookies(res);

@@ -7,6 +7,10 @@ import Pagination from '../components/Pagination';
 import EmptyState from '../components/EmptyState';
 import { ShoppingBag, SearchX } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useVault } from '../context/VaultContext';
+import { decryptNote } from '../services/encryption';
+import VaultUnlock from '../components/Vault/VaultUnlock';
+import { FaLock, FaUnlock } from 'react-icons/fa';
 import './Transactions.css';
 
 const categoryLabelMap = {
@@ -57,7 +61,24 @@ const Transactions = () => {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+
+  // Vault Mechanics
+  const { isVaultEnabled, isUnlocked, cryptoKey } = useVault();
+  const [showVaultUnlock, setShowVaultUnlock] = useState(false);
+  const [decryptedNotes, setDecryptedNotes] = useState({});
+
+  const handleDecryptClick = async (tx) => {
+    if (!isUnlocked || !cryptoKey) {
+      setShowVaultUnlock(true);
+      return;
+    }
+    try {
+      const plainText = await decryptNote(tx.encryptedData, cryptoKey);
+      setDecryptedNotes(prev => ({ ...prev, [tx._id || tx.id]: plainText }));
+    } catch (err) {
+      setError("Decryption failed. Invalid vault session.");
+    }
+  };
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,27 +132,16 @@ const Transactions = () => {
 
       console.log('Fetching with params:', params);
 
-      const response = await api.get('/api/transactions', { params, signal });
+      const response = await api.get('/transactions', { params, signal });
 
       if (response.data?.success) {
         setTransactions(response.data.transactions || []);
         if (response.data.pagination) {
           setTotalPages(response.data.pagination.pages);
         }
-      } else {
-        setError('Failed to load transactions.');
       }
     } catch (err) {
-      if (err.name === 'CanceledError' || err.name === 'AbortError') {
-        console.log('Request aborted');
-        return; // Early return to avoid updating state
-      }
-      console.error('Transactions fetch error:', err);
-      if (err.response?.status === 401) {
-        navigate('/login');
-      } else {
-        setError('Could not connect to server.');
-      }
+      if (err.name === 'CanceledError' || err.name === 'AbortError') return;
       setTransactions([]);
     } finally {
       setLoading(false);
@@ -168,13 +178,20 @@ const Transactions = () => {
 
 
   const buildExportRows = () => {
-    return transactions.map((tx) => ({
-      date: formatDate(tx.date),
-      category: tx.category || 'others',
-      description: tx.description || '.',
-      amount: tx.amount,
-      mood: moodMeta[normalizeMood(tx.mood)]?.label || 'Neutral'
-    }));
+    return transactions.map((tx) => {
+      let exportNote = tx.description || '.';
+      if (tx.isEncrypted) {
+        exportNote = decryptedNotes[tx.id || tx._id] || '[LOCKED NOTE]';
+      }
+
+      return {
+        date: formatDate(tx.date),
+        category: tx.category || 'others',
+        description: exportNote,
+        amount: tx.amount,
+        mood: moodMeta[normalizeMood(tx.mood)]?.label || 'Neutral'
+      };
+    });
   };
 
   const escapeCsv = (value) => {
@@ -211,6 +228,20 @@ const Transactions = () => {
     downloadFile(content, `transactions_export.${ext}`, 'text/plain;charset=utf-8;');
   };
 
+  const handleSkip = async (id) => {
+    if (!window.confirm('Are you sure you want to skip the next occurrence of this recurring transaction?')) return;
+    try {
+      const response = await api.post(`/api/transactions/${id}/skip`);
+      if (response.data?.success) {
+        alert('Next occurrence skipped successfully!');
+        fetchTransactions();
+      }
+    } catch (err) {
+      console.error('Failed to skip transaction:', err);
+      alert(err.response?.data?.message || 'Failed to skip transaction. Please try again.');
+    }
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
@@ -222,19 +253,6 @@ const Transactions = () => {
     return (
       <div className="transactions-page">
         <div className="page-loading">Loading transactions...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="transactions-page">
-        <div className="page-error">
-          <p>{error}</p>
-          <button className="primary-button" onClick={() => window.location.reload()}>
-            Try Again
-          </button>
-        </div>
       </div>
     );
   }
@@ -354,6 +372,7 @@ const Transactions = () => {
                   <th>Note</th>
                   <th>Amount</th>
                   <th>Mood</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -363,11 +382,28 @@ const Transactions = () => {
                   const categoryKey = (tx.category || 'others').toLowerCase();
                   const categoryLabel = categoryLabelMap[categoryKey] || tx.category || 'Other';
                   const noteText = tx.description && `${tx.description}`.trim() ? tx.description : '.';
+
+                  let displayNote;
+                  if (tx.isEncrypted) {
+                    displayNote = decryptedNotes[tx.id || tx._id] ? (
+                      <div className="encrypted-note-preview">
+                        <FaUnlock className="vault-tiny-icon text-green-500" />
+                        {decryptedNotes[tx.id || tx._id]}
+                      </div>
+                    ) : (
+                      <button onClick={() => handleDecryptClick(tx)} className="unlock-note-btn">
+                        <FaLock className="vault-tiny-icon" /> Locked Note
+                      </button>
+                    );
+                  } else {
+                    displayNote = noteText;
+                  }
+
                   return (
                     <tr key={tx.id || tx._id}>
                       <td>{formatDate(tx.date)}</td>
                       <td>{categoryLabel}</td>
-                      <td className="note">{noteText}</td>
+                      <td className="note">{displayNote}</td>
                       <td className={`amount ${tx.type}`}>{formatCurrency(tx.amount)}</td>
                       <td>
                         <span className="mood-pill" style={{ '--mood-color': mood.color }}>
@@ -376,6 +412,18 @@ const Transactions = () => {
                           </span>
                           {mood.label}
                         </span>
+                      </td>
+                      <td>
+                        {tx.isRecurring && (
+                          <button 
+                            className="ghost-button skip-button"
+                            onClick={() => handleSkip(tx._id || tx.id)}
+                            title="Skip Next Occurrence"
+                            style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                          >
+                            Skip Next
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
@@ -391,6 +439,12 @@ const Transactions = () => {
           </>
         )}
       </section>
+
+      {showVaultUnlock && (
+        <VaultUnlock
+          onClose={() => setShowVaultUnlock(false)}
+        />
+      )}
     </div>
   );
 };

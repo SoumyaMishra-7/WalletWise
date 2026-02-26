@@ -26,11 +26,12 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            scriptSrc: ["'self'", "https://unpkg.com"],
+            styleSrc: ["'self'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://i.pravatar.cc"],
-            connectSrc: ["'self'", "http://localhost:5000", "https://api.walletwise.com"],
+            imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://i.pravatar.cc", "https://www.google.com"],
+            connectSrc: ["'self'", "http://localhost:5000", "https://api.walletwise.com", "https://tessdata.projectnaptha.com", "https://unpkg.com"],
+            workerSrc: ["'self'", "blob:"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: [],
         },
@@ -119,6 +120,7 @@ app.use(globalLimiter);
 
 // 4. Apply stricter rate limiter to auth routes
 app.use('/api/v1/auth', authLimiter);
+app.use('/api/auth', authLimiter);
 
 
 // ==================== DATABASE CONNECTION ====================
@@ -154,6 +156,7 @@ const errHandler = require('./middleware/errorHandler');
 
 // ==================== ROUTE MOUNTING ====================
 app.use('/api/v1', v1Routes);
+app.use('/api', v1Routes); // Alias for frontend compatibility
 
 // Optional: Keep legacy /api paths for transition or redirect them
 // For now, let's keep the OAuth at /auth as it might be used by external providers

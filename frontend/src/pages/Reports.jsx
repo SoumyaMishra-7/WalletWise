@@ -34,7 +34,6 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState('month');
   const panelsRef = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [reportData, setReportData] = useState({
     monthTotal: 0,
     monthlyBudget: 0,
@@ -57,11 +56,10 @@ const Reports = () => {
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
-    setError('');
     try {
       const [txRes, budgetRes] = await Promise.all([
-        api.get('/api/transactions'),
-        api.get('/api/budget/stats/summary')
+        api.get('/transactions'),
+        api.get('/budget/stats/summary')
       ]);
 
       const transactions = txRes.data?.transactions || [];
@@ -230,8 +228,7 @@ const Reports = () => {
         transactions: monthExpenses
       });
     } catch (err) {
-      console.error('Reports fetch error:', err);
-      setError('Failed to load reports. Please try again.');
+      // Interceptor handles the toast
     } finally {
       setLoading(false);
     }
@@ -417,11 +414,9 @@ const Reports = () => {
     if (next && next !== activeTab) setActiveTab(next);
   };
 
-  const headerNote = error
-    ? error
-    : loading
-      ? 'Loading latest insights...'
-      : 'Quick, student-friendly views of where your money went.';
+  const headerNote = loading
+    ? 'Loading latest insights...'
+    : 'Quick, student-friendly views of where your money went.';
 
   const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
 
@@ -543,9 +538,9 @@ const Reports = () => {
         </div>
       </div>
 
-      {(loading || error) && (
-        <div className={`reports-status ${error ? 'error' : 'loading'}`}>
-          {error || 'Loading latest insights...'}
+      {loading && (
+        <div className="reports-status loading">
+          Loading latest insights...
         </div>
       )}
 

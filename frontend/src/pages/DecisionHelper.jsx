@@ -38,7 +38,7 @@ const DecisionHelper = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await api.post('/api/insights/evaluate', formData);
+            const response = await api.post('/insights/evaluate', formData);
             if (response.data.success) {
                 setResult(response.data.evaluation);
             }

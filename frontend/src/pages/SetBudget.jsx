@@ -199,33 +199,70 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     };
 
     try {
-      const response = await api.post('/api/budget', budgetData);
+      const response = await api.post('/budget', budgetData);
 
       if (response.data.success) {
         toast.success(response.data.notification?.message || 'Budget set succesfully.', {
-          style: {
-            background: '#16a34a',
-            color: '#ffffff'
-          },
-          iconTheme: {
-            primary: '#bbf7d0',
-            secondary: '#166534'
-          }
+          style: { background: '#16a34a', color: '#ffffff' },
+          iconTheme: { primary: '#bbf7d0', secondary: '#166534' }
         });
-
-        // Call parent callback
-        if (onSetBudget) {
-          onSetBudget(response.data.budget);
-        }
-
-        // Close modal
+        if (onSetBudget) onSetBudget(response.data.budget);
         onClose();
-      } else {
-        throw new Error(response.data.message || 'Failed to set budget');
       }
     } catch (err) {
-      console.error('Budget set error:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to set budget. Please try again.');
+      // Interceptor handles the toast
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSmartSuggest = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { data } = await api.get('/analytics/forecast');
+      if (data && data.forecasts) {
+        const totalBudget = data.overallSuggestion || 0;
+
+        const updatedCategories = formData.categories.map(cat => {
+          const forecast = data.forecasts.find(f => f.category === cat.categoryType || f.category === cat.name);
+          if (forecast) {
+            const amount = forecast.predictedNextMonth;
+            const percentage = totalBudget > 0 ? Math.round((amount / totalBudget) * 100) : 0;
+            return {
+              ...cat,
+              amount,
+              percentage,
+              amountStr: amount.toString()
+            };
+          }
+          return cat;
+        });
+
+        // Ensure total percentage is 100
+        const currentTotalPerc = updatedCategories.reduce((sum, c) => sum + c.percentage, 0);
+        if (currentTotalPerc !== 100 && updatedCategories.length > 0) {
+          const diff = 100 - currentTotalPerc;
+          updatedCategories[0].percentage += diff;
+          updatedCategories[0].amount = Math.round((updatedCategories[0].percentage / 100) * totalBudget);
+          updatedCategories[0].amountStr = updatedCategories[0].amount.toString();
+        }
+
+        setFormData({
+          totalBudget: totalBudget.toString(),
+          categories: updatedCategories
+        });
+
+        toast.success('Generated smart budget based on your spending history!', {
+          icon: '🤖',
+          style: { background: '#118AB2', color: '#fff' }
+        });
+      } else {
+        toast.error('Not enough data to generate a forecast. Try manually setting for now.');
+      }
+    } catch (err) {
+      console.error('Forecast error:', err);
+      toast.error('Failed to generate smart suggestion.');
     } finally {
       setLoading(false);
     }
@@ -311,6 +348,15 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                 disabled={loading}
               >
                 Copy Last Month
+              </button>
+              <button
+                type="button"
+                className="smart-suggest-btn"
+                onClick={handleSmartSuggest}
+                disabled={loading}
+                title="AI-powered budget suggestion based on your history"
+              >
+                ✨ Smart Suggest
               </button>
             </div>
             <div className="quick-allocation-buttons">

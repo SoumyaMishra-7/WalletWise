@@ -88,7 +88,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
       console.log('Sending request to backend...');
 
       // ADD TIMEOUT to prevent hanging indefinitely
-      const response = await api.post('/api/savings-goals', goalData, {
+      const response = await api.post('/savings-goals', goalData, {
         timeout: 15000
       });
 
@@ -111,51 +111,9 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
         resetForm();
         if (onClose) onClose();
       }, 1500);
-
     } catch (err) {
-      console.error('Error creating goal:', err);
-      console.error('Error details:', {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        code: err.code
-      });
-
-      // Handle different types of errors
-      let errorMessage = 'Failed to create goal. Please try again.';
-
-      if (err.response) {
-        // Server responded with error
-        if (err.response.status === 401) {
-          errorMessage = 'Session expired. Please login again.';
-          // Redirect to login after delay
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 2000);
-        } else if (err.response.status === 400) {
-          errorMessage = err.response.data.message || 'Invalid data. Please check your inputs.';
-        } else if (err.response.status === 404) {
-          errorMessage = 'API endpoint not found. Please check backend server.';
-        } else if (err.response.status === 500) {
-          errorMessage = 'Server error. Please try again later.';
-        } else if (err.response.data && err.response.data.errors) {
-          // Mongoose validation errors
-          const errors = err.response.data.errors;
-          errorMessage = Object.values(errors).map(e => e.message).join(', ');
-        } else if (err.response.data && err.response.data.message) {
-          errorMessage = err.response.data.message;
-        }
-      } else if (err.request) {
-        // Request made but no response
-        errorMessage = 'No response from server. Please check: 1) Backend is running, 2) CORS is configured, 3) Network connection';
-        console.log('No response received. Check if backend server is running at http://localhost:5000');
-      } else if (err.code === 'ECONNABORTED') {
-        errorMessage = 'Request timeout. Server might be busy or offline.';
-      } else if (err.code === 'ERR_NETWORK') {
-        errorMessage = 'Network error. Check your internet connection and ensure backend is running.';
-      }
-
-      setError(errorMessage);
+      // Interceptor handles the toast
+    } finally {
       setLoading(false);
     }
   };
@@ -222,17 +180,17 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             disabled={loading}
             aria-label="Close"
           >
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 16 16" 
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path 
-                d="M1 1L15 15M15 1L1 15" 
-                stroke="white" 
-                strokeWidth="2.5" 
+              <path
+                d="M1 1L15 15M15 1L1 15"
+                stroke="white"
+                strokeWidth="2.5"
                 strokeLinecap="round"
               />
             </svg>

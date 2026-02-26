@@ -15,16 +15,14 @@ const MOOD_EMOJIS = {
 const MoodInsight = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await api.get('/api/insights/mood-correlation');
+      const res = await api.get('/insights/mood-correlation');
       setData(res.data.moodCorrelation);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to load data');
+      // Interceptor handles the toast
     } finally {
       setLoading(false);
     }
@@ -45,11 +43,11 @@ const MoodInsight = () => {
     );
   }
 
-  if (error) {
+  if (!data) {
     return (
       <div className="mood-insight-page">
         <div className="mood-error">
-          <p>⚠️ {error}</p>
+          <p>⚠️ Failed to load insights data.</p>
           <button onClick={fetchData}>Retry</button>
         </div>
       </div>
