@@ -1,5 +1,6 @@
 const Transaction = require('../models/Transactions');
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 
 // Add Transaction
 const addTransaction = async (req, res) => {
@@ -139,20 +140,15 @@ const updateTransaction = async (req, res) => {
 
         let balanceChange = 0;
 
-        if (oldTransaction.type === 'income') {
-            balanceChange -= oldTransaction.amount;
-        } else {
-            balanceChange += oldTransaction.amount;
-        }
+        // Calculate the difference between the old and new balance change
+        const oldAmount = oldTransaction.amount;
+        const oldType = oldTransaction.type;
+        const newAmount = amount !== undefined ? Number(amount) : oldAmount;
+        const newType = type || oldType;
 
-        const newType = type || oldTransaction.type;
-        const newAmount = amount !== undefined ? Number(amount) : oldTransaction.amount;
-
-        if (newType === 'income') {
-            balanceChange += newAmount;
-        } else {
-            balanceChange -= newAmount;
-        }
+        const oldBalanceChange = oldType === 'income' ? oldAmount : -oldAmount;
+        const newBalanceChange = newType === 'income' ? newAmount : -newAmount;
+        balanceChange = newBalanceChange - oldBalanceChange;
 
         oldTransaction.type = newType;
         oldTransaction.amount = newAmount;
@@ -213,9 +209,18 @@ const deleteTransaction = async (req, res) => {
             $inc: { walletBalance: balanceChange }
         });
 
+        // Securely sign the deleted transaction payload to prevent client-sided forgery
+        const undoToken = jwt.sign(
+            { transaction: transaction.toObject() },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '15m' }
+        );
+
         res.json({
             success: true,
-            message: 'Transaction deleted successfully'
+            message: 'Transaction deleted successfully',
+            deletedTransaction: transaction,
+            undoToken
         });
 
     } catch (error) {
@@ -227,9 +232,78 @@ const deleteTransaction = async (req, res) => {
     }
 };
 
+// Undo transaction
+const undoTransaction = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { undoToken } = req.body;
+
+        if (!undoToken) {
+            return res.status(400).json({
+                success: false,
+                message: 'No undo token provided for undo'
+            });
+        }
+
+        // Verify that the payload hasn't been forged by the client
+        let decoded;
+        try {
+            decoded = jwt.verify(undoToken, process.env.JWT_SECRET || 'secret');
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired undo token'
+            });
+        }
+
+        const deletedTx = decoded.transaction;
+
+        // Prevent Replay Attacks: Make sure we haven't already restored this exact transaction ID
+        const existingTx = await Transaction.findById(deletedTx._id);
+        if (existingTx) {
+            return res.status(400).json({
+                success: false,
+                message: 'Transaction already restored. Cannot duplicate undo.'
+            });
+        }
+
+        // Restore transaction with exact previous attributes including _id
+        const restored = new Transaction({
+            ...deletedTx,
+            _id: deletedTx._id
+        });
+
+        await restored.save();
+
+        // Restore wallet balance
+        const balanceChange =
+            restored.type === 'income'
+                ? restored.amount
+                : -restored.amount;
+
+        await User.findByIdAndUpdate(userId, {
+            $inc: { walletBalance: balanceChange }
+        });
+
+        res.json({
+            success: true,
+            message: 'Transaction restored successfully',
+            transaction: restored
+        });
+
+    } catch (error) {
+        console.error('Undo transaction error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     addTransaction,
     getAllTransactions,
     updateTransaction,
-    deleteTransaction
+    deleteTransaction,
+    undoTransaction
 };
