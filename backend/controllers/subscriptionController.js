@@ -2,6 +2,7 @@
 const Subscription = require('../models/Subscription');
 const Transaction = require('../models/Transactions');
 const { isValidObjectId } = require('../utils/validation');
+const { escapeRegex } = require('../utils/helpers');
 
 // Get all active subscriptions
 const getSubscriptions = async (req, res) => {
@@ -77,11 +78,6 @@ const detectSubscriptions = async (req, res) => {
             date: { $gte: threeMonthsAgo }
         }).sort({ date: 1 });
 
-        // Helper to escape regex
-        const escapeRegExp = (string) => {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        };
-
         // 1. Fetch ALL active subscriptions for this user (Batch Query - Fixes N+1)
         const existingSubscriptions = await Subscription.find({
             userId,
@@ -134,7 +130,7 @@ const detectSubscriptions = async (req, res) => {
 
                 // 2. In-Memory Check (Fixes Unsafe Regex + N+1)
                 // Sanitize key before creating regex
-                const safeKey = escapeRegExp(key);
+                const safeKey = escapeRegex(key);
                 const regex = new RegExp(safeKey, 'i');
 
                 const exists = existingSubscriptions.some(sub => regex.test(sub.name));

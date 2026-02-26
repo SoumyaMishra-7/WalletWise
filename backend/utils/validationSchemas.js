@@ -120,6 +120,7 @@ const userUpdateSchema = z.object({
   currency: z.string().optional(),
   dateFormat: z.string().optional(),
   language: z.string().optional(),
+  theme: z.enum(['light', 'dark']).optional(),
   // Financial Settings
   incomeFrequency: z.string().optional(),
   incomeSources: z.string().optional(),

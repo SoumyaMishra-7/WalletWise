@@ -22,6 +22,7 @@ import {
   FaSync, FaHome, FaExchangeAlt,
   FaCog, FaChartPie,
   FaMagic, FaTrophy, FaSun, FaMoon
+  FaMagic, FaSun, FaMoon
   FaMagic, FaTrophy, FaSun, FaMoon, FaLock, FaUnlock
 } from 'react-icons/fa';
 import { Line, Pie } from 'react-chartjs-2';
@@ -170,6 +171,7 @@ const Dashboard = () => {
     { id: "budget", label: "Budget", icon: FaChartPie, path: "/budget" },
     { id: "goals", label: "Goals", icon: FaBullseye, path: "/goals" },
     { id: "gamification", label: "Rewards", icon: FaTrophy, path: "/gamification" },
+    { id: "wallets", label: "Shared Wallets", icon: FaWallet, path: "/wallets" },
     { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
     { id: "subscriptions", label: "Subscriptions", icon: FaCog, path: "/subscriptions" },
     { id: "settings", label: "Settings", icon: FaCog, path: "/settings" },

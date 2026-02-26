@@ -20,7 +20,7 @@ router.get('/', protect, transactionController.getAllTransactions);
 router.post('/:id/undo', protect, transactionController.undoTransaction);
 
 // Skip next occurrence
-router.post('/:id/skip', protect, transactionController.skipNextOccurrence);
+router.patch('/recurring/:id/skip', protect, transactionController.skipNextOccurrence);
 
 // Update transaction
 router.put('/:id', protect, transactionController.updateTransaction);
