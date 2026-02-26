@@ -19,22 +19,13 @@ import Reports from './pages/Reports';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
-import DecisionHelper from './pages/DecisionHelper';
-import MoodInsight from './pages/MoodInsight';
-import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
 // Import authentication components
 import Login from './components/Login';
 import Signup from './components/Signup';
 import VerifyEmail from './components/VerifyEmail';
-import ForgotPassword from './components/ForgotPassword';
-import VerifyResetOtp from './components/VerifyResetOtp';
-import ResetPassword from './components/ResetPassword';
-
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
-
-
 
 function App() {
   return (
@@ -67,7 +58,6 @@ function App() {
                 },
               }}
             />
-            <ScrollToTop />
 
             <Routes>
               {/* Public Routes */}
@@ -92,33 +82,6 @@ function App() {
               />
 
               <Route
-                path="/forgot-password"
-                element={
-                  <PublicRoute>
-                    <ForgotPassword />
-                  </PublicRoute>
-                }
-              />
-
-              <Route
-                path="/forgot-password/verify"
-                element={
-                  <PublicRoute>
-                    <VerifyResetOtp />
-                  </PublicRoute>
-                }
-              />
-
-              <Route
-                path="/forgot-password/reset"
-                element={
-                  <PublicRoute>
-                    <ResetPassword />
-                  </PublicRoute>
-                }
-              />
-
-              <Route
                 path="/verify-email"
                 element={
                   <PublicRoute>
@@ -126,15 +89,6 @@ function App() {
                   </PublicRoute>
                 }
               />
-              <Route
-                path="/forgot-password"
-                element={
-                  <PublicRoute>
-                    <ForgotPassword />
-                  </PublicRoute>
-                }
-              />
-
 
               {/* Protected Routes - Only accessible when logged in */}
               <Route
@@ -242,24 +196,6 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Profile />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/decision-helper"
-                element={
-                  <ProtectedRoute>
-                    <DecisionHelper />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/mood-insight"
-                element={
-                  <ProtectedRoute>
-                    <MoodInsight />
                   </ProtectedRoute>
                 }
               />

@@ -1,5 +1,4 @@
 const SavingsGoal = require('../models/SavingGoal');
-const { isValidObjectId } = require('../utils/validation');
 
 // Create Savings Goal
 const createGoal = async (req, res) => {
@@ -112,11 +111,6 @@ const getAllGoals = async (req, res) => {
 const addAmount = async (req, res) => {
     try {
         const goalId = req.params.id;
-
-        if (!isValidObjectId(goalId)) {
-            return res.status(400).json({ success: false, message: 'Invalid goal ID format' });
-        }
-
         const amount = parseFloat(req.body?.amount);
 
         if (!amount || isNaN(amount) || amount <= 0) {
@@ -126,22 +120,7 @@ const addAmount = async (req, res) => {
             });
         }
 
-        const goal = await SavingsGoal.findOneAndUpdate(
-            { _id: goalId, userId: req.userId, isActive: true },
-            [
-                {
-                    $set: {
-                        currentAmount: {
-                            $min: [
-                                "$targetAmount",
-                                { $add: ["$currentAmount", amount] }
-                            ]
-                        }
-                    }
-                }
-            ],
-            { new: true }
-        );
+        const goal = await SavingsGoal.findOne({ _id: goalId, userId: req.userId, isActive: true });
 
         if (!goal) {
             return res.status(404).json({
@@ -149,6 +128,10 @@ const addAmount = async (req, res) => {
                 message: 'Goal not found'
             });
         }
+
+        const nextAmount = Math.min(goal.targetAmount, goal.currentAmount + amount);
+        goal.currentAmount = nextAmount;
+        await goal.save();
 
         res.json({
             success: true,

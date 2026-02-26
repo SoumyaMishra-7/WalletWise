@@ -18,9 +18,9 @@
 
 /* Modal Content */
 .savings-modal-content {
-  background: var(--bg-card);
+  background: white;
   border-radius: 16px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 90%;
   max-width: 500px;
   max-height: 85vh;
@@ -34,7 +34,7 @@
 .savings-modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 24px;
   border-bottom: 1px solid #e9ecef;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -70,19 +70,11 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  transform-origin: center center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;        /* stops text character from having extra space */
-  padding: 0;            /* removes any default button padding offsetting it */
-  transform-origin: center center;
-  transition: all 0.2s;
 }
 
-body.theme-dark .close-savings-btn:hover {
+.close-savings-btn:hover {
   background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg) scale(1.1);
+  transform: rotate(90deg);
 }
 
 .close-savings-btn:disabled {
@@ -104,7 +96,7 @@ body.theme-dark .close-savings-btn:hover {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: var(--text-main);
+  color: #333;
   font-size: 14px;
 }
 
@@ -113,12 +105,11 @@ body.theme-dark .close-savings-btn:hover {
 .savings-form-group select {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid var(--border-subtle);
+  border: 2px solid #e1e5e9;
   border-radius: 8px;
   font-size: 15px;
   transition: all 0.3s;
-  background: var(--bg-app);
-  color: var(--text-main);
+  background: #f8f9fa;
 }
 
 .savings-form-group input:focus,
@@ -126,7 +117,7 @@ body.theme-dark .close-savings-btn:hover {
 .savings-form-group select:focus {
   outline: none;
   border-color: #667eea;
-  background: var(--bg-card);
+  background: white;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -201,13 +192,13 @@ body.theme-dark .close-savings-btn:hover {
 
 .timeline-btn {
   padding: 10px;
+  border: 2px solid #e1e5e9;
   border-radius: 8px;
-  background: var(--bg-card);        /* was: white */
-  border: 2px solid var(--border-subtle); /* was: #e1e5e9 */
-  color: var(--text-muted);
+  background: white;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.3s;
+  color: #666;
 }
 
 .timeline-btn.active {
@@ -236,32 +227,32 @@ body.theme-dark .close-savings-btn:hover {
 .char-count {
   text-align: right;
   font-size: 12px;
-  color: var(--text-muted);
+  color: #999;
   margin-top: 4px;
 }
 
 /* Helper Text */
 .helper-text {
   font-size: 12px;
-  color: var(--text-muted);
+  color: #666;
   margin-top: 4px;
   font-style: italic;
 }
 
 /* Summary Card */
 .savings-summary-card {
-  background: var(--bg-app);         
-  border: 1px solid var(--border-subtle);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-radius: 12px;
   padding: 20px;
   margin: 24px 0;
+  border: 1px solid #dee2e6;
 }
 
 .summary-title {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: var(--text-main);;
+  color: #333;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -281,7 +272,7 @@ body.theme-dark .close-savings-btn:hover {
 
 .summary-label {
   font-size: 12px;
-  color:  var(--text-muted);
+  color: #666;
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -290,7 +281,7 @@ body.theme-dark .close-savings-btn:hover {
 .summary-value {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-main);;
+  color: #333;
 }
 
 .summary-value.highlight {
@@ -298,16 +289,16 @@ body.theme-dark .close-savings-btn:hover {
 }
 
 .monthly-section {
-  background: var(--bg-card);
+  background: white;
   padding: 16px;
   border-radius: 8px;
   text-align: center;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid #dee2e6;
 }
 
 .monthly-label {
   font-size: 14px;
-  color:  var(--text-muted);
+  color: #666;
   margin-bottom: 8px;
 }
 
@@ -320,7 +311,7 @@ body.theme-dark .close-savings-btn:hover {
 
 .monthly-note {
   font-size: 12px;
-  color: var(--text-muted);
+  color: #999;
   font-style: italic;
 }
 
@@ -330,7 +321,7 @@ body.theme-dark .close-savings-btn:hover {
   gap: 12px;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid #e9ecef;
 }
 
 .savings-btn-cancel,
@@ -346,14 +337,14 @@ body.theme-dark .close-savings-btn:hover {
 }
 
 .savings-btn-cancel {
-  background: var(--bg-app);          
-  color: var(--text-muted);   
-  border: 2px solid var(--border-subtle);
+  background: #f8f9fa;
+  color: #666;
+  border: 2px solid #e1e5e9;
 }
 
 .savings-btn-cancel:hover:not(:disabled) {
-   background: var(--bg-card);
-  color: var(--text-main);
+  background: #e9ecef;
+  color: #333;
 }
 
 .savings-btn-submit {
@@ -503,12 +494,12 @@ body.theme-dark .close-savings-btn:hover {
 }
 
 /* Scrollbar Styling */
-body.theme-dark .savings-modal-content::-webkit-scrollbar-track {
-  background: var(--bg-app);
+.savings-modal-content::-webkit-scrollbar {
+  width: 8px;
 }
 
-body.theme-dark .savings-modal-content::-webkit-scrollbar-thumb {
-  background: var(--border-subtle);
+.savings-modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
   border-radius: 4px;
 }
 

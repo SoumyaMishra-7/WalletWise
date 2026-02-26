@@ -7,27 +7,24 @@ const {
   userLoginSchema,
   userUpdateSchema,
   verifyEmailSchema,
-  resendOtpSchema,
-  forgotPasswordRequestSchema,
-  forgotPasswordVerifySchema,
-  resetPasswordSchema
+  resendOtpSchema
 } = require('../utils/validationSchemas');
 const authController = require('../controllers/authController');
 
 const singleUpload = require('../middleware/multer');
 
-const { authLimiter } = require('../middleware/rateLimiter');
-
 const router = express.Router();
-const currencyMiddleware = require('../middleware/currencyConverter.middleware');
 
-router.post('/register', authLimiter, currencyMiddleware, validate(userRegisterSchema), authController.register);
-router.post('/login', authLimiter, currencyMiddleware, validate(userLoginSchema), authController.login);
-router.post('/verify-email', authLimiter, currencyMiddleware, validate(verifyEmailSchema), authController.verifyEmail);
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Too many attempts. Please try again later.'
+});
+
+router.post('/register', authLimiter, validate(userRegisterSchema), authController.register);
+router.post('/login', authLimiter, validate(userLoginSchema), authController.login);
+router.post('/verify-email', authLimiter, validate(verifyEmailSchema), authController.verifyEmail);
 router.post('/resend-otp', authLimiter, validate(resendOtpSchema), authController.resendEmailOtp);
-router.post('/forgot-password', authLimiter, validate(forgotPasswordRequestSchema), authController.requestPasswordReset);
-router.post('/forgot-password/verify', authLimiter, validate(forgotPasswordVerifySchema), authController.verifyPasswordResetOtp);
-router.post('/forgot-password/reset', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
 router.post('/logout', authController.logout);
 router.post('/refresh', authController.refresh);
 router.get('/me', protect, authController.me);

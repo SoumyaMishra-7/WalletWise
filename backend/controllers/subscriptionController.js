@@ -1,7 +1,6 @@
 
 const Subscription = require('../models/Subscription');
 const Transaction = require('../models/Transactions');
-const { isValidObjectId } = require('../utils/validation');
 
 // Get all active subscriptions
 const getSubscriptions = async (req, res) => {
@@ -41,11 +40,6 @@ const addSubscription = async (req, res) => {
 const deleteSubscription = async (req, res) => {
     try {
         const { id } = req.params;
-
-        if (!isValidObjectId(id)) {
-            return res.status(400).json({ success: false, message: 'Invalid subscription ID format' });
-        }
-
         const subscription = await Subscription.findOneAndUpdate(
             { _id: id, userId: req.userId },
             { isActive: false },
@@ -77,17 +71,6 @@ const detectSubscriptions = async (req, res) => {
             date: { $gte: threeMonthsAgo }
         }).sort({ date: 1 });
 
-        // Helper to escape regex
-        const escapeRegExp = (string) => {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        };
-
-        // 1. Fetch ALL active subscriptions for this user (Batch Query - Fixes N+1)
-        const existingSubscriptions = await Subscription.find({
-            userId,
-            isActive: true
-        });
-
         const candidates = [];
         const grouped = {};
 
@@ -102,7 +85,7 @@ const detectSubscriptions = async (req, res) => {
         });
 
         // Analyze groups
-        for (const key of Object.keys(grouped)) {
+        for (const key in grouped) {
             const txs = grouped[key];
             if (txs.length < 2) continue; // Need at least 2 to form a pattern
 
@@ -132,14 +115,14 @@ const detectSubscriptions = async (req, res) => {
                 const nextDue = new Date(lastTx.date);
                 nextDue.setDate(nextDue.getDate() + 30); // Project next month
 
-                // 2. In-Memory Check (Fixes Unsafe Regex + N+1)
-                // Sanitize key before creating regex
-                const safeKey = escapeRegExp(key);
-                const regex = new RegExp(safeKey, 'i');
+                // Check if already exists
+                const existing = await Subscription.findOne({
+                    userId,
+                    name: { $regex: new RegExp(key, 'i') },
+                    isActive: true
+                });
 
-                const exists = existingSubscriptions.some(sub => regex.test(sub.name));
-
-                if (!exists) {
+                if (!existing) {
                     candidates.push({
                         name: key.charAt(0).toUpperCase() + key.slice(1), // Capitalize
                         amount: avgAmount,

@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import SavingGoal from './SavingGoal';
 
@@ -67,12 +66,8 @@ const Goals = () => {
   const [addingAmount, setAddingAmount] = useState(false);
   const location = useLocation();
 
-  const { user } = useAuth();
-  const formatCurrency = (amount) => {
-    const currency = user?.currency || 'USD';
-    const locale = currency === 'INR' ? 'en-IN' : 'en-US';
-    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
-  };
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
 
   const formatDeadline = (date) => {
     if (!date) return 'No deadline';

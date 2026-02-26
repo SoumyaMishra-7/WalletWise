@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import AppNavbar from '../components/AppNavbar';
 
 import './Settings.css';
-import { FaUserCircle, FaArrowLeft, FaCamera, FaCheck, FaExclamationTriangle, FaTimes, FaBell } from 'react-icons/fa';
+import { FaUserCircle, FaArrowLeft, FaCamera, FaCheck, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
 const Profile = () => {
     const { user, loading, updateProfile } = useAuth();
@@ -23,9 +23,7 @@ const Profile = () => {
         year: '1st',
         currency: 'USD',
         dateFormat: 'MM/DD/YYYY',
-        language: 'English',
-        billRemindersEnabled: true,
-        reminderDaysBefore: 3
+        language: 'English'
     });
 
     useEffect(() => {
@@ -44,17 +42,15 @@ const Profile = () => {
             year: user.year || '1st',
             currency: user.currency || 'USD',
             dateFormat: user.dateFormat || 'MM/DD/YYYY',
-            language: user.language || 'English',
-            billRemindersEnabled: user.notificationPrefs?.billRemindersEnabled ?? true,
-            reminderDaysBefore: user.notificationPrefs?.reminderDaysBefore || 3
+            language: user.language || 'English'
         }));
         lastUserIdRef.current = user._id;
         setHasChanges(false);
     }, [user]);
 
     const handleChange = (event) => {
-        const { name, value, type, checked } = event.target;
-        setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+        const { name, value } = event.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
         setHasChanges(true);
         setStatus({ type: '', message: '' });
     };
@@ -93,9 +89,7 @@ const Profile = () => {
             year: user.year || '1st',
             currency: user.currency || 'USD',
             dateFormat: user.dateFormat || 'MM/DD/YYYY',
-            language: user.language || 'English',
-            billRemindersEnabled: user.notificationPrefs?.billRemindersEnabled ?? true,
-            reminderDaysBefore: user.notificationPrefs?.reminderDaysBefore || 3
+            language: user.language || 'English'
         }));
         setHasChanges(false);
     };
@@ -114,8 +108,6 @@ const Profile = () => {
             formDataToSend.append('currency', formData.currency);
             formDataToSend.append('dateFormat', formData.dateFormat);
             formDataToSend.append('language', formData.language);
-            formDataToSend.append('billRemindersEnabled', formData.billRemindersEnabled);
-            formDataToSend.append('reminderDaysBefore', formData.reminderDaysBefore);
 
             if (file) {
                 formDataToSend.append('file', file);
@@ -133,9 +125,7 @@ const Profile = () => {
                     year: data.user?.year || '1st',
                     currency: data.user?.currency || 'USD',
                     dateFormat: data.user?.dateFormat || 'MM/DD/YYYY',
-                    language: data.user?.language || 'English',
-                    billRemindersEnabled: data.user?.notificationPrefs?.billRemindersEnabled ?? true,
-                    reminderDaysBefore: data.user?.notificationPrefs?.reminderDaysBefore || 3
+                    language: data.user?.language || 'English'
                 }));
                 setStatus({ type: 'success', message: 'Profile updated successfully.' });
                 setFile(null);
@@ -320,67 +310,6 @@ const Profile = () => {
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                    </section>
-
-                    <section className="settings-card">
-                        <div className="card-header">
-                            <div className="card-icon blue" style={{ background: 'linear-gradient(135deg, #fee2e2, #fecaca)', color: '#ef4444' }}>
-                                <FaBell />
-                            </div>
-                            <div>
-                                <h2>Notifications</h2>
-                                <p>Customize how and when you receive alerts.</p>
-                            </div>
-                        </div>
-                        <div className="form-grid">
-                            <div className="form-group" style={{ gridColumn: '1 / -1', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div>
-                                    <label style={{ marginBottom: 0 }}>Bill Reminders</label>
-                                    <p className="field-info" style={{ marginTop: '0.2rem' }}>Receive email alerts for upcoming due dates</p>
-                                </div>
-                                <label className="toggle-switch">
-                                    <input
-                                        type="checkbox"
-                                        name="billRemindersEnabled"
-                                        checked={formData.billRemindersEnabled}
-                                        onChange={handleChange}
-                                    />
-                                    <span className="slider round"></span>
-                                </label>
-                            </div>
-
-                            {formData.billRemindersEnabled && (
-                                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                    <label>Reminder Timing</label>
-                                    <p className="field-info" style={{ marginBottom: '0.5rem' }}>How many days before the due date should we remind you?</p>
-                                    <div className="radio-group" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                        {[1, 3, 7].map(days => (
-                                            <label key={days} className="radio-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', background: 'var(--bg-app)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: `1px solid ${Number(formData.reminderDaysBefore) === days ? '#ef4444' : 'var(--border-subtle)'}` }}>
-                                                <input
-                                                    type="radio"
-                                                    name="reminderDaysBefore"
-                                                    value={days}
-                                                    checked={Number(formData.reminderDaysBefore) === days}
-                                                    onChange={handleChange}
-                                                    style={{ display: 'none' }}
-                                                />
-                                                <div style={{
-                                                    width: '18px', height: '18px', borderRadius: '50%', border: '2px solid',
-                                                    borderColor: Number(formData.reminderDaysBefore) === days ? '#ef4444' : 'var(--border-subtle)',
-                                                    background: Number(formData.reminderDaysBefore) === days ? '#ef4444' : 'transparent',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                }}>
-                                                    {Number(formData.reminderDaysBefore) === days && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
-                                                </div>
-                                                <span style={{ fontWeight: Number(formData.reminderDaysBefore) === days ? 600 : 400 }}>
-                                                    {days} Day{days !== 1 && 's'} Before
-                                                </span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </section>
                 </form>

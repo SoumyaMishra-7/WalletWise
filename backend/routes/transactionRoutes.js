@@ -1,31 +1,23 @@
 const express = require('express');
 const router = express.Router();
-
-
 const { protect } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { transactionSchema } = require('../utils/validationSchemas');
+
+// Import the controller object
 const transactionController = require('../controllers/transactionController');
 
-router.get(
-    "/activity/:transactionId",
-    protect,
-    transactionController.getTransactionActivity
-);
-// Add transaction
-router.post('/', protect, transactionController.addTransaction);
+// Add transaction 
+router.post('/', protect, validate(transactionSchema), transactionController.addTransaction);
 
 // Get all transactions
 router.get('/', protect, transactionController.getAllTransactions);
 
-// Undo transaction ✅ IMPORTANT
-router.post('/:id/undo', protect, transactionController.undoTransaction);
-
-// Skip next occurrence
-router.post('/:id/skip', protect, transactionController.skipNextOccurrence);
-
 // Update transaction
-router.put('/:id', protect, transactionController.updateTransaction);
+router.put('/:id', protect, validate(transactionSchema), transactionController.updateTransaction);
 
 // Delete transaction
 router.delete('/:id', protect, transactionController.deleteTransaction);
 
 module.exports = router;
+

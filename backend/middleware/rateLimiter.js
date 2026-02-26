@@ -31,7 +31,7 @@ const speedLimiter = slowDown({
 // Standard protection for individual users
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'development' ? 10000 : 100, // Increased for development
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -43,8 +43,8 @@ const globalLimiter = rateLimit({
 // 4. Auth Rate Limiter
 // Stricter limits for authentication routes
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes default
-    max: process.env.NODE_ENV === 'development' ? 5000 : 100, // Increased for dev, stricter for prod
+    windowMs: process.env.AUTH_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000, // 15 minutes default
+    max: process.env.AUTH_RATE_LIMIT_MAX || 1000, // Limit each IP to 1000 login requests per windowMs
     standardHeaders: true,
     legacyHeaders: false,
     message: {

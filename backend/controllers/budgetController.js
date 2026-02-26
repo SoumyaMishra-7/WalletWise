@@ -1,6 +1,5 @@
 const Budget = require('../models/Budget');
 const Transaction = require('../models/Transactions');
-const { isValidObjectId } = require('../utils/validation');
 
 // Set/Update Budget
 const setBudget = async (req, res) => {
@@ -364,10 +363,6 @@ const deleteBudget = async (req, res) => {
         const { id } = req.params;
         const userId = req.userId;
 
-        if (!isValidObjectId(id)) {
-            return res.status(400).json({ success: false, message: 'Invalid budget ID format' });
-        }
-
         const budget = await Budget.findOne({
             _id: id,
             userId
@@ -405,10 +400,6 @@ const updateBudget = async (req, res) => {
         const userId = req.userId;
         const updates = req.body;
 
-        if (!isValidObjectId(id)) {
-            return res.status(400).json({ success: false, message: 'Invalid budget ID format' });
-        }
-
         const budget = await Budget.findOne({
             _id: id,
             userId,
@@ -423,13 +414,6 @@ const updateBudget = async (req, res) => {
         }
 
         // Validate if updating
-        if (updates.totalBudget !== undefined && updates.totalBudget <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Valid total budget amount is required and must be greater than 0'
-            });
-        }
-
         if (updates.categories) {
             const totalPercentage = updates.categories.reduce((sum, cat) => sum + cat.percentage, 0);
             if (Math.abs(totalPercentage - 100) > 0.01) {
@@ -438,34 +422,11 @@ const updateBudget = async (req, res) => {
                     message: `Total percentage must be 100%. Currently ${totalPercentage.toFixed(2)}%`
                 });
             }
-
-            // Ensure we use the right totalBudget to compare against (either the new one or existing)
-            const expectedTotal = updates.totalBudget !== undefined ? updates.totalBudget : budget.totalBudget;
-            let totalAmount = 0;
-
-            for (const category of updates.categories) {
-                if (category.amount < 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Amount for ${category.name} cannot be negative`
-                    });
-                }
-                totalAmount += category.amount;
-            }
-
-            if (Math.abs(totalAmount - expectedTotal) > 0.01) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Sum of category amounts (${totalAmount}) must equal total budget (${expectedTotal})`
-                });
-            }
         }
 
-        // Update fields with a secure whitelist
-        const allowedUpdates = ['totalBudget', 'categories', 'isActive'];
-
-        allowedUpdates.forEach(key => {
-            if (updates[key] !== undefined) {
+        // Update fields
+        Object.keys(updates).forEach(key => {
+            if (key !== '_id' && key !== 'userId' && key !== 'month') {
                 budget[key] = updates[key];
             }
         });
@@ -501,8 +462,6 @@ const getBudgetSummary = async (req, res) => {
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
-        const endOfMonth = new Date(startOfMonth);
-        endOfMonth.setMonth(endOfMonth.getMonth() + 1);
 
         const budget = await Budget.findOne({
             userId,
@@ -510,31 +469,66 @@ const getBudgetSummary = async (req, res) => {
             isActive: true
         });
 
-        const expenseStats = await Transaction.aggregate({
-            $match: {
-                userId,
-                type: "expense",
-                date: {
-                    $gte: startOfMonth,
-                    $lte: endOfMonth
-                }
-            }
-        },
-        {$group:{
-           _id: { $toLower: "$category" },
-            totalSpent:{$sum: "$amount"}
-        }
-    });
-    console.log("Expense Stats:", expenseStats);
-        const totalSpent = expenseStats.reduce((sum, tx) => sum + tx.amount, 0);
-
-        const spentByCategory = new Map();
-        expenseStats.forEach((tx) => {
-            spentByCategory.set(tx._id, tx.totalSpent);
+        const monthlyExpenses = await Transaction.find({
+            userId,
+            type: 'expense',
+            date: { $gte: startOfMonth }
         });
 
+        const totalSpent = monthlyExpenses.reduce((sum, tx) => sum + tx.amount, 0);
+
+        if (!budget) {
+            return res.json({
+                success: true,
+                hasBudget: false,
+                message: 'No budget set for current month',
+                summary: {
+                    totalBudget: 0,
+                    categories: [],
+                    spent: totalSpent,
+                    remaining: 0,
+                    utilization: 0
+                }
+            });
+        }
+
+        const normalize = (value) =>
+            String(value || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '');
+
+        const categoryAliases = {
+            food: ['food', 'grocery', 'grocer', 'dining', 'restaurant'],
+            transport: ['transport', 'travel', 'fuel', 'gas', 'uber', 'taxi', 'bus', 'train'],
+            shopping: ['shopping', 'shop', 'clothes', 'apparel'],
+            entertainment: ['entertain', 'movie', 'game', 'fun', 'subscription'],
+            education: ['education', 'school', 'tuition', 'course', 'book'],
+            healthcare: ['health', 'medical', 'doctor', 'pharmacy'],
+            housing: ['housing', 'rent', 'utility', 'utilities', 'home'],
+            other: ['other', 'misc']
+        };
+
+        const spentByCategory = new Map();
+        monthlyExpenses.forEach((tx) => {
+            const key = normalize(tx.category);
+            spentByCategory.set(key, (spentByCategory.get(key) || 0) + tx.amount);
+        });
+
+        const matchTransactionCategories = (categoryName) => {
+            const normalized = normalize(categoryName);
+            if (!normalized) return [];
+
+            const directMatch = Object.keys(categoryAliases).find((key) => key === normalized);
+            if (directMatch) return [directMatch];
+
+            return Object.entries(categoryAliases)
+                .filter(([, aliases]) => aliases.some((alias) => normalized.includes(normalize(alias))))
+                .map(([key]) => key);
+        };
+
         const categoriesWithSpend = budget.categories.map((category) => {
-            const spent = spentByCategory.get(category.name) || 0;
+            const matches = matchTransactionCategories(category.name);
+            const spent = matches.reduce((sum, key) => sum + (spentByCategory.get(key) || 0), 0);
             return {
                 ...category.toObject(),
                 spent

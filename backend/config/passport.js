@@ -3,17 +3,6 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 
 const configurePassport = () => {
-  const googleOauthEnabled = Boolean(
-    process.env.GOOGLE_CLIENT_ID &&
-      process.env.GOOGLE_CLIENT_SECRET &&
-      process.env.GOOGLE_CALLBACK_URL
-  );
-
-  if (!googleOauthEnabled) {
-    console.warn('Google OAuth is not configured. Skipping Google strategy setup.');
-    return;
-  }
-
   passport.use(
     new GoogleStrategy(
       {
@@ -43,12 +32,7 @@ const configurePassport = () => {
           user = await User.findOne({ email });
           if (user) {
             user.googleId = googleId;
-            if (!user.emailVerified && user.provider === 'local') {
-              user.passwordHash = undefined;
-              user.provider = 'google';
-            } else {
-              user.provider = user.provider === 'local' ? 'both' : user.provider;
-            }
+            user.provider = user.provider === 'local' ? 'both' : user.provider;
             if (!user.emailVerified) {
               user.emailVerified = true;
             }

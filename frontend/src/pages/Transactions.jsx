@@ -1,12 +1,7 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import useDebounce from '../hooks/useDebounce';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { FaFilter, FaSearch } from 'react-icons/fa';
-import Pagination from '../components/Pagination';
-import EmptyState from '../components/EmptyState';
-import { ShoppingBag, SearchX } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import './Transactions.css';
 
 const categoryLabelMap = {
@@ -54,110 +49,111 @@ const exportColumns = [
 
 const Transactions = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [limit] = useState(10);
-
-  // Filter State
   const [searchTerm, setSearchTerm] = useState('');
-  // Debounced search — only triggers API call after 300ms of inactivity
-  // Empty string is instantly applied (no debounce on clear for better UX)
-  const debouncedSearch = useDebounce(searchTerm, 300);
   const [activeQuickFilter, setActiveQuickFilter] = useState('all');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [tagFilter, setTagFilter] = useState(''); // Not active in backend yet, keeping UI
+  const [tagFilter, setTagFilter] = useState('');
   const [sortMode, setSortMode] = useState('newest');
-  const abortControllerRef = useRef(null);
-
-  const fetchTransactions = useCallback(async () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
-
-    setLoading(true);
-    try {
-      const params = {
-        page: currentPage,
-        limit,
-        sort: sortMode,
-        search: debouncedSearch,
-      };
-
-      if (activeQuickFilter !== 'all') {
-        if (activeQuickFilter === 'month') {
-          const now = new Date();
-          params.startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-          params.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
-        } else {
-
-          if (activeQuickFilter === 'food') params.search = 'food';
-          if (activeQuickFilter === 'transport') params.search = 'transport';
-          if (activeQuickFilter === 'fun') params.search = 'fun';
-        }
-      }
-
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-
-      console.log('Fetching with params:', params);
-
-      const response = await api.get('/api/transactions', { params, signal });
-
-      if (response.data?.success) {
-        setTransactions(response.data.transactions || []);
-        if (response.data.pagination) {
-          setTotalPages(response.data.pagination.pages);
-        }
-      } else {
-        setError('Failed to load transactions.');
-      }
-    } catch (err) {
-      if (err.name === 'CanceledError' || err.name === 'AbortError') {
-        console.log('Request aborted');
-        return; // Early return to avoid updating state
-      }
-      console.error('Transactions fetch error:', err);
-      if (err.response?.status === 401) {
-        navigate('/login');
-      } else {
-        setError('Could not connect to server.');
-      }
-      setTransactions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, limit, sortMode, debouncedSearch, activeQuickFilter, startDate, endDate, navigate]);
 
   useEffect(() => {
-    fetchTransactions();
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+    const fetchTransactions = async () => {
+      try {
+        const response = await api.get('/api/transactions');
+        if (response.data?.success) {
+          setTransactions(response.data.transactions || []);
+        } else {
+          setError('Failed to load transactions.');
+        }
+      } catch (err) {
+        console.error('Transactions fetch error:', err);
+        if (err.response?.status === 401) {
+          navigate('/login');
+        } else {
+          setError('Could not connect to server.');
+        }
+      } finally {
+        setLoading(false);
       }
     };
-  }, [fetchTransactions]);
 
-  // Reset to page 1 when debounced search or filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearch, activeQuickFilter, sortMode, startDate, endDate]);
+    fetchTransactions();
+  }, [navigate]);
 
+  const filteredTransactions = useMemo(() => {
+    const now = new Date();
+    let start = null;
+    let end = null;
 
-  const formatCurrency = (amount) => {
-    const currency = user?.currency || 'USD';
-    const locale = currency === 'INR' ? 'en-IN' : 'en-US';
-    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
-  };
+    if (activeQuickFilter === 'month') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    } else {
+      if (startDate) start = new Date(startDate);
+      if (endDate) end = new Date(`${endDate}T23:59:59`);
+    }
+
+    const quickFilter = quickFilters.find((filter) => filter.id === activeQuickFilter);
+    const quickCategories = quickFilter?.categories || [];
+    const normalizedTags = tagFilter
+      .split(',')
+      .map((tag) => tag.trim().toLowerCase())
+      .filter(Boolean);
+
+    const result = transactions.filter((t) => {
+      const category = (t.category || 'others').toLowerCase();
+      const description = (t.description || '').toLowerCase();
+
+      if (quickCategories.length > 0 && !quickCategories.includes(category)) {
+        return false;
+      }
+
+      if (start || end) {
+        const txDate = new Date(t.date);
+        if (start && txDate < start) return false;
+        if (end && txDate > end) return false;
+      }
+
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        if (!description.includes(term) && !category.includes(term)) {
+          return false;
+        }
+      }
+
+      if (normalizedTags.length > 0) {
+        const txTags = Array.isArray(t.tags)
+          ? t.tags.map((tag) => `${tag}`.toLowerCase())
+          : [];
+        if (!normalizedTags.some((tag) => txTags.includes(tag))) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    return result.sort((a, b) => {
+      if (sortMode === 'oldest') {
+        return new Date(a.date) - new Date(b.date);
+      }
+      if (sortMode === 'amount-high') {
+        return Number(b.amount || 0) - Number(a.amount || 0);
+      }
+      if (sortMode === 'amount-low') {
+        return Number(a.amount || 0) - Number(b.amount || 0);
+      }
+      return new Date(b.date) - new Date(a.date);
+    });
+  }, [activeQuickFilter, endDate, searchTerm, sortMode, startDate, tagFilter, transactions]);
+
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
 
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString('en-GB', {
@@ -166,9 +162,8 @@ const Transactions = () => {
       year: 'numeric'
     });
 
-
   const buildExportRows = () => {
-    return transactions.map((tx) => ({
+    return filteredTransactions.map((tx) => ({
       date: formatDate(tx.date),
       category: tx.category || 'others',
       description: tx.description || '.',
@@ -195,7 +190,7 @@ const Transactions = () => {
   };
 
   const handleExport = (format) => {
-    if (transactions.length === 0) {
+    if (filteredTransactions.length === 0) {
       alert('No transactions to export.');
       return;
     }
@@ -211,31 +206,28 @@ const Transactions = () => {
     downloadFile(content, `transactions_export.${ext}`, 'text/plain;charset=utf-8;');
   };
 
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  if (loading && transactions.length === 0) {
+  if (loading) {
     return (
-      <div className="transactions-page">
-        <div className="page-loading">Loading transactions...</div>
-      </div>
+      <>
+        <div className="transactions-page">
+          <div className="page-loading">Loading transactions...</div>
+        </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="transactions-page">
-        <div className="page-error">
-          <p>{error}</p>
-          <button className="primary-button" onClick={() => window.location.reload()}>
-            Try Again
-          </button>
+      <>
+        <div className="transactions-page">
+          <div className="page-error">
+            <p>{error}</p>
+            <button className="primary-button" onClick={() => window.location.reload()}>
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -300,13 +292,12 @@ const Transactions = () => {
               </div>
             </div>
             <div className="advanced-block">
-              <label>Tags (backend support pending)</label>
+              <label>Tags (comma separated)</label>
               <input
                 type="text"
                 placeholder="meal, commute, club"
                 value={tagFilter}
                 onChange={(e) => setTagFilter(e.target.value)}
-                disabled // Disabled for now as per backend availability
               />
             </div>
             <div className="advanced-block">
@@ -319,7 +310,7 @@ const Transactions = () => {
               </select>
             </div>
             <div className="advanced-block">
-              <label>Export (Current Page)</label>
+              <label>Export</label>
               <div className="export-actions">
                 <button onClick={() => handleExport('csv')} className="primary-button">
                   Export CSV
@@ -334,65 +325,53 @@ const Transactions = () => {
       )}
 
       <section className="transactions-table">
-        {transactions.length === 0 ? (
-          <EmptyState
-            icon={searchTerm || startDate || endDate || activeQuickFilter !== 'all' ? SearchX : ShoppingBag}
-            title={searchTerm || startDate || endDate || activeQuickFilter !== 'all' ? "No matching transactions" : "No transactions yet"}
-            description={searchTerm || startDate || endDate || activeQuickFilter !== 'all'
-              ? "We couldn't find any transactions for your current filters. Try resetting them or searching for something else."
-              : "You haven't recorded any spending moments yet this semester. Start tracking to see your financial story unfold!"}
-            actionLabel={searchTerm || startDate || endDate || activeQuickFilter !== 'all' ? null : "Add Your First Transaction"}
-            onAction={() => navigate('/add-expense')}
-          />
+        {filteredTransactions.length === 0 ? (
+          <div className="empty-state">
+            <h3>No transactions match these filters.</h3>
+            <p>Try a different search or date range.</p>
+          </div>
         ) : (
-          <>
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Category</th>
-                  <th>Note</th>
-                  <th>Amount</th>
-                  <th>Mood</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((tx) => {
-                  const moodKey = normalizeMood(tx.mood);
-                  const mood = moodMeta[moodKey] || moodMeta.neutral;
-                  const categoryKey = (tx.category || 'others').toLowerCase();
-                  const categoryLabel = categoryLabelMap[categoryKey] || tx.category || 'Other';
-                  const noteText = tx.description && `${tx.description}`.trim() ? tx.description : '.';
-                  return (
-                    <tr key={tx.id || tx._id}>
-                      <td>{formatDate(tx.date)}</td>
-                      <td>{categoryLabel}</td>
-                      <td className="note">{noteText}</td>
-                      <td className={`amount ${tx.type}`}>{formatCurrency(tx.amount)}</td>
-                      <td>
-                        <span className="mood-pill" style={{ '--mood-color': mood.color }}>
-                          <span className="mood-emoji" aria-hidden="true">
-                            {mood.emoji}
-                          </span>
-                          {mood.label}
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Note</th>
+                <th>Amount</th>
+                <th>Mood</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTransactions.map((tx) => {
+                const moodKey = normalizeMood(tx.mood);
+                const mood = moodMeta[moodKey] || moodMeta.neutral;
+                const categoryKey = (tx.category || 'others').toLowerCase();
+                const categoryLabel = categoryLabelMap[categoryKey] || tx.category || 'Other';
+                const noteText = tx.description && `${tx.description}`.trim() ? tx.description : '.';
+                return (
+                  <tr key={tx.id || tx._id}>
+                    <td>{formatDate(tx.date)}</td>
+                    <td>{categoryLabel}</td>
+                    <td className="note">{noteText}</td>
+                    <td className={`amount ${tx.type}`}>{formatCurrency(tx.amount)}</td>
+                    <td>
+                      <span className="mood-pill" style={{ '--mood-color': mood.color }}>
+                        <span className="mood-emoji" aria-hidden="true">
+                          {mood.emoji}
                         </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </>
+                        {mood.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </section>
     </div>
+
   );
-}
+};
 
 export default Transactions;

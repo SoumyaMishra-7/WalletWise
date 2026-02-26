@@ -99,9 +99,7 @@ const userRegisterSchema = z.object({
   studentId: z.string().min(1, 'Student ID is required').max(50),
   fullName: z.string().min(2, 'Full name is required').max(100),
   email: z.string().email('Invalid email format'),
-  password: z.string()
-    .min(6, 'Password must be at least 6 characters')
-    .max(128, 'Password must not exceed 128 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(128),
   department: z.string().max(100).optional(),
   year: z.string().max(20).optional()
 });
@@ -136,42 +134,6 @@ const resendOtpSchema = z.object({
   email: z.string().email('Invalid email format')
 });
 
-const forgotPasswordRequestSchema = z.object({
-  email: z.string().email('Invalid email format')
-});
-
-const forgotPasswordVerifySchema = z.object({
-  email: z.string().email('Invalid email format'),
-  otp: z.string().length(6, 'OTP must be 6 digits')
-});
-
-const resetPasswordSchema = z.object({
-  token: z.string().min(32, 'Invalid reset token').optional(),
-  email: z.string().email('Invalid email format').optional(),
-  otp: z.string().length(6, 'OTP must be 6 digits').optional(),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(128),
-  confirmPassword: z.string().min(6, 'Password must be at least 6 characters').max(128)
-}).superRefine((data, ctx) => {
-  const hasToken = Boolean(data.token);
-  const hasOtpFlow = Boolean(data.email && data.otp);
-
-  if (!hasToken && !hasOtpFlow) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Provide either reset token or email+OTP',
-      path: ['token']
-    });
-  }
-
-  if (data.password !== data.confirmPassword) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Passwords do not match',
-      path: ['confirmPassword']
-    });
-  }
-});
-
 module.exports = {
   // Budget
   budgetSchema,
@@ -187,8 +149,5 @@ module.exports = {
   userLoginSchema,
   userUpdateSchema,
   verifyEmailSchema,
-  resendOtpSchema,
-  forgotPasswordRequestSchema,
-  forgotPasswordVerifySchema,
-  resetPasswordSchema
+  resendOtpSchema
 };

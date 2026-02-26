@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../api/client';
 import './SetBudget.css';
-import ConfirmDialog from "../components/ConfirmDialog";
-import { useAuth } from '../context/AuthContext';
 
 const DEFAULT_CATEGORIES = [
   { name: 'Food', categoryType: 'food', amount: 0, percentage: 0, color: '#FF6B6B' },
@@ -17,16 +15,12 @@ const DEFAULT_CATEGORIES = [
 ];
 
 const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
-  const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
     totalBudget: '',
     categories: DEFAULT_CATEGORIES
   });
 
   const [activeCategory, setActiveCategory] = useState(0);
-  const { user } = useAuth();
-  const currencySymbol = user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$'));
-  const locale = user?.currency === 'INR' ? 'en-IN' : 'en-US';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -238,7 +232,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains('budget-modal-overlay')) {
-      handleClose();
+      onClose();
     }
   };
 
@@ -252,7 +246,8 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
   };
 
   const handleClose = () => {
-    setShowConfirm(true);
+    resetForm();
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -285,7 +280,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               Total Monthly Budget *
             </label>
             <div className="total-budget-input">
-              <span className="budget-currency">{currencySymbol}</span>
+              <span className="budget-currency">₹</span>
               <input
                 type="number"
                 id="totalBudget"
@@ -368,7 +363,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                 <h3>{formData.categories[activeCategory].name}</h3>
                 <div className="category-stats">
                   <span className="stat-percentage">{formData.categories[activeCategory].percentage}%</span>
-                  <span className="stat-amount">{currencySymbol}{formData.categories[activeCategory].amount.toLocaleString(locale)}</span>
+                  <span className="stat-amount">₹{formData.categories[activeCategory].amount.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -404,9 +399,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
 
                 {/* Amount Input */}
                 <div className="control-group">
-                  <label>Amount ({currencySymbol})</label>
+                  <label>Amount (₹)</label>
                   <div className="amount-input-container">
-                    <span className="amount-currency">{currencySymbol}</span>
+                    <span className="amount-currency">₹</span>
                     <input
                       type="number"
                       min="0"
@@ -417,7 +412,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                       disabled={loading}
                     />
                     <span className="amount-hint">
-                      Max: {currencySymbol}{(formData.totalBudget || 0).toLocaleString(locale)}
+                      Max: ₹{(formData.totalBudget || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -441,7 +436,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               <div className="summary-item">
                 <span className="summary-label">Total Amount:</span>
                 <span className="summary-value amount">
-                  {currencySymbol}{(formData.totalBudget || 0).toLocaleString(locale)}
+                  ₹{(formData.totalBudget || 0).toLocaleString()}
                 </span>
               </div>
             </div>
@@ -467,16 +462,6 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
           </div>
         </form>
       </div>
-      <ConfirmDialog
-        isOpen={showConfirm}
-        message="Are you sure you want to close? Any unsaved budget changes will be lost."
-        onConfirm={() => {
-          setShowConfirm(false);
-          resetForm();
-          onClose();
-        }}
-        onCancel={() => setShowConfirm(false)}
-      />
     </div>
   );
 };

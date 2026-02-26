@@ -13,18 +13,12 @@ import {
 } from 'lucide-react';
 import api from '../api/client';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
 import './SubscriptionDashboard.css';
 
+const formatCurrency = (amount) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
+
 const SubscriptionDashboard = () => {
-    const { user } = useAuth();
-
-    const formatCurrency = (amount) => {
-        const currency = user?.currency || 'USD';
-        const locale = currency === 'INR' ? 'en-IN' : 'en-US';
-        return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
-    };
-
     const [subscriptions, setSubscriptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [scanning, setScanning] = useState(false);
@@ -147,11 +141,8 @@ const SubscriptionDashboard = () => {
             <header className="sub-header">
                 <div className="sub-header-top">
                     <Link to="/dashboard" className="back-link">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                                </svg>
-                                Back to Dashboard
-                              </Link>
+                        Back to Dashboard
+                    </Link>
                     <div className="sub-badge">
                         <LucideCalendarDays size={16} />
                         Smart Tracker
