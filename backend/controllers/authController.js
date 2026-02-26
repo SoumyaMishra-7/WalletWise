@@ -104,7 +104,11 @@ const safeUser = (user) => ({
   incomeSources: user.incomeSources,
   priorities: user.priorities,
   riskTolerance: user.riskTolerance,
-  theme: user.theme || 'light'
+  theme: user.theme || 'light',
+  totalXP: user.totalXP || 0,
+  currentStreak: user.currentStreak || 0,
+  highestStreak: user.highestStreak || 0,
+  unlockedBadges: user.unlockedBadges || []
 });
 
 const sendVerificationOtp = async (user) => {

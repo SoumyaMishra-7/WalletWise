@@ -133,6 +133,25 @@ const userSchema = new mongoose.Schema({
   refreshTokenHash: {
     type: String
   },
+  // Gamification Fields
+  totalXP: {
+    type: Number,
+    default: 0
+  },
+  currentStreak: {
+    type: Number,
+    default: 0
+  },
+  highestStreak: {
+    type: Number,
+    default: 0
+  },
+  lastActiveDate: {
+    type: Date
+  },
+  unlockedBadges: [{
+    type: String
+  }],
   // Privacy Vault Fields
   vaultEnabled: {
     type: Boolean,

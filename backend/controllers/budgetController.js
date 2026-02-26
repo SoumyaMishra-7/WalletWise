@@ -1,6 +1,7 @@
 const Budget = require('../models/Budget');
 const Transaction = require('../models/Transactions');
 const { isValidObjectId } = require('../utils/validation');
+const gamification = require('../utils/gamification');
 
 // Set/Update Budget
 const setBudget = async (req, res) => {
@@ -108,10 +109,14 @@ const setBudget = async (req, res) => {
 
         }
 
+        // Gamification Hook: Award First Budget badge if applicable
+        const badgeAwarded = await gamification.awardBadge(req.userId, 'FIRST_BUDGET');
+
         // Send success response
         res.status(200).json({
             success: true,
             message: 'Budget set successfully! 🎉',
+            gamification: badgeAwarded ? { badge: badgeAwarded.badge } : null,
             notification: {
                 type: 'success',
                 title: 'Budget Set',

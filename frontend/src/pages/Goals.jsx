@@ -92,7 +92,7 @@ const Goals = () => {
     setLoadingGoals(true);
 
     try {
-      const response = await api.get('/api/savings-goals');
+      const response = await api.get('/savings-goals');
 
       if (response.data?.success) {
         const mappedGoals = (response.data.goals || []).map((goal) => {

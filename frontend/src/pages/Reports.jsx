@@ -58,8 +58,8 @@ const Reports = () => {
     setLoading(true);
     try {
       const [txRes, budgetRes] = await Promise.all([
-        api.get('/api/transactions'),
-        api.get('/api/budget/stats/summary')
+        api.get('/transactions'),
+        api.get('/budget/stats/summary')
       ]);
 
       const transactions = txRes.data?.transactions || [];

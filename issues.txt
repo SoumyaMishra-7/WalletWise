@@ -1,0 +1,11 @@
+275	OPEN	Feature Request: Student Micro-Investment Simulator	OSCG26, Medium	2026-02-23T18:00:09Z
+274	OPEN	Feature Request: Privacy Vault with Client-Side Encryption	OSCG26, Difficult	2026-02-23T17:59:52Z
+273	OPEN	Feature Request: Predictive Budget Forecasting & Trend Analysis	OSCG26, Medium	2026-02-23T17:59:30Z
+272	OPEN	Feature Request: Financial Habit Gamification & Rewards	OSCG26, Medium	2026-02-23T17:59:16Z
+271	OPEN	Feature Request: Automated Transaction Entry via Receipt OCR	OSCG26, Difficult	2026-02-23T17:58:48Z
+270	OPEN	Feature Request: Shared Wallets and Collaborative Budgeting	OSCG26, Difficult	2026-02-23T17:58:25Z
+209	OPEN	# [Security/Architecture] Implement API Versioning (/api/v1)	OSCG26, Medium	2026-02-22T19:11:52Z
+208	OPEN	# [Feature] Recurring Transaction "Skip Next" Action	OSCG26, Easy	2026-02-22T19:10:18Z
+207	OPEN	# [Security] Implement Content Security Policy (CSP) via Helmet	OSCG26, Medium	2026-02-22T19:09:00Z
+187	OPEN	[UX] Add Empty State for Transaction List	OSCG26, Medium	2026-02-19T18:29:45Z
+183	OPEN	[Refactor] Standardize Request Validation using Zod in Transaction Controller	OSCG26, Medium	2026-02-19T18:33:43Z

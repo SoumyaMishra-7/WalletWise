@@ -25,7 +25,7 @@ const ForgotPassword = () => {
 
         try {
             setLoading(true);
-            const response = await api.post('/api/auth/forgot-password', { email });
+            const response = await api.post('/auth/forgot-password', { email });
 
             if (response.data.success) {
                 toast.success('Check your email for an OTP.');
@@ -64,7 +64,7 @@ const ForgotPassword = () => {
 
         try {
             setLoading(true);
-            const response = await api.post('/api/auth/reset-password', {
+            const response = await api.post('/auth/reset-password', {
                 email,
                 otp,
                 newPassword

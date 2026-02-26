@@ -120,6 +120,7 @@ app.use(globalLimiter);
 
 // 4. Apply stricter rate limiter to auth routes
 app.use('/api/v1/auth', authLimiter);
+app.use('/api/auth', authLimiter);
 
 
 // ==================== DATABASE CONNECTION ====================
@@ -155,6 +156,7 @@ const errHandler = require('./middleware/errorHandler');
 
 // ==================== ROUTE MOUNTING ====================
 app.use('/api/v1', v1Routes);
+app.use('/api', v1Routes); // Alias for frontend compatibility
 
 // Optional: Keep legacy /api paths for transition or redirect them
 // For now, let's keep the OAuth at /auth as it might be used by external providers

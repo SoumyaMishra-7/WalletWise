@@ -61,6 +61,14 @@ module.exports = (err, req, res, next) => {
       error = new AppError(message, 400);
     }
 
+    if (error.name === 'MulterError') {
+      const message = error.code === 'LIMIT_FILE_SIZE'
+        ? 'File is too large. Maximum allowed size exceeded.'
+        : `Upload error: ${error.message}`;
+      const AppError = require('../utils/appError');
+      error = new AppError(message, 400);
+    }
+
     if (error.message && error.message.includes('Transaction numbers are only allowed on a replica set')) {
       const message = 'Database configuration error: Transactions require a Replica Set (Atlas or local-rs).';
       const AppError = require('../utils/appError');

@@ -5,9 +5,16 @@ const { z } = require('zod');
 const { isValidObjectId } = require('../utils/validation');
 const logTransactionActivity = require("../utils/activityLogger");
 const TransactionActivity = require("../models/TransactionActivity");
+const { processEvent } = require("../utils/gamificationEngine");
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const gamification = require('../utils/gamification');
 const { escapeRegex } = require('../utils/helpers');
+
+// Local development fallback (no MongoDB replica set)
+const withTransaction = async (operation) => {
+  return await operation(null);
+};
 
 const transactionSchema = z.object({
   type: z.enum(['income', 'expense']),
@@ -25,14 +32,13 @@ const transactionSchema = z.object({
   ),
   isRecurring: z.boolean().optional().default(false),
   recurringInterval: z.enum(['daily', 'weekly', 'monthly']).nullable().optional(),
+  walletId: z.string().nullable().optional(),
+  isEncrypted: z.boolean().optional().default(false),
+  encryptedData: z.string().optional()
   isEncrypted: z.boolean().optional().default(false),
   encryptedData: z.string().nullable().optional()
 });
 
-const withTransaction = async (operation) => {
-  // Local development fallback (no MongoDB replica set)
-  return await operation(null);
-};
 
 // ================= ADD TRANSACTION =================
 const addTransaction = catchAsync(async (req, res, next) => {
@@ -61,11 +67,12 @@ const addTransaction = catchAsync(async (req, res, next) => {
     date,
     isRecurring,
     recurringInterval,
+    walletId,
     isEncrypted,
     encryptedData
   } = parsed.data;
 
-  // Duplicate Detection
+  // Duplicate Detection (24 hour window)
   const duplicateWindow = 24 * 60 * 60 * 1000;
   const sinceDate = new Date(Date.now() - duplicateWindow);
 
@@ -86,6 +93,7 @@ const addTransaction = catchAsync(async (req, res, next) => {
   }
 
   const result = await withTransaction(async (session) => {
+
     let nextExecutionDate = null;
 
     if (isRecurring && recurringInterval) {
@@ -96,6 +104,57 @@ const addTransaction = catchAsync(async (req, res, next) => {
       nextExecutionDate = now;
     }
 
+    const result = await withTransaction(async (session) => {
+
+        let nextExecutionDate = null;
+
+        if (isRecurring && recurringInterval) {
+            const now = new Date();
+
+            if (recurringInterval === "daily") now.setDate(now.getDate() + 1);
+            else if (recurringInterval === "weekly") now.setDate(now.getDate() + 7);
+            else if (recurringInterval === "monthly") now.setMonth(now.getMonth() + 1);
+
+            nextExecutionDate = now;
+        }
+
+        const transaction = new Transaction({
+            userId,
+            type,
+            amount,
+            category,
+            description,
+            paymentMethod,
+            mood,
+            ...(date ? { date } : {}),
+            isRecurring,
+            recurringInterval,
+            nextExecutionDate
+        });
+
+        await transaction.save({ session });
+
+        const balanceChange = type === 'income' ? amount : -amount;
+
+        await User.findByIdAndUpdate(
+            userId,
+            { $inc: { walletBalance: balanceChange } },
+            { session }
+        );
+
+        // Gamification
+        const userDoc = await User.findById(userId).session(session);
+        const gamificationUpdate = processEvent(userDoc, 'TRANSACTION_ADDED');
+        await userDoc.save({ session });
+
+        return { transaction, gamificationUpdate };
+    });
+
+    return res.status(201).json({
+        success: true,
+        message: 'Transaction added successfully',
+        transaction: result.transaction,
+        gamification: result.gamificationUpdate
     const transaction = new Transaction({
       userId,
       type,
@@ -108,19 +167,33 @@ const addTransaction = catchAsync(async (req, res, next) => {
       isRecurring,
       recurringInterval,
       nextExecutionDate,
+      walletId: walletId || null,
+      paidBy: walletId ? userId : null,
       isEncrypted,
       encryptedData
     });
 
     await transaction.save({ session });
 
-    // Update wallet balance
+    // Update balance
     const balanceChange = type === 'income' ? amount : -amount;
-    await User.findByIdAndUpdate(
-      userId,
-      { $inc: { walletBalance: balanceChange } },
-      { session }
-    );
+    
+    if (walletId) {
+      // Update shared wallet balance
+      const Wallet = require('../models/Wallet');
+      await Wallet.findByIdAndUpdate(
+        walletId,
+        { $inc: { balance: balanceChange } },
+        { session }
+      );
+    } else {
+      // Update personal balance
+      await User.findByIdAndUpdate(
+        userId,
+        { $inc: { walletBalance: balanceChange } },
+        { session }
+      );
+    }
 
     // Log Activity
     await logTransactionActivity({
@@ -129,19 +202,35 @@ const addTransaction = catchAsync(async (req, res, next) => {
       action: "CREATED"
     });
 
-    return transaction;
+    // Gamification Hook
+    const gamificationResult = await gamification.recordUserActivity(userId);
+    let badgeAwarded = null;
+    
+    // Check for "First Transaction" badge
+    const count = await Transaction.countDocuments({ userId });
+    if (count === 1) {
+       badgeAwarded = await gamification.awardBadge(userId, 'FIRST_TRANSACTION');
+    }
+
+    return { transaction, gamificationResult, badgeAwarded };
   });
 
   return res.status(201).json({
     success: true,
     message: 'Transaction added successfully',
-    transaction: result
+    transaction: result.transaction,
+    gamification: {
+      activity: result.gamificationResult,
+      badge: result.badgeAwarded
+    }
   });
 });
+
 
 // ================= GET ALL TRANSACTIONS =================
 const getAllTransactions = catchAsync(async (req, res) => {
   const userId = req.userId;
+
   const {
     page = 1,
     limit = 10,
@@ -149,49 +238,69 @@ const getAllTransactions = catchAsync(async (req, res) => {
     type,
     startDate,
     endDate,
-    sort = 'newest'
+    sort = 'newest',
+    walletId
   } = req.query;
 
-  const query = { userId };
+  const query = {};
+  if (walletId) {
+    query.walletId = walletId;
+  } else {
+    query.userId = userId;
+    query.walletId = null; // Only personal transactions
+  }
 
   // Process recurring transactions
+  // For simplicity, recurring transactions are currently bound to personal userId.
+  // If we want recurring inside shared wallets, we'll need to expand this query.
   const recurringTransactions = await Transaction.find({
     userId,
     isRecurring: true,
-    nextExecutionDate: { $lte: new Date() }
+    nextExecutionDate: { $lte: new Date() },
+    walletId: null // Process only personal recurring transactions for now
   });
 
   for (const rt of recurringTransactions) {
-    const newTransaction = new Transaction({
-      userId: rt.userId,
-      type: rt.type,
-      amount: rt.amount,
-      category: rt.category,
-      description: rt.description,
-      paymentMethod: rt.paymentMethod,
-      mood: rt.mood,
-      date: new Date()
+    await withTransaction(async (session) => {
+
+      const newTransaction = new Transaction({
+        userId: rt.userId,
+        type: rt.type,
+        amount: rt.amount,
+        category: rt.category,
+        description: rt.description,
+        paymentMethod: rt.paymentMethod,
+        mood: rt.mood,
+        date: new Date()
+      });
+
+      await newTransaction.save({ session });
+
+      const balanceChange = rt.type === 'income' ? rt.amount : -rt.amount;
+
+      await User.findByIdAndUpdate(
+        rt.userId,
+        { $inc: { walletBalance: balanceChange } },
+        { session }
+      );
+
+      await logTransactionActivity({
+        userId: rt.userId,
+        transactionId: newTransaction._id,
+        action: "CREATED"
+      });
+
+      let nextDate = new Date(rt.nextExecutionDate);
+
+      if (rt.recurringInterval === "daily") nextDate.setDate(nextDate.getDate() + 1);
+      else if (rt.recurringInterval === "weekly") nextDate.setDate(nextDate.getDate() + 7);
+      else if (rt.recurringInterval === "monthly") nextDate.setMonth(nextDate.getMonth() + 1);
+
+      rt.nextExecutionDate = nextDate;
+      await rt.save({ session });
     });
-
-    await newTransaction.save();
-
-    await logTransactionActivity({
-      userId,
-      transactionId: newTransaction._id,
-      action: "CREATED"
-    });
-
-    // Update next execution date
-    let nextDate = new Date(rt.nextExecutionDate);
-    if (rt.recurringInterval === "daily") nextDate.setDate(nextDate.getDate() + 1);
-    else if (rt.recurringInterval === "weekly") nextDate.setDate(nextDate.getDate() + 7);
-    else if (rt.recurringInterval === "monthly") nextDate.setMonth(nextDate.getMonth() + 1);
-
-    rt.nextExecutionDate = nextDate;
-    await rt.save();
   }
 
-  // Filters
   if (type && type !== 'all') query.type = type;
 
   if (startDate || endDate) {
@@ -237,7 +346,8 @@ const getAllTransactions = catchAsync(async (req, res) => {
   });
 });
 
-// ================= UPDATE TRANSACTION =================
+
+// ================= UPDATE =================
 const updateTransaction = catchAsync(async (req, res) => {
   const { id } = req.params;
   const userId = req.userId;
@@ -259,8 +369,8 @@ const updateTransaction = catchAsync(async (req, res) => {
   }
 
   const updateData = parsed.data;
-  Object.assign(oldTransaction, updateData);
 
+  Object.assign(oldTransaction, updateData);
   await oldTransaction.save();
 
   await logTransactionActivity({
@@ -277,7 +387,8 @@ const updateTransaction = catchAsync(async (req, res) => {
   });
 });
 
-// ================= DELETE TRANSACTION =================
+
+// ================= DELETE =================
 const deleteTransaction = catchAsync(async (req, res) => {
   const { id } = req.params;
   const userId = req.userId;
@@ -292,11 +403,21 @@ const deleteTransaction = catchAsync(async (req, res) => {
     throw new AppError('Transaction not found', 404);
   }
 
-  const balanceChange = transaction.type === 'income' ? -transaction.amount : transaction.amount;
+  const balanceChange =
+    transaction.type === 'income'
+      ? -transaction.amount
+      : transaction.amount;
 
-  await User.findByIdAndUpdate(userId, {
-    $inc: { walletBalance: balanceChange }
-  });
+  if (transaction.walletId) {
+    const Wallet = require('../models/Wallet');
+    await Wallet.findByIdAndUpdate(transaction.walletId, {
+      $inc: { balance: balanceChange }
+    });
+  } else {
+    await User.findByIdAndUpdate(userId, {
+      $inc: { walletBalance: balanceChange }
+    });
+  }
 
   await logTransactionActivity({
     userId,
@@ -311,6 +432,7 @@ const deleteTransaction = catchAsync(async (req, res) => {
   });
 });
 
+
 // ================= SKIP OCCURRENCE =================
 const skipNextOccurrence = catchAsync(async (req, res) => {
   const { id } = req.params;
@@ -322,24 +444,18 @@ const skipNextOccurrence = catchAsync(async (req, res) => {
 
   const transaction = await Transaction.findOne({ _id: id, userId });
 
-  if (!transaction) {
-    throw new AppError('Transaction not found', 404);
-  }
-
-  if (!transaction.isRecurring || !transaction.nextExecutionDate) {
+  if (!transaction || !transaction.isRecurring || !transaction.nextExecutionDate) {
     throw new AppError('Transaction is not recurring or has no next execution date', 400);
   }
 
-  const currentNextDate = new Date(transaction.nextExecutionDate);
-  let updatedNextDate = new Date(currentNextDate);
+  let updatedNextDate = new Date(transaction.nextExecutionDate);
 
-  if (transaction.recurringInterval === "daily") {
+  if (transaction.recurringInterval === "daily")
     updatedNextDate.setDate(updatedNextDate.getDate() + 1);
-  } else if (transaction.recurringInterval === "weekly") {
+  else if (transaction.recurringInterval === "weekly")
     updatedNextDate.setDate(updatedNextDate.getDate() + 7);
-  } else if (transaction.recurringInterval === "monthly") {
+  else if (transaction.recurringInterval === "monthly")
     updatedNextDate.setMonth(updatedNextDate.getMonth() + 1);
-  }
 
   transaction.nextExecutionDate = updatedNextDate;
   await transaction.save();
@@ -347,9 +463,58 @@ const skipNextOccurrence = catchAsync(async (req, res) => {
   res.json({
     success: true,
     message: 'Next occurrence skipped successfully',
-    newNextExecutionDate: transaction.nextExecutionDate
+    newNextExecutionDate: updatedNextDate
   });
 });
+
+const skipNextOccurrence = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid transaction ID format' });
+        }
+
+        const transaction = await Transaction.findOne({ _id: id, userId });
+
+        if (!transaction) {
+            return res.status(404).json({ success: false, message: 'Transaction not found' });
+        }
+
+        if (!transaction.isRecurring || !transaction.nextExecutionDate) {
+            return res.status(400).json({ success: false, message: 'Transaction is not recurring or has no next execution date' });
+        }
+
+        // Calculate the next occurrence date
+        const currentNextDate = new Date(transaction.nextExecutionDate);
+        let updatedNextDate = new Date(currentNextDate);
+
+        if (transaction.recurringInterval === "daily") {
+            updatedNextDate.setDate(updatedNextDate.getDate() + 1);
+        } else if (transaction.recurringInterval === "weekly") {
+            updatedNextDate.setDate(updatedNextDate.getDate() + 7);
+        } else if (transaction.recurringInterval === "monthly") {
+            updatedNextDate.setMonth(updatedNextDate.getMonth() + 1);
+        }
+
+        transaction.nextExecutionDate = updatedNextDate;
+        await transaction.save();
+
+        res.json({
+            success: true,
+            message: 'Next occurrence skipped successfully',
+            newNextExecutionDate: transaction.nextExecutionDate
+        });
+
+    } catch (error) {
+        console.error('Skip next occurrence error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error skipping next occurrence'
+        });
+    }
+};
 
 // ================= UNDO TRANSACTION =================
 const undoTransaction = catchAsync(async (req, res) => {
@@ -373,16 +538,19 @@ const undoTransaction = catchAsync(async (req, res) => {
 
   await restored.save();
 
+  const balanceChange =
+    restored.type === 'income'
+      ? restored.amount
+      : -restored.amount;
+
+  await User.findByIdAndUpdate(userId, {
+    $inc: { walletBalance: balanceChange }
+  });
+
   await logTransactionActivity({
     userId,
     transactionId: restored._id,
     action: "RESTORED"
-  });
-
-  const balanceChange = restored.type === 'income' ? restored.amount : -restored.amount;
-
-  await User.findByIdAndUpdate(userId, {
-    $inc: { walletBalance: balanceChange }
   });
 
   res.json({
@@ -391,6 +559,7 @@ const undoTransaction = catchAsync(async (req, res) => {
     transaction: restored
   });
 });
+
 
 // ================= GET ACTIVITY =================
 const getTransactionActivity = catchAsync(async (req, res) => {

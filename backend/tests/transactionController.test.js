@@ -205,6 +205,38 @@ describe('Transaction Controller', () => {
 
     describe('getAllTransactions and recurring triggers', () => {
 
+        it('should correctly spawn new transaction and update wallet balance for recurring transactions', async () => {
+            mockdate.set('2024-01-01T10:00:00.000Z');
+            
+            // Create a recurring transaction that is due
+            const recurringTx = new Transaction({
+                userId: user._id,
+                type: 'income',
+                amount: 300,
+                category: 'salary',
+                isRecurring: true,
+                recurringInterval: 'monthly',
+                nextExecutionDate: new Date('2024-01-01T08:00:00.000Z') // Due now
+            });
+            await recurringTx.save();
+
+            const req = mockRequest({}, {}, {}, user._id);
+            const res = mockResponse();
+
+            await getAllTransactions(req, res);
+
+            const updatedUser = await User.findById(user._id);
+            expect(updatedUser.walletBalance).toBe(1300); // 1000 + 300
+
+            // Check if discrete transaction was spawned
+            const txs = await Transaction.find({ userId: user._id, category: 'salary' });
+            expect(txs.length).toBe(2);
+
+            // Check next execution date
+            const updatedRecurring = await Transaction.findById(recurringTx._id);
+            expect(updatedRecurring.nextExecutionDate.toISOString()).toBe(new Date('2024-02-01T08:00:00.000Z').toISOString());
+        });
+
         it('should correctly filter and sort transactions', async () => {
             await Transaction.insertMany([
                 { userId: user._id, type: 'income', amount: 50, category: 'other', date: new Date('2024-01-02') },

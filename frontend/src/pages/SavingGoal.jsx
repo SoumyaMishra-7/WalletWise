@@ -88,7 +88,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
       console.log('Sending request to backend...');
 
       // ADD TIMEOUT to prevent hanging indefinitely
-      const response = await api.post('/api/savings-goals', goalData, {
+      const response = await api.post('/savings-goals', goalData, {
         timeout: 15000
       });
 

@@ -1,0 +1,80 @@
+/* frontend/src/components/Gamification/BadgeGallery.css */
+
+.badge-gallery {
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    margin-top: 2rem;
+}
+
+.badge-gallery-header {
+    margin-bottom: 1.5rem;
+}
+
+.badge-gallery-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge-gallery-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.badge-card {
+    background: var(--bg-app);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.badge-card.unlocked {
+    border-color: var(--brand-primary);
+    background: linear-gradient(to bottom, var(--bg-card), var(--bg-app));
+    box-shadow: 0 4px 12px rgba(var(--brand-primary-rgb), 0.1);
+}
+
+.badge-card.locked {
+    opacity: 0.6;
+    filter: grayscale(100%);
+}
+
+.badge-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.badge-card.unlocked .badge-icon {
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+.badge-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.badge-description {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}

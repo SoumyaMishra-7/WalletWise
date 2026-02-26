@@ -22,6 +22,9 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import DecisionHelper from './pages/DecisionHelper';
 import MoodInsight from './pages/MoodInsight';
+import GamificationDashboard from './pages/GamificationDashboard'; // NEW: Gamification
+import SharedWallets from './pages/SharedWallets';
+import WalletDetails from './pages/WalletDetails';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
 // Import authentication components
@@ -266,6 +269,39 @@ function App() {
                   }
                 />
 
+              {/* Gamification Route */}
+              <Route
+                path="/gamification"
+                element={
+                  <ProtectedRoute>
+                    <GamificationDashboard />
+              <Route
+                path="/simulator"
+                element={
+                  <ProtectedRoute>
+                    <InvestmentSimulator />
+                path="/wallets"
+                element={
+                  <ProtectedRoute>
+                    <SharedWallets />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/wallets/:id"
+                element={
+                  <ProtectedRoute>
+                    <WalletDetails />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Redirect unknown routes to homepage */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </Router>
                 {/* Redirect unknown routes to homepage */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

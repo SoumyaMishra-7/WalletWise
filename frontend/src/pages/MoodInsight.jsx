@@ -19,7 +19,7 @@ const MoodInsight = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/api/insights/mood-correlation');
+      const res = await api.get('/insights/mood-correlation');
       setData(res.data.moodCorrelation);
     } catch (err) {
       // Interceptor handles the toast
