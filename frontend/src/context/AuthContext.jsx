@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshSession = useCallback(async () => {
     try {
-      await api.post('/api/auth/refresh', {});
+      await api.post('/auth/refresh', {});
       return true;
     } catch (error) {
       return false;
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   const loadUser = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/api/auth/me');
+      const { data } = await api.get('/auth/me');
       if (data?.success) {
         setUser(data.user);
       } else {
@@ -36,8 +36,25 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, [loadUser]);
 
+  // Listen for forced logout events triggered by the API interceptor
+  // (when token refresh fails after a 401). This avoids circular imports
+  // between AuthContext and client.js.
+  useEffect(() => {
+    const handleForceLogout = async () => {
+      await api.post('/auth/logout', {}).catch(() => { });
+      setUser(null);
+
+      const publicPaths = ['/login', '/signup', '/forgot-password', '/forgot-password/verify', '/forgot-password/reset', '/verify-email', '/'];
+      if (!publicPaths.includes(window.location.pathname)) {
+        window.location.href = '/login';
+      }
+    };
+    window.addEventListener('auth:logout', handleForceLogout);
+    return () => window.removeEventListener('auth:logout', handleForceLogout);
+  }, []);
+
   const login = async (payload) => {
-    const { data } = await api.post('/api/auth/login', payload);
+    const { data } = await api.post('/auth/login', payload);
     if (data?.success) {
       setUser(data.user);
     }
@@ -45,7 +62,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (payload) => {
-    const { data } = await api.post('/api/auth/register', payload);
+    const { data } = await api.post('/auth/register', payload);
     if (data?.success && !data?.requiresVerification) {
       setUser(data.user);
     }
@@ -53,7 +70,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateProfile = async (payload) => {
-    const { data } = await api.put('/api/auth/profile', payload);
+    const { data } = await api.put('/auth/profile', payload);
     if (data?.success) {
       setUser(data.user);
     }
@@ -61,9 +78,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await api.post('/api/auth/logout', {});
+    await api.post('/auth/logout', {});
     setUser(null);
   };
+
+  const updateUserLocally = useCallback((updates) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -75,8 +96,9 @@ export const AuthProvider = ({ children }) => {
         signup,
         updateProfile,
         logout,
-        logout,
-        reloadUser: loadUser
+        refreshSession,
+        reloadUser: loadUser,
+        updateUserLocally
       }}
     >
       {children}

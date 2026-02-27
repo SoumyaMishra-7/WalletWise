@@ -104,6 +104,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'English'
   },
+  theme: {
+    type: String,
+    enum: ['light', 'dark'],
+    default: 'light'
+  },
   // Financial Settings
   incomeFrequency: {
     type: String,
@@ -125,7 +130,38 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  wwcBalance: {
+    type: Number,
+    default: 10000
+  },
   refreshTokenHash: {
+    type: String
+  },
+  // Gamification Fields
+  totalXP: {
+    type: Number,
+    default: 0
+  },
+  currentStreak: {
+    type: Number,
+    default: 0
+  },
+  highestStreak: {
+    type: Number,
+    default: 0
+  },
+  lastActiveDate: {
+    type: Date
+  },
+  unlockedBadges: [{
+    type: String
+  }],
+  // Privacy Vault Fields
+  vaultEnabled: {
+    type: Boolean,
+    default: false
+  },
+  vaultSalt: {
     type: String
   },
   createdAt: {

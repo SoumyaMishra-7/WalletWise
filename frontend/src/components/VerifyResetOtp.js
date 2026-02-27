@@ -28,7 +28,7 @@ const VerifyResetOtp = () => {
 
     try {
       setLoading(true);
-      const response = await api.post('/api/auth/forgot-password/verify', {
+      const response = await api.post('/auth/forgot-password/verify', {
         email,
         otp
       });

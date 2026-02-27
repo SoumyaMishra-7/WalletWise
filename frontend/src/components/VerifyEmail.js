@@ -26,7 +26,7 @@ const VerifyEmail = () => {
 
     setLoading(true);
     try {
-      const { data } = await api.post('/api/auth/verify-email', {
+      const { data } = await api.post('/auth/verify-email', {
         email: email.trim(),
         otp: otp.trim()
       });
@@ -58,7 +58,7 @@ const VerifyEmail = () => {
 
     setResending(true);
     try {
-      const { data } = await api.post('/api/auth/resend-otp', {
+      const { data } = await api.post('/auth/resend-otp', {
         email: email.trim()
       });
       if (data?.success) {

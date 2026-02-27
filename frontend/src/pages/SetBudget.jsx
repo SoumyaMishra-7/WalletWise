@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 import api from '../api/client';
 import './SetBudget.css';
 import ConfirmDialog from "../components/ConfirmDialog";
+import { useAuth } from '../context/AuthContext';
 
 const DEFAULT_CATEGORIES = [
   { name: 'Food', categoryType: 'food', amount: 0, percentage: 0, color: '#FF6B6B' },
@@ -23,6 +24,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
   });
 
   const [activeCategory, setActiveCategory] = useState(0);
+  const { user } = useAuth();
+  const currencySymbol = user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$'));
+  const locale = user?.currency === 'INR' ? 'en-IN' : 'en-US';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -195,33 +199,70 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     };
 
     try {
-      const response = await api.post('/api/budget', budgetData);
+      const response = await api.post('/budget', budgetData);
 
       if (response.data.success) {
         toast.success(response.data.notification?.message || 'Budget set succesfully.', {
-          style: {
-            background: '#16a34a',
-            color: '#ffffff'
-          },
-          iconTheme: {
-            primary: '#bbf7d0',
-            secondary: '#166534'
-          }
+          style: { background: '#16a34a', color: '#ffffff' },
+          iconTheme: { primary: '#bbf7d0', secondary: '#166534' }
         });
-
-        // Call parent callback
-        if (onSetBudget) {
-          onSetBudget(response.data.budget);
-        }
-
-        // Close modal
+        if (onSetBudget) onSetBudget(response.data.budget);
         onClose();
-      } else {
-        throw new Error(response.data.message || 'Failed to set budget');
       }
     } catch (err) {
-      console.error('Budget set error:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to set budget. Please try again.');
+      // Interceptor handles the toast
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSmartSuggest = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { data } = await api.get('/analytics/forecast');
+      if (data && data.forecasts) {
+        const totalBudget = data.overallSuggestion || 0;
+
+        const updatedCategories = formData.categories.map(cat => {
+          const forecast = data.forecasts.find(f => f.category === cat.categoryType || f.category === cat.name);
+          if (forecast) {
+            const amount = forecast.predictedNextMonth;
+            const percentage = totalBudget > 0 ? Math.round((amount / totalBudget) * 100) : 0;
+            return {
+              ...cat,
+              amount,
+              percentage,
+              amountStr: amount.toString()
+            };
+          }
+          return cat;
+        });
+
+        // Ensure total percentage is 100
+        const currentTotalPerc = updatedCategories.reduce((sum, c) => sum + c.percentage, 0);
+        if (currentTotalPerc !== 100 && updatedCategories.length > 0) {
+          const diff = 100 - currentTotalPerc;
+          updatedCategories[0].percentage += diff;
+          updatedCategories[0].amount = Math.round((updatedCategories[0].percentage / 100) * totalBudget);
+          updatedCategories[0].amountStr = updatedCategories[0].amount.toString();
+        }
+
+        setFormData({
+          totalBudget: totalBudget.toString(),
+          categories: updatedCategories
+        });
+
+        toast.success('Generated smart budget based on your spending history!', {
+          icon: '🤖',
+          style: { background: '#118AB2', color: '#fff' }
+        });
+      } else {
+        toast.error('Not enough data to generate a forecast. Try manually setting for now.');
+      }
+    } catch (err) {
+      console.error('Forecast error:', err);
+      toast.error('Failed to generate smart suggestion.');
     } finally {
       setLoading(false);
     }
@@ -281,7 +322,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               Total Monthly Budget *
             </label>
             <div className="total-budget-input">
-              <span className="budget-currency">₹</span>
+              <span className="budget-currency">{currencySymbol}</span>
               <input
                 type="number"
                 id="totalBudget"
@@ -307,6 +348,15 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                 disabled={loading}
               >
                 Copy Last Month
+              </button>
+              <button
+                type="button"
+                className="smart-suggest-btn"
+                onClick={handleSmartSuggest}
+                disabled={loading}
+                title="AI-powered budget suggestion based on your history"
+              >
+                ✨ Smart Suggest
               </button>
             </div>
             <div className="quick-allocation-buttons">
@@ -364,7 +414,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                 <h3>{formData.categories[activeCategory].name}</h3>
                 <div className="category-stats">
                   <span className="stat-percentage">{formData.categories[activeCategory].percentage}%</span>
-                  <span className="stat-amount">₹{formData.categories[activeCategory].amount.toLocaleString()}</span>
+                  <span className="stat-amount">{currencySymbol}{formData.categories[activeCategory].amount.toLocaleString(locale)}</span>
                 </div>
               </div>
 
@@ -400,9 +450,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
 
                 {/* Amount Input */}
                 <div className="control-group">
-                  <label>Amount (₹)</label>
+                  <label>Amount ({currencySymbol})</label>
                   <div className="amount-input-container">
-                    <span className="amount-currency">₹</span>
+                    <span className="amount-currency">{currencySymbol}</span>
                     <input
                       type="number"
                       min="0"
@@ -413,7 +463,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                       disabled={loading}
                     />
                     <span className="amount-hint">
-                      Max: ₹{(formData.totalBudget || 0).toLocaleString()}
+                      Max: {currencySymbol}{(formData.totalBudget || 0).toLocaleString(locale)}
                     </span>
                   </div>
                 </div>
@@ -437,7 +487,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               <div className="summary-item">
                 <span className="summary-label">Total Amount:</span>
                 <span className="summary-value amount">
-                  ₹{(formData.totalBudget || 0).toLocaleString()}
+                  {currencySymbol}{(formData.totalBudget || 0).toLocaleString(locale)}
                 </span>
               </div>
             </div>

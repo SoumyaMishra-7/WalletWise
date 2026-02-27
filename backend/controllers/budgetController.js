@@ -1,6 +1,7 @@
 const Budget = require('../models/Budget');
 const Transaction = require('../models/Transactions');
 const { isValidObjectId } = require('../utils/validation');
+const gamification = require('../utils/gamification');
 
 // Set/Update Budget
 const setBudget = async (req, res) => {
@@ -108,10 +109,14 @@ const setBudget = async (req, res) => {
 
         }
 
+        // Gamification Hook: Award First Budget badge if applicable
+        const badgeAwarded = await gamification.awardBadge(req.userId, 'FIRST_BUDGET');
+
         // Send success response
         res.status(200).json({
             success: true,
             message: 'Budget set successfully! 🎉',
+            gamification: badgeAwarded ? { badge: badgeAwarded.badge } : null,
             notification: {
                 type: 'success',
                 title: 'Budget Set',
@@ -423,12 +428,40 @@ const updateBudget = async (req, res) => {
         }
 
         // Validate if updating
+        if (updates.totalBudget !== undefined && updates.totalBudget <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Valid total budget amount is required and must be greater than 0'
+            });
+        }
+
         if (updates.categories) {
             const totalPercentage = updates.categories.reduce((sum, cat) => sum + cat.percentage, 0);
             if (Math.abs(totalPercentage - 100) > 0.01) {
                 return res.status(400).json({
                     success: false,
                     message: `Total percentage must be 100%. Currently ${totalPercentage.toFixed(2)}%`
+                });
+            }
+
+            // Ensure we use the right totalBudget to compare against (either the new one or existing)
+            const expectedTotal = updates.totalBudget !== undefined ? updates.totalBudget : budget.totalBudget;
+            let totalAmount = 0;
+
+            for (const category of updates.categories) {
+                if (category.amount < 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Amount for ${category.name} cannot be negative`
+                    });
+                }
+                totalAmount += category.amount;
+            }
+
+            if (Math.abs(totalAmount - expectedTotal) > 0.01) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Sum of category amounts (${totalAmount}) must equal total budget (${expectedTotal})`
                 });
             }
         }

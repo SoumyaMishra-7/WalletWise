@@ -49,10 +49,13 @@ const updateProfileSchema = z.object({
   currency: z.string().optional(),
   dateFormat: z.string().optional(),
   language: z.string().optional(),
+  theme: z.enum(['light', 'dark']).optional(),
   incomeFrequency: z.string().optional(),
   incomeSources: z.string().optional(),
   priorities: z.string().optional(),
-  riskTolerance: z.string().optional()
+  riskTolerance: z.string().optional(),
+  billRemindersEnabled: z.union([z.boolean(), z.string()]).transform(v => v === true || v === 'true').optional(),
+  reminderDaysBefore: z.union([z.number(), z.string()]).transform(Number).refine(v => [1, 3, 7].includes(v), 'Must be 1, 3, or 7').optional()
 });
 
 const cookieOptions = () => {
@@ -100,7 +103,12 @@ const safeUser = (user) => ({
   incomeFrequency: user.incomeFrequency,
   incomeSources: user.incomeSources,
   priorities: user.priorities,
-  riskTolerance: user.riskTolerance
+  riskTolerance: user.riskTolerance,
+  theme: user.theme || 'light',
+  totalXP: user.totalXP || 0,
+  currentStreak: user.currentStreak || 0,
+  highestStreak: user.highestStreak || 0,
+  unlockedBadges: user.unlockedBadges || []
 });
 
 const sendVerificationOtp = async (user) => {
@@ -175,6 +183,7 @@ const sendPasswordResetInstructions = async (user, { skipEmail } = {}) => {
   return { otp, token, resetLink, delivered: true };
 };
 
+
 const register = asyncHandler(async (req, res) => {
   console.log('📝 Incoming Registration Request:', JSON.stringify(req.body, null, 2));
 
@@ -192,28 +201,23 @@ const register = asyncHandler(async (req, res) => {
   if (existing) {
     return res.status(400).json({
       success: false,
-      message: 'Registration failed. Please check your details.'
+      message: 'User already exists with this email or student ID'
     });
   }
 
+  // ✅ Create user properly
   const user = new User({
     studentId,
     fullName,
     email,
-    phoneNumber: phoneNumber || '',
+    phoneNumber,
     department,
     year,
-    provider: 'local',
-    walletBalance: 0,
-    emailVerified: false
+    emailVerified: true // ✅ Skip email verification for local testing
   });
 
   await user.setPassword(password);
   await User.saveWithUniqueStudentId(user);
-
-  // ✅ Skip email verification for local testing
-  user.emailVerified = true;
-  await user.save();
 
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
@@ -225,6 +229,7 @@ const register = asyncHandler(async (req, res) => {
   return res.status(201).json({
     success: true,
     message: 'Registration successful',
+    token: accessToken,
     user: safeUser(user)
   });
 });
@@ -267,33 +272,26 @@ const login = asyncHandler(async (req, res) => {
 
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
+
   user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-  await User.saveWithUniqueStudentId(user);
+  await user.save();
 
   setAuthCookies(res, accessToken, refreshToken);
 
   return res.json({
     success: true,
     message: 'Login successful',
+    token: accessToken,
     user: safeUser(user)
   });
 });
 
 const logout = asyncHandler(async (req, res) => {
-  const refreshToken = req.cookies.refresh_token;
-  if (refreshToken) {
-    try {
-      const decoded = verifyRefreshToken(refreshToken);
-      const user = await User.findById(decoded.sub);
-      if (user) {
-        user.refreshTokenHash = null;
-        await user.save();
-      }
-    } catch (error) { }
-  }
-
   clearAuthCookies(res);
-  return res.json({ success: true, message: 'Logged out successfully' });
+  return res.json({
+    success: true,
+    message: 'Logged out successfully'
+  });
 });
 
 const refresh = asyncHandler(async (req, res) => {
@@ -426,9 +424,11 @@ const requestPasswordReset = async (req, res) => {
         await sendPasswordResetInstructions(user);
         emailSent = true;
       } catch (mailError) {
-        if (process.env.NODE_ENV !== 'production' && /SMTP configuration missing/i.test(mailError?.message)) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn("Mail error (ignored in dev):", mailError.message);
           const fallback = await sendPasswordResetInstructions(user, { skipEmail: true });
           devResetLink = fallback.resetLink;
+          res.locals.devOtp = fallback.otp; // Store to send in response
         } else {
           throw mailError;
         }
@@ -439,7 +439,7 @@ const requestPasswordReset = async (req, res) => {
       success: true,
       message: 'If an account exists for this email, a password reset link has been sent.',
       emailSent,
-      ...(devResetLink ? { devResetLink } : {})
+      ...(devResetLink ? { devResetLink, devOtp: res.locals.devOtp } : {})
     });
   } catch (error) {
     return res.status(500).json({
@@ -451,12 +451,13 @@ const requestPasswordReset = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { email, otp, token, password } = req.body || {};
+    const { email, otp, token, newPassword, password } = req.body || {};
+    const effectivePassword = newPassword || password;
     const normalizedEmail = String(email || '').toLowerCase();
     const hasToken = Boolean(token);
     const hasOtpFlow = Boolean(normalizedEmail && otp);
 
-    if (!password || (!hasToken && !hasOtpFlow)) {
+    if (!effectivePassword || (!hasToken && !hasOtpFlow)) {
       return res.status(400).json({
         success: false,
         message: 'Password and either token or email+OTP are required'
@@ -491,7 +492,7 @@ const resetPassword = async (req, res) => {
       }
     }
 
-    await user.setPassword(password);
+    await user.setPassword(effectivePassword);
     user.passwordResetOtpHash = null;
     user.passwordResetOtpExpires = null;
     user.passwordResetOtpSentAt = null;
@@ -531,11 +532,17 @@ const updateProfile = asyncHandler(async (req, res) => {
     user.avatar = myCloud.secure_url;
   }
 
+  // const {
+  //   fullName, phoneNumber, department, year,
+  //   currency, dateFormat, language, theme,
+  //   incomeFrequency, incomeSources, priorities, riskTolerance
+  // } = parsed.data;
   const {
-    fullName, phoneNumber, department, year,
-    currency, dateFormat, language,
-    incomeFrequency, incomeSources, priorities, riskTolerance
-  } = parsed.data;
+  fullName, phoneNumber, department, year,
+  currency, dateFormat, language, theme,
+  incomeFrequency, incomeSources, priorities, riskTolerance,
+  billRemindersEnabled, reminderDaysBefore
+} = parsed.data;
 
   if (fullName !== undefined) user.fullName = fullName.trim();
   if (phoneNumber !== undefined) user.phoneNumber = phoneNumber.trim();
@@ -545,10 +552,19 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (currency !== undefined) user.currency = currency;
   if (dateFormat !== undefined) user.dateFormat = dateFormat;
   if (language !== undefined) user.language = language;
+  if (theme !== undefined) user.theme = theme;
   if (incomeFrequency !== undefined) user.incomeFrequency = incomeFrequency;
   if (incomeSources !== undefined) user.incomeSources = incomeSources;
   if (priorities !== undefined) user.priorities = priorities;
   if (riskTolerance !== undefined) user.riskTolerance = riskTolerance;
+
+  if (billRemindersEnabled !== undefined || reminderDaysBefore !== undefined) {
+    if (!user.notificationPrefs) {
+      user.notificationPrefs = {};
+    }
+    if (billRemindersEnabled !== undefined) user.notificationPrefs.billRemindersEnabled = billRemindersEnabled;
+    if (reminderDaysBefore !== undefined) user.notificationPrefs.reminderDaysBefore = reminderDaysBefore;
+  }
 
   await user.save();
 

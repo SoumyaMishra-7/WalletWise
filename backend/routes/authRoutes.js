@@ -19,12 +19,11 @@ const singleUpload = require('../middleware/multer');
 const { authLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
+const currencyMiddleware = require('../middleware/currencyConverter.middleware');
 
-
-
-router.post('/register', authLimiter, validate(userRegisterSchema), authController.register);
-router.post('/login', authLimiter, validate(userLoginSchema), authController.login);
-router.post('/verify-email', authLimiter, validate(verifyEmailSchema), authController.verifyEmail);
+router.post('/register', authLimiter, currencyMiddleware, validate(userRegisterSchema), authController.register);
+router.post('/login', authLimiter, currencyMiddleware, validate(userLoginSchema), authController.login);
+router.post('/verify-email', authLimiter, currencyMiddleware, validate(verifyEmailSchema), authController.verifyEmail);
 router.post('/resend-otp', authLimiter, validate(resendOtpSchema), authController.resendEmailOtp);
 router.post('/forgot-password', authLimiter, validate(forgotPasswordRequestSchema), authController.requestPasswordReset);
 router.post('/forgot-password/verify', authLimiter, validate(forgotPasswordVerifySchema), authController.verifyPasswordResetOtp);

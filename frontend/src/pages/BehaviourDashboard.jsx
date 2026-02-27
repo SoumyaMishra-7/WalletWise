@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import api from '../api/client';
 import Spinner from '../components/Spinner';
+import { useAuth } from '../context/AuthContext';
 import './BehaviourDashboard.css';
 
 const categoryToneMap = {
@@ -33,9 +34,6 @@ const categoryToneMap = {
   shopping: 'tone-violet'
 };
 
-const formatCurrency = (amount) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
-
 const normalizeMerchant = (transaction) => {
   const raw = `${transaction.description || transaction.category || 'Unknown'}`.trim();
   if (!raw) return 'Unknown';
@@ -44,8 +42,14 @@ const normalizeMerchant = (transaction) => {
 
 const BehaviourDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const formatCurrency = useCallback((amount) => {
+    const currency = user?.currency || 'USD';
+    const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
+  }, [user?.currency]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [summary, setSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [insights, setInsights] = useState(null);
@@ -54,12 +58,11 @@ const BehaviourDashboard = () => {
     let isMounted = true;
     const fetchData = async () => {
       setLoading(true);
-      setError('');
       try {
         const [summaryRes, txRes, insightsRes] = await Promise.all([
-          api.get('/api/dashboard/summary'),
-          api.get('/api/transactions'),
-          api.get('/api/insights/summary')
+          api.get('/dashboard/summary'),
+          api.get('/transactions'),
+          api.get('/insights/summary')
         ]);
 
         if (!isMounted) return;
@@ -67,8 +70,7 @@ const BehaviourDashboard = () => {
         setTransactions(txRes.data?.transactions || []);
         setInsights(insightsRes.data || null);
       } catch (err) {
-        if (!isMounted) return;
-        setError('Unable to load AI analysis data right now.');
+        // Interceptor handles the toast
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -160,7 +162,7 @@ const BehaviourDashboard = () => {
     }
 
     return highlights.slice(0, 3);
-  }, [transactions, stats.monthlyExpenses]);
+  }, [transactions, stats.monthlyExpenses, formatCurrency]);
 
   const totalMonthlyContribution = useMemo(
     () => savingsGoals.reduce((sum, goal) => sum + Number(goal.monthlyContribution || 0), 0),
@@ -291,23 +293,13 @@ const BehaviourDashboard = () => {
     const peaks = insights.seasonal?.categoryPeaks || [];
     peaks.slice(0, 2).forEach((p) => msgs.push(`${p.category} peaked in ${p.peakMonth}.`));
     return msgs.slice(0, 8);
-  }, [insights]);
+  }, [insights, formatCurrency]);
 
   if (loading) {
     return (
       <div className="ai-page">
         <div className="ai-content">
           <Spinner size={60} text="Loading AI analysis…" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="ai-page">
-        <div className="ai-content">
-          <div className="ai-card">{error}</div>
         </div>
       </div>
     );

@@ -54,6 +54,24 @@ nextExecutionDate: {
     type: String,
     enum: ['happy', 'stressed', 'bored', 'sad', 'calm', 'neutral'],
     default: 'neutral'
+  },
+  // Issue 270: Shared Wallets Fields
+  walletId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Wallet',
+    default: null
+  },
+  paidBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  // Privacy Vault Fields
+  isEncrypted: {
+    type: Boolean,
+    default: false
+  },
+  encryptedData: {
+    type: String, // Stores Base64 encoded JSON of { ciphertext, iv }
+    default: null
   }
 }, { timestamps: true });
 

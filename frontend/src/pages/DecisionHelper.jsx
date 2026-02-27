@@ -11,6 +11,7 @@ import {
     LucideZap
 } from 'lucide-react';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import './DecisionHelper.css';
 
 const moodOptions = [
@@ -37,7 +38,7 @@ const DecisionHelper = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await api.post('/api/insights/evaluate', formData);
+            const response = await api.post('/insights/evaluate', formData);
             if (response.data.success) {
                 setResult(response.data.evaluation);
             }
@@ -48,8 +49,13 @@ const DecisionHelper = () => {
         }
     };
 
-    const formatCurrency = (amount) =>
-        new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
+    const { user } = useAuth();
+
+    const formatCurrency = (amount) => {
+        const currency = user?.currency || 'USD';
+        const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+        return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
+    };
 
     return (
         <div className="decision-page">

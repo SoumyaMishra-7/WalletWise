@@ -18,9 +18,9 @@
 
 /* Modal Content */
 .savings-modal-content {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
   width: 90%;
   max-width: 500px;
   max-height: 85vh;
@@ -34,7 +34,7 @@
 .savings-modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 24px;
   border-bottom: 1px solid #e9ecef;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -70,11 +70,19 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  transform-origin: center center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;        /* stops text character from having extra space */
+  padding: 0;            /* removes any default button padding offsetting it */
+  transform-origin: center center;
+  transition: all 0.2s;
 }
 
-.close-savings-btn:hover {
+body.theme-dark .close-savings-btn:hover {
   background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
+  transform: rotate(90deg) scale(1.1);
 }
 
 .close-savings-btn:disabled {
@@ -96,7 +104,7 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-main);
   font-size: 14px;
 }
 
@@ -105,11 +113,12 @@
 .savings-form-group select {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--border-subtle);
   border-radius: 8px;
   font-size: 15px;
   transition: all 0.3s;
-  background: #f8f9fa;
+  background: var(--bg-app);
+  color: var(--text-main);
 }
 
 .savings-form-group input:focus,
@@ -117,7 +126,7 @@
 .savings-form-group select:focus {
   outline: none;
   border-color: #667eea;
-  background: white;
+  background: var(--bg-card);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -192,13 +201,13 @@
 
 .timeline-btn {
   padding: 10px;
-  border: 2px solid #e1e5e9;
   border-radius: 8px;
-  background: white;
+  background: var(--bg-card);        /* was: white */
+  border: 2px solid var(--border-subtle); /* was: #e1e5e9 */
+  color: var(--text-muted);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.3s;
-  color: #666;
 }
 
 .timeline-btn.active {
@@ -227,32 +236,32 @@
 .char-count {
   text-align: right;
   font-size: 12px;
-  color: #999;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
 /* Helper Text */
 .helper-text {
   font-size: 12px;
-  color: #666;
+  color: var(--text-muted);
   margin-top: 4px;
   font-style: italic;
 }
 
 /* Summary Card */
 .savings-summary-card {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: var(--bg-app);         
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 20px;
   margin: 24px 0;
-  border: 1px solid #dee2e6;
 }
 
 .summary-title {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: #333;
+  color: var(--text-main);;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -272,7 +281,7 @@
 
 .summary-label {
   font-size: 12px;
-  color: #666;
+  color:  var(--text-muted);
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -281,7 +290,7 @@
 .summary-value {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-main);;
 }
 
 .summary-value.highlight {
@@ -289,16 +298,16 @@
 }
 
 .monthly-section {
-  background: white;
+  background: var(--bg-card);
   padding: 16px;
   border-radius: 8px;
   text-align: center;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-subtle);
 }
 
 .monthly-label {
   font-size: 14px;
-  color: #666;
+  color:  var(--text-muted);
   margin-bottom: 8px;
 }
 
@@ -311,7 +320,7 @@
 
 .monthly-note {
   font-size: 12px;
-  color: #999;
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -321,7 +330,7 @@
   gap: 12px;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .savings-btn-cancel,
@@ -337,14 +346,14 @@
 }
 
 .savings-btn-cancel {
-  background: #f8f9fa;
-  color: #666;
-  border: 2px solid #e1e5e9;
+  background: var(--bg-app);          
+  color: var(--text-muted);   
+  border: 2px solid var(--border-subtle);
 }
 
 .savings-btn-cancel:hover:not(:disabled) {
-  background: #e9ecef;
-  color: #333;
+   background: var(--bg-card);
+  color: var(--text-main);
 }
 
 .savings-btn-submit {
@@ -494,12 +503,12 @@
 }
 
 /* Scrollbar Styling */
-.savings-modal-content::-webkit-scrollbar {
-  width: 8px;
+body.theme-dark .savings-modal-content::-webkit-scrollbar-track {
+  background: var(--bg-app);
 }
 
-.savings-modal-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+body.theme-dark .savings-modal-content::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
   border-radius: 4px;
 }
 

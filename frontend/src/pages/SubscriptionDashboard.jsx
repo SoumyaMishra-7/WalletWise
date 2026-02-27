@@ -14,12 +14,18 @@ import {
 import api from '../api/client';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 import './SubscriptionDashboard.css';
 
-const formatCurrency = (amount) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
-
 const SubscriptionDashboard = () => {
+    const { user } = useAuth();
+
+    const formatCurrency = (amount) => {
+        const currency = user?.currency || 'USD';
+        const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+        return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
+    };
+
     const [subscriptions, setSubscriptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [scanning, setScanning] = useState(false);
@@ -35,7 +41,7 @@ const SubscriptionDashboard = () => {
     const fetchSubscriptions = async () => {
         try {
             setLoading(true);
-            const { data } = await api.get('/api/subscriptions');
+            const { data } = await api.get('/subscriptions');
             setSubscriptions(data.subscriptions || []);
         } catch (error) {
             toast.error('Failed to load subscriptions');
@@ -51,7 +57,7 @@ const SubscriptionDashboard = () => {
     const handleScan = async () => {
         try {
             setScanning(true);
-            const { data } = await api.get('/api/subscriptions/detect');
+            const { data } = await api.get('/subscriptions/detect');
 
             if (data.candidates && data.candidates.length > 0) {
                 // Auto-add high confidence ones or show prompt (simplifying to auto-add for now with toast)
@@ -59,7 +65,7 @@ const SubscriptionDashboard = () => {
                 for (const candidate of data.candidates) {
                     // Check if already exists in current list to avoid dupes visually
                     if (!subscriptions.some(s => s.name.toLowerCase() === candidate.name.toLowerCase())) {
-                        await api.post('/api/subscriptions', candidate);
+                        await api.post('/subscriptions', candidate);
                         addedCount++;
                     }
                 }
@@ -98,7 +104,7 @@ const SubscriptionDashboard = () => {
             return;
         }
         try {
-            await api.post('/api/subscriptions', newSub);
+            await api.post('/subscriptions', newSub);
             setShowAddModal(false);
             setNewSub({ name: '', amount: '', nextDueDate: '', category: 'Utilities', billingCycle: 'monthly' });
             fetchSubscriptions();
@@ -142,8 +148,11 @@ const SubscriptionDashboard = () => {
             <header className="sub-header">
                 <div className="sub-header-top">
                     <Link to="/dashboard" className="back-link">
-                        Back to Dashboard
-                    </Link>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                                </svg>
+                                Back to Dashboard
+                              </Link>
                     <div className="sub-badge">
                         <LucideCalendarDays size={16} />
                         Smart Tracker

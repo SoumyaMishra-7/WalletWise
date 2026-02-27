@@ -25,10 +25,13 @@ const ForgotPassword = () => {
 
         try {
             setLoading(true);
-            const response = await api.post('/api/auth/forgot-password', { email });
+            const response = await api.post('/auth/forgot-password', { email });
 
             if (response.data.success) {
-                toast.success(response.data.message);
+                toast.success('Check your email for an OTP.');
+                if (response.data.devOtp) {
+                    toast.info(`Dev Mode: Your OTP is ${response.data.devOtp}`, { autoClose: false });
+                }
                 setStep(2);
             } else {
                 toast.error(response.data.message || 'Failed to send OTP');
@@ -61,7 +64,7 @@ const ForgotPassword = () => {
 
         try {
             setLoading(true);
-            const response = await api.post('/api/auth/reset-password', {
+            const response = await api.post('/auth/reset-password', {
                 email,
                 otp,
                 newPassword

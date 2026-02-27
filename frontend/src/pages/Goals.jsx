@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import SavingGoal from './SavingGoal';
 import Spinner from '../components/Spinner';
@@ -59,16 +60,18 @@ const initialGoals = [
 const Goals = () => {
   const [goals, setGoals] = useState([]);
   const [loadingGoals, setLoadingGoals] = useState(true);
-  const [goalsError, setGoalsError] = useState('');
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [addAmount, setAddAmount] = useState(0);
-  const [addError, setAddError] = useState('');
   const [addingAmount, setAddingAmount] = useState(false);
   const location = useLocation();
 
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
+  const { user } = useAuth();
+  const formatCurrency = (amount) => {
+    const currency = user?.currency || 'USD';
+    const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
+  };
 
   const formatDeadline = (date) => {
     if (!date) return 'No deadline';
@@ -88,10 +91,9 @@ const Goals = () => {
 
   const fetchGoals = useCallback(async () => {
     setLoadingGoals(true);
-    setGoalsError('');
 
     try {
-      const response = await api.get('/api/savings-goals');
+      const response = await api.get('/savings-goals');
 
       if (response.data?.success) {
         const mappedGoals = (response.data.goals || []).map((goal) => {
@@ -114,12 +116,9 @@ const Goals = () => {
         setGoals(mappedGoals);
       } else {
         setGoals(initialGoals);
-        setGoalsError(response.data?.message || 'Failed to load goals');
       }
     } catch (err) {
-      console.error('Failed to fetch goals:', err);
       setGoals(initialGoals);
-      setGoalsError('Failed to load goals. Please try again.');
     } finally {
       setLoadingGoals(false);
     }
@@ -152,14 +151,12 @@ const Goals = () => {
   useEffect(() => {
     if (!selectedGoal) return;
     setAddAmount(suggestedAmountForGoal(selectedGoal));
-    setAddError('');
   }, [selectedGoal]);
 
   const handleAddCustomAmount = async () => {
     if (!selectedGoal) return;
     const amountValue = Math.max(0, Number(addAmount || 0));
     if (!amountValue) return;
-    setAddError('');
     setAddingAmount(true);
 
     try {
@@ -187,8 +184,7 @@ const Goals = () => {
       setSelectedGoal(updatedGoal);
       setAddAmount(suggestedAmountForGoal(updatedGoal));
     } catch (error) {
-      console.error('Failed to add amount:', error);
-      setAddError('Failed to add amount. Please try again.');
+      // Interceptor handles the toast
     } finally {
       setAddingAmount(false);
     }
@@ -387,7 +383,6 @@ const Goals = () => {
                 Use suggested {formatCurrency(suggestedAmountForGoal(selectedGoal))}
               </button>
             </div>
-            {addError && <p className="add-error">{addError}</p>}
             <div className="goal-modal-actions">
               <button className="btn-primary" onClick={handleAddCustomAmount} disabled={addingAmount}>
                 {addingAmount ? 'Adding...' : `Add ${formatCurrency(addAmount || 0)}`}
