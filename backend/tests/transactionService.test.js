@@ -183,5 +183,145 @@ describe('TransactionService (with mocks — no database)', () => {
             expect(result.transactions.length).toBe(1);
             expect(result.transactions[0].type).toBe('expense');
         });
+
+        it('should exclude soft-deleted transactions from results', async () => {
+            const addResult = await service.addTransaction(testUser._id, {
+                type: 'expense', amount: 100, category: 'food', forceDuplicate: true
+            });
+            await service.addTransaction(testUser._id, {
+                type: 'income', amount: 200, category: 'salary', forceDuplicate: true
+            });
+
+            // Soft-delete first transaction
+            await service.deleteTransaction(testUser._id, addResult.transaction._id.toString());
+
+            const result = await service.getAllTransactions(testUser._id, { page: 1, limit: 10 });
+
+            expect(result.transactions.length).toBe(1);
+            expect(result.transactions[0].type).toBe('income');
+        });
+    });
+
+    describe('deleteTransaction (soft-delete)', () => {
+        it('should soft-delete a transaction and revert balance', async () => {
+            const addResult = await service.addTransaction(testUser._id, {
+                type: 'expense',
+                amount: 150,
+                category: 'housing'
+            });
+
+            // Balance should be 850 (1000 - 150)
+            let user = await userRepo.findById(testUser._id);
+            expect(user.walletBalance).toBe(850);
+
+            const deleted = await service.deleteTransaction(testUser._id, addResult.transaction._id.toString());
+
+            // Transaction should be soft-deleted, not removed
+            expect(deleted.isDeleted).toBe(true);
+            expect(deleted.deletedAt).toBeDefined();
+
+            // Balance should be restored to 1000
+            user = await userRepo.findById(testUser._id);
+            expect(user.walletBalance).toBe(1000);
+
+            // Transaction should still exist in the repository
+            const raw = await txRepo.findOne({ _id: addResult.transaction._id, isDeleted: true });
+            expect(raw).not.toBeNull();
+        });
+
+        it('should throw for invalid transaction ID', async () => {
+            await expect(
+                service.deleteTransaction(testUser._id, 'invalid-id')
+            ).rejects.toThrow('Invalid transaction ID format');
+        });
+    });
+
+    describe('undoTransaction (server-side restore)', () => {
+        it('should restore a soft-deleted transaction and re-apply balance', async () => {
+            const addResult = await service.addTransaction(testUser._id, {
+                type: 'expense',
+                amount: 200,
+                category: 'shopping'
+            });
+
+            // Balance: 1000 - 200 = 800
+            let user = await userRepo.findById(testUser._id);
+            expect(user.walletBalance).toBe(800);
+
+            // Delete (soft) — balance reverts to 1000
+            await service.deleteTransaction(testUser._id, addResult.transaction._id.toString());
+            user = await userRepo.findById(testUser._id);
+            expect(user.walletBalance).toBe(1000);
+
+            // Undo — balance goes back to 800
+            const restored = await service.undoTransaction(testUser._id, addResult.transaction._id.toString());
+
+            expect(restored.isDeleted).toBe(false);
+            expect(restored.deletedAt).toBeNull();
+
+            user = await userRepo.findById(testUser._id);
+            expect(user.walletBalance).toBe(800);
+        });
+
+        it('should restore a soft-deleted income transaction correctly', async () => {
+            const addResult = await service.addTransaction(testUser._id, {
+                type: 'income',
+                amount: 500,
+                category: 'salary'
+            });
+
+            // Balance: 1000 + 500 = 1500
+            let user = await userRepo.findById(testUser._id);
+            expect(user.walletBalance).toBe(1500);
+
+            // Delete — balance reverts to 1000
+            await service.deleteTransaction(testUser._id, addResult.transaction._id.toString());
+            user = await userRepo.findById(testUser._id);
+            expect(user.walletBalance).toBe(1000);
+
+            // Undo — balance goes back to 1500
+            const restored = await service.undoTransaction(testUser._id, addResult.transaction._id.toString());
+            expect(restored.isDeleted).toBe(false);
+
+            user = await userRepo.findById(testUser._id);
+            expect(user.walletBalance).toBe(1500);
+        });
+
+        it('should reject undo for a non-deleted transaction', async () => {
+            const addResult = await service.addTransaction(testUser._id, {
+                type: 'expense',
+                amount: 100,
+                category: 'food'
+            });
+
+            // Try to undo a transaction that was never deleted
+            await expect(
+                service.undoTransaction(testUser._id, addResult.transaction._id.toString())
+            ).rejects.toThrow('No deleted transaction found to restore');
+        });
+
+        it('should reject undo after the undo window expires', async () => {
+            const addResult = await service.addTransaction(testUser._id, {
+                type: 'expense',
+                amount: 100,
+                category: 'food'
+            });
+
+            await service.deleteTransaction(testUser._id, addResult.transaction._id.toString());
+
+            // Manually set deletedAt to 31 minutes ago to simulate expiry
+            const tx = await txRepo.findOne({ _id: addResult.transaction._id, isDeleted: true });
+            tx.deletedAt = new Date(Date.now() - 31 * 60 * 1000);
+
+            await expect(
+                service.undoTransaction(testUser._id, addResult.transaction._id.toString())
+            ).rejects.toThrow('Undo window has expired');
+        });
+
+        it('should reject undo with invalid transaction ID', async () => {
+            await expect(
+                service.undoTransaction(testUser._id, 'invalid-id')
+            ).rejects.toThrow('Invalid transaction ID format');
+        });
     });
 });
