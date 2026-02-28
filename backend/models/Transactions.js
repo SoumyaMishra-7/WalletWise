@@ -64,6 +64,7 @@ nextExecutionDate: {
   paidBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+  },
   // Privacy Vault Fields
   isEncrypted: {
     type: Boolean,
@@ -72,6 +73,15 @@ nextExecutionDate: {
   encryptedData: {
     type: String, // Stores Base64 encoded JSON of { ciphertext, iv }
     default: null
+  },
+  // Soft-delete fields for secure server-side undo
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date,
+    default: null
   }
 }, { timestamps: true });
 
@@ -79,5 +89,6 @@ nextExecutionDate: {
 transactionSchema.index({ userId: 1, type: 1, date: -1 });
 transactionSchema.index({ userId: 1, category: 1 });
 transactionSchema.index({ userId: 1, description: 1 });
+transactionSchema.index({ userId: 1, isDeleted: 1 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);
