@@ -514,32 +514,40 @@ const getBudgetSummary = async (req, res) => {
             month: currentMonth,
             isActive: true
         });
-
-        const expenseStats = await Transaction.aggregate({
-            $match: {
-                userId,
-                type: "expense",
-                date: {
-                    $gte: startOfMonth,
-                    $lte: endOfMonth
-                }
+        const expenses = await Transaction.find({
+            userId,
+            type: "expense",
+            date: {
+                $gte: startOfMonth,
+                $lte: endOfMonth
             }
-        },
-        {$group:{
-           _id: { $toLower: "$category" },
-            totalSpent:{$sum: "$amount"}
+        }).select("category amount");
+
+        const totalSpent = expenses.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+
+        if (!budget) {
+            return res.json({
+                success: true,
+                hasBudget: false,
+                summary: {
+                    totalBudget: 0,
+                    categories: [],
+                    spent: totalSpent,
+                    remaining: 0,
+                    utilization: 0
+                }
+            });
         }
-    });
-    console.log("Expense Stats:", expenseStats);
-        const totalSpent = expenseStats.reduce((sum, tx) => sum + tx.amount, 0);
 
         const spentByCategory = new Map();
-        expenseStats.forEach((tx) => {
-            spentByCategory.set(tx._id, tx.totalSpent);
+        expenses.forEach((tx) => {
+            const key = String(tx.category || "").toLowerCase();
+            spentByCategory.set(key, (spentByCategory.get(key) || 0) + (tx.amount || 0));
         });
 
         const categoriesWithSpend = budget.categories.map((category) => {
-            const spent = spentByCategory.get(category.name) || 0;
+            const key = String(category.name || "").toLowerCase();
+            const spent = spentByCategory.get(key) || 0;
             return {
                 ...category.toObject(),
                 spent
@@ -550,7 +558,7 @@ const getBudgetSummary = async (req, res) => {
             ? Math.min((totalSpent / budget.totalBudget) * 100, 100)
             : 0;
 
-        res.json({
+        return res.json({
             success: true,
             hasBudget: true,
             summary: {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
-import { FaGraduationCap, FaTrendingUp, FaArrowLeft, FaDollarSign, FaSearch, FaInfoCircle } from 'react-icons/fa';
+import { FaGraduationCap, FaChartLine, FaArrowLeft, FaDollarSign, FaSearch, FaInfoCircle } from 'react-icons/fa';
 import './InvestmentSimulator.css';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
 import { toast } from 'react-hot-toast';
@@ -19,8 +19,8 @@ const InvestmentSimulator = () => {
         try {
             setLoading(true);
             const [marketRes, portfolioRes] = await Promise.all([
-                api.get('/investments/market'),
-                api.get('/investments/portfolio')
+                api.get('/api/investments/market'),
+                api.get('/api/investments/portfolio')
             ]);
 
             if (marketRes.data?.success) {
@@ -45,7 +45,7 @@ const InvestmentSimulator = () => {
 
     const handleBuy = async (symbol) => {
         try {
-            const response = await api.post('/investments/buy', { symbol, quantity: 1 });
+            const response = await api.post('/api/investments/buy', { symbol, quantity: 1 });
             if (response.data?.success) {
                 toast.success(`Bought 1 share of ${symbol}`);
                 fetchSimulationData();
@@ -57,7 +57,7 @@ const InvestmentSimulator = () => {
 
     const handleSell = async (symbol) => {
         try {
-            const response = await api.post('/investments/sell', { symbol, quantity: 1 });
+            const response = await api.post('/api/investments/sell', { symbol, quantity: 1 });
             if (response.data?.success) {
                 toast.success(`Sold 1 share of ${symbol}`);
                 fetchSimulationData();
@@ -169,7 +169,7 @@ const InvestmentSimulator = () => {
                 <div className="right-column">
                     {/* Market Search */}
                     <section className="market-area card">
-                        <h2><FaTrendingUp /> Market</h2>
+                        <h2><FaChartLine /> Market</h2>
                         <div className="search-bar">
                             <FaSearch />
                             <input

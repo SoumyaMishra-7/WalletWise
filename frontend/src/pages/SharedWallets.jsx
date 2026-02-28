@@ -19,7 +19,7 @@ const SharedWallets = () => {
     const fetchWallets = async () => {
         try {
             setLoading(true);
-            const res = await api.get('/wallets');
+            const res = await api.get('/api/wallets');
             setWallets(res.data);
         } catch (err) {
             console.error('Failed to fetch wallets:', err);
@@ -31,7 +31,7 @@ const SharedWallets = () => {
     const handleCreateWallet = async (e) => {
         e.preventDefault();
         try {
-            const res = await api.post('/wallets', newWalletData);
+            const res = await api.post('/api/wallets', newWalletData);
             setWallets([...wallets, res.data]);
             setShowCreateModal(false);
             setNewWalletData({ name: '', description: '', currency: 'USD' });

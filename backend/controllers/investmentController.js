@@ -1,6 +1,6 @@
 const Investment = require('../models/Investment');
 const Transaction = require('../models/Transactions');
-const SavingsGoal = require('../models/SavingsGoal');
+const SavingGoal = require('../models/SavingGoal');
 const Budget = require('../models/Budget');
 
 // Mock data for top student stocks

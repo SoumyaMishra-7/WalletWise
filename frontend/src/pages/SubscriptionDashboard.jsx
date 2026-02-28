@@ -41,7 +41,7 @@ const SubscriptionDashboard = () => {
     const fetchSubscriptions = async () => {
         try {
             setLoading(true);
-            const { data } = await api.get('/subscriptions');
+            const { data } = await api.get('/api/subscriptions');
             setSubscriptions(data.subscriptions || []);
         } catch (error) {
             toast.error('Failed to load subscriptions');
@@ -57,7 +57,7 @@ const SubscriptionDashboard = () => {
     const handleScan = async () => {
         try {
             setScanning(true);
-            const { data } = await api.get('/subscriptions/detect');
+            const { data } = await api.get('/api/subscriptions/detect');
 
             if (data.candidates && data.candidates.length > 0) {
                 // Auto-add high confidence ones or show prompt (simplifying to auto-add for now with toast)
@@ -65,7 +65,7 @@ const SubscriptionDashboard = () => {
                 for (const candidate of data.candidates) {
                     // Check if already exists in current list to avoid dupes visually
                     if (!subscriptions.some(s => s.name.toLowerCase() === candidate.name.toLowerCase())) {
-                        await api.post('/subscriptions', candidate);
+                        await api.post('/api/subscriptions', candidate);
                         addedCount++;
                     }
                 }
@@ -104,7 +104,7 @@ const SubscriptionDashboard = () => {
             return;
         }
         try {
-            await api.post('/subscriptions', newSub);
+            await api.post('/api/subscriptions', newSub);
             setShowAddModal(false);
             setNewSub({ name: '', amount: '', nextDueDate: '', category: 'Utilities', billingCycle: 'monthly' });
             fetchSubscriptions();

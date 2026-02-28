@@ -88,14 +88,15 @@ const AddIncome = ({ isOpen, onClose, onSuccess }) => {
 
   const finalizeSubmit = async (transactionData) => {
     try {
-      await onAddIncome(transactionData);
+      if (onSuccess) {
+        await onSuccess(transactionData);
+      }
       onClose();
 
       setFormData({
         amount: '',
         category: 'pocket_money',
         date: new Date().toISOString().split('T')[0],
-        description: '',
         description: '',
         sourceNature: 'earned'
       });

@@ -28,8 +28,8 @@ const WalletDetails = () => {
         try {
             setLoading(true);
             const [walletRes, txRes] = await Promise.all([
-                api.get(`/wallets/${id}`),
-                api.get(`/transactions?walletId=${id}&limit=50`)
+                api.get(`/api/wallets/${id}`),
+                api.get(`/api/transactions?walletId=${id}&limit=50`)
             ]);
             setWallet(walletRes.data);
             setTransactions(txRes.data.transactions || []);
@@ -44,7 +44,7 @@ const WalletDetails = () => {
     const handleAddMember = async (e) => {
         e.preventDefault();
         try {
-            await api.post(`/wallets/${id}/members`, { email: newMemberEmail });
+            await api.post(`/api/wallets/${id}/members`, { email: newMemberEmail });
             setNewMemberEmail('');
             setShowAddMember(false);
             fetchWalletDetails();
@@ -56,7 +56,7 @@ const WalletDetails = () => {
     const handleRemoveMember = async (userId) => {
         if (!window.confirm("Are you sure you want to remove this member?")) return;
         try {
-            await api.delete(`/wallets/${id}/members/${userId}`);
+            await api.delete(`/api/wallets/${id}/members/${userId}`);
             fetchWalletDetails();
         } catch (err) {
             console.error('Failed to remove member:', err);
@@ -70,7 +70,7 @@ const WalletDetails = () => {
                 ...transactionData,
                 walletId: wallet._id
             };
-            await api.post('/transactions', payload);
+            await api.post('/api/transactions', payload);
             fetchWalletDetails();
         } catch (err) {
             console.error("Failed to add shared transaction", err);
@@ -197,7 +197,7 @@ const WalletDetails = () => {
             <AddExpense
                 isOpen={showAddExpense}
                 onClose={() => setShowAddExpense(false)}
-                onAddExpense={handleAddSharedTransaction}
+                onSuccess={handleAddSharedTransaction}
             />
         </div>
     );

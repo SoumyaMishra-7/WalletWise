@@ -12,9 +12,9 @@ exports.createWallet = async (req, res) => {
     const wallet = await Wallet.create({
       name,
       description,
-      currency: currency || req.user.currency || 'USD',
-      owner: req.user._id,
-      members: [{ user: req.user._id, role: 'admin' }]
+      currency: currency || 'USD',
+      owner: req.userId,
+      members: [{ user: req.userId, role: 'admin' }]
     });
 
     res.status(201).json(wallet);
@@ -28,7 +28,7 @@ exports.createWallet = async (req, res) => {
 // @access  Private
 exports.getWallets = async (req, res) => {
   try {
-    const wallets = await Wallet.find({ 'members.user': req.user._id })
+    const wallets = await Wallet.find({ 'members.user': req.userId })
       .populate('owner', 'name email')
       .populate('members.user', 'name email avatarUrl');
     res.json(wallets);
@@ -44,7 +44,7 @@ exports.getWalletById = async (req, res) => {
   try {
     const wallet = await Wallet.findOne({
       _id: req.params.id,
-      'members.user': req.user._id
+      'members.user': req.userId
     })
       .populate('owner', 'name email')
       .populate('members.user', 'name email avatarUrl');
@@ -69,7 +69,7 @@ exports.updateWallet = async (req, res) => {
     // Only owner or admin can update
     const wallet = await Wallet.findOne({
       _id: req.params.id,
-      members: { $elemMatch: { user: req.user._id, role: 'admin' } }
+      members: { $elemMatch: { user: req.userId, role: 'admin' } }
     });
 
     if (!wallet) {
@@ -94,7 +94,7 @@ exports.deleteWallet = async (req, res) => {
     // Only owner can delete
     const wallet = await Wallet.findOne({
       _id: req.params.id,
-      owner: req.user._id
+      owner: req.userId
     });
 
     if (!wallet) {
@@ -121,7 +121,7 @@ exports.addMember = async (req, res) => {
 
     const wallet = await Wallet.findOne({
       _id: req.params.id,
-      members: { $elemMatch: { user: req.user._id, role: 'admin' } }
+      members: { $elemMatch: { user: req.userId, role: 'admin' } }
     });
 
     if (!wallet) {
@@ -165,8 +165,8 @@ exports.removeMember = async (req, res) => {
     }
 
     // Check permissions: A user can remove themselves. An admin can remove anyone (except owner).
-    const isSelf = req.user._id.toString() === userId;
-    const reqUserMember = wallet.members.find(m => m.user.toString() === req.user._id.toString());
+    const isSelf = req.userId.toString() === userId;
+    const reqUserMember = wallet.members.find(m => m.user.toString() === req.userId.toString());
     const isAdmin = reqUserMember && reqUserMember.role === 'admin';
 
     if (!isSelf && !isAdmin) {

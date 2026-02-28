@@ -3,35 +3,28 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import Spinner from './Spinner';
-import { useTheme } from '../context/ThemeContext';
 import { DashboardSkeleton } from './SkeletonLoader';
 import './dashboard.css';
 import AddExpense from '../pages/AddExpense';
 import AddIncome from '../pages/AddIncome';
 import SetBudget from '../pages/SetBudget';
 import SavingGoal from '../pages/SavingGoal';
-import { useTheme } from '../context/ThemeContext';
 import { useVault } from '../context/VaultContext';
 import { decryptNote } from '../services/encryption';
 import VaultUnlock from './Vault/VaultUnlock';
 import {
   FaWallet, FaSignOutAlt, FaUserCircle, FaChevronDown,
   FaMoneyBillWave, FaChartLine, FaPiggyBank,
-  FaHandHoldingUsd, FaBullseye, FaChartBar, FaExclamationTriangle,
-  FaBrain, FaArrowUp, FaCalendarAlt, FaSun, FaMoon,
+  FaHandHoldingUsd, FaBullseye, FaChartBar,
+  FaBrain, FaArrowUp, FaCalendarAlt,
   FaSync, FaHome, FaExchangeAlt,
-  FaCog, FaChartPie,
-  FaMagic, FaTrophy, FaSun, FaMoon
-  FaMagic, FaSun, FaMoon
-  FaMagic, FaTrophy, FaSun, FaMoon, FaLock, FaUnlock
+  FaCog, FaChartPie, FaMagic, FaTrophy,
+  FaLock, FaUnlock, FaFire, FaStar
 } from 'react-icons/fa';
 import { Line, Pie } from 'react-chartjs-2';
 import { toast } from 'react-hot-toast';
 import { handleGamificationReward } from '../utils/RewardCelebration';
 import { calculateLevel } from '../utils/gamificationConstants';
-import { FaFire, FaStar, FaSun, FaMoon } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
 
 import {
   Chart as ChartJS,
@@ -175,14 +168,8 @@ const Dashboard = () => {
       path: "/transactions",
     },
     { id: "budget", label: "Budget", icon: FaChartPie, path: "/budget" },
-    { id: "simulator", label: "Simulator", icon: FaChartLine, path: "/simulator" },
-    { id: "goals", label: "Goals", icon: FaBullseye, path: "/goals" },
-    { id: "gamification", label: "Rewards", icon: FaTrophy, path: "/gamification" },
     { id: "wallets", label: "Shared Wallets", icon: FaWallet, path: "/wallets" },
-    { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
     { id: "subscriptions", label: "Subscriptions", icon: FaCog, path: "/subscriptions" },
-    { id: "investments", label: "Investments", icon: FaChartLine, path: "/investments" },
-    { id: "settings", label: "Settings", icon: FaCog, path: "/settings" },
   ];
 
   // Fetch dashboard data
@@ -192,7 +179,7 @@ const Dashboard = () => {
     try {
       console.log('???? Fetching dashboard data...');
 
-      const dashboardRes = await api.get('/dashboard/summary');
+      const dashboardRes = await api.get('/api/dashboard/summary');
       const dashboardData = dashboardRes.data;
 
       console.log("📋 Dashboard API Response:", dashboardData);
@@ -296,6 +283,14 @@ const Dashboard = () => {
   const handleNavigation = (path) => {
     navigate(path);
     setIsMobileMenuOpen(false);
+  };
+
+  const handleSuccess = async () => {
+    setShowAddExpenseModal(false);
+    setShowAddIncomeModal(false);
+    setShowSetBudgetModal(false);
+    setShowSavingsGoalModal(false);
+    await fetchDashboardData(true);
   };
 
   const isActive = (path) => {
@@ -707,6 +702,19 @@ const Dashboard = () => {
                   <span className="dropdown-user-email">{user?.email}</span>
                 </div>
               </div>
+
+              <div className="dropdown-divider"></div>
+
+              <Link
+                to="/gamification"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => setShowUserMenu(false)}
+                title="View rewards"
+              >
+                <FaTrophy />
+                <span>Rewards</span>
+              </Link>
 
               <div className="dropdown-divider"></div>
 

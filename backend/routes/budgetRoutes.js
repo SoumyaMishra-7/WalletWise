@@ -23,9 +23,6 @@ router.post('/', protect, sanitizeInput, budgetController.setBudget);
 // Get Current Month Budget
 router.get('/current', protect, budgetController.getCurrentBudget);
 
-// Get Budget by Month
-router.get('/:month', protect, budgetController.getBudgetByMonth);
-
 // Get All Budgets
 router.get('/', protect, budgetController.getAllBudgets);
 
@@ -40,5 +37,8 @@ router.put('/:id', protect, sanitizeInput, budgetController.updateBudget);
 
 // Get Budget Summary with Transaction Matching
 router.get('/stats/summary', protect, budgetController.getBudgetSummary);
+
+// Get Budget by Month
+router.get('/:month', protect, budgetController.getBudgetByMonth);
 
 module.exports = router;

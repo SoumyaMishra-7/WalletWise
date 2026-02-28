@@ -14,8 +14,7 @@ const googleOauthEnabled = Boolean(
 if (googleOauthEnabled) {
   router.get('/google', passport.authenticate('google', {
     scope: ['profile', 'email'],
-    session: false,
-    state: true
+    session: false
   }));
 
   router.get(

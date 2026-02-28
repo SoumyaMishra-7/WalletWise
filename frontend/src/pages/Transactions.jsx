@@ -62,6 +62,7 @@ const Transactions = () => {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   // Vault Mechanics
   const { isVaultEnabled, isUnlocked, cryptoKey } = useVault();
@@ -133,7 +134,7 @@ const Transactions = () => {
 
       console.log('Fetching with params:', params);
 
-      const response = await api.get('/transactions', { params, signal });
+      const response = await api.get('/api/transactions', { params, signal });
 
       if (response.data?.success) {
         setTransactions(response.data.transactions || []);

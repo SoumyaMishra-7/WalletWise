@@ -64,6 +64,8 @@ nextExecutionDate: {
   paidBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    default: null
+  },
   // Privacy Vault Fields
   isEncrypted: {
     type: Boolean,

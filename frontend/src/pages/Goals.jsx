@@ -60,6 +60,7 @@ const initialGoals = [
 const Goals = () => {
   const [goals, setGoals] = useState([]);
   const [loadingGoals, setLoadingGoals] = useState(true);
+  const [goalsError, setGoalsError] = useState('');
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [addAmount, setAddAmount] = useState(0);
@@ -93,9 +94,10 @@ const Goals = () => {
     setLoadingGoals(true);
 
     try {
-      const response = await api.get('/savings-goals');
+      const response = await api.get('/api/savings-goals');
 
       if (response.data?.success) {
+        setGoalsError('');
         const mappedGoals = (response.data.goals || []).map((goal) => {
           const progress = goal.targetAmount > 0
             ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100))
@@ -115,9 +117,11 @@ const Goals = () => {
 
         setGoals(mappedGoals);
       } else {
+        setGoalsError('Could not load goals right now.');
         setGoals(initialGoals);
       }
     } catch (err) {
+      setGoalsError('Could not load goals right now.');
       setGoals(initialGoals);
     } finally {
       setLoadingGoals(false);

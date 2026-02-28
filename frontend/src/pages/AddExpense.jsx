@@ -128,7 +128,9 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
       }
     }
 
-    onAddExpense(transactionData);
+    if (onSuccess) {
+      onSuccess(transactionData);
+    }
     onClose();
 
     if (!transactionToEdit) {

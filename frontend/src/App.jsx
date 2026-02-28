@@ -6,13 +6,22 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { VaultProvider } from './context/VaultContext';
 
-// Import your existing components
 import Homepage from './components/Homepage';
 import Dashboard from './components/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import VerifyEmail from './components/VerifyEmail';
+import ForgotPassword from './components/ForgotPassword';
+import VerifyResetOtp from './components/VerifyResetOtp';
+import ResetPassword from './components/ResetPassword';
+import ScrollToTop from './components/ScrollToTop/ScrollToTop';
+
 import AddExpense from './pages/AddExpense';
 import SetBudget from './pages/SetBudget';
 import SavingGoal from './pages/SavingGoal';
-import BehaviourDashboard from './pages/BehaviourDashboard'; // NEW: Import Behaviour Dashboard
+import BehaviourDashboard from './pages/BehaviourDashboard';
 import Transactions from './pages/Transactions';
 import Budget from './pages/Budget';
 import Goals from './pages/Goals';
@@ -22,23 +31,10 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import DecisionHelper from './pages/DecisionHelper';
 import MoodInsight from './pages/MoodInsight';
-import GamificationDashboard from './pages/GamificationDashboard'; // NEW: Gamification
+import GamificationDashboard from './pages/GamificationDashboard';
+import InvestmentSimulator from './pages/InvestmentSimulator';
 import SharedWallets from './pages/SharedWallets';
 import WalletDetails from './pages/WalletDetails';
-import ScrollToTop from './components/ScrollToTop/ScrollToTop';
-
-// Import authentication components
-import Login from './components/Login';
-import Signup from './components/Signup';
-import VerifyEmail from './components/VerifyEmail';
-import ForgotPassword from './components/ForgotPassword';
-import VerifyResetOtp from './components/VerifyResetOtp';
-import ResetPassword from './components/ResetPassword';
-
-import ProtectedRoute from './components/ProtectedRoute';
-import PublicRoute from './components/PublicRoute';
-
-
 
 function App() {
   return (
@@ -47,7 +43,6 @@ function App() {
         <VaultProvider>
           <Router>
             <div className="app">
-              {/* Toast Notifications */}
               <Toaster
                 position="top-right"
                 toastOptions={{
@@ -75,7 +70,6 @@ function App() {
               <ScrollToTop />
 
               <Routes>
-                {/* Public Routes */}
                 <Route path="/" element={<Homepage />} />
 
                 <Route
@@ -86,7 +80,6 @@ function App() {
                     </PublicRoute>
                   }
                 />
-
                 <Route
                   path="/signup"
                   element={
@@ -95,34 +88,6 @@ function App() {
                     </PublicRoute>
                   }
                 />
-
-                <Route
-                  path="/forgot-password"
-                  element={
-                    <PublicRoute>
-                      <ForgotPassword />
-                    </PublicRoute>
-                  }
-                />
-
-                <Route
-                  path="/forgot-password/verify"
-                  element={
-                    <PublicRoute>
-                      <VerifyResetOtp />
-                    </PublicRoute>
-                  }
-                />
-
-                <Route
-                  path="/forgot-password/reset"
-                  element={
-                    <PublicRoute>
-                      <ResetPassword />
-                    </PublicRoute>
-                  }
-                />
-
                 <Route
                   path="/verify-email"
                   element={
@@ -139,9 +104,23 @@ function App() {
                     </PublicRoute>
                   }
                 />
+                <Route
+                  path="/forgot-password/verify"
+                  element={
+                    <PublicRoute>
+                      <VerifyResetOtp />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/forgot-password/reset"
+                  element={
+                    <PublicRoute>
+                      <ResetPassword />
+                    </PublicRoute>
+                  }
+                />
 
-
-                {/* Protected Routes - Only accessible when logged in */}
                 <Route
                   path="/dashboard"
                   element={
@@ -150,8 +129,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
-                {/* NEW: Behaviour Analysis Route */}
                 <Route
                   path="/behaviour-analysis"
                   element={
@@ -160,7 +137,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/add-expense"
                   element={
@@ -169,7 +145,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/set-budget"
                   element={
@@ -178,7 +153,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/saving-goal"
                   element={
@@ -187,7 +161,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/transactions"
                   element={
@@ -196,7 +169,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/budget"
                   element={
@@ -205,7 +177,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/goals"
                   element={
@@ -214,7 +185,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/reports"
                   element={
@@ -223,7 +193,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/subscriptions"
                   element={
@@ -232,7 +201,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/settings"
                   element={
@@ -241,7 +209,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/profile"
                   element={
@@ -250,7 +217,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/decision-helper"
                   element={
@@ -259,7 +225,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route
                   path="/mood-insight"
                   element={
@@ -268,43 +233,39 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/gamification"
+                  element={
+                    <ProtectedRoute>
+                      <GamificationDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/simulator"
+                  element={
+                    <ProtectedRoute>
+                      <InvestmentSimulator />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/wallets"
+                  element={
+                    <ProtectedRoute>
+                      <SharedWallets />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/wallets/:id"
+                  element={
+                    <ProtectedRoute>
+                      <WalletDetails />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Gamification Route */}
-              <Route
-                path="/gamification"
-                element={
-                  <ProtectedRoute>
-                    <GamificationDashboard />
-              <Route
-                path="/simulator"
-                element={
-                  <ProtectedRoute>
-                    <InvestmentSimulator />
-                path="/wallets"
-                element={
-                  <ProtectedRoute>
-                    <SharedWallets />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/wallets/:id"
-                element={
-                  <ProtectedRoute>
-                    <WalletDetails />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Redirect unknown routes to homepage */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
-                {/* Redirect unknown routes to homepage */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </div>

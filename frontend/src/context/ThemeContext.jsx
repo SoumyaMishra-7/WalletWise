@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import api from '../api/client';
 
 const ThemeContext = createContext(null);
 const THEME_STORAGE_KEY = 'walletwise-theme';

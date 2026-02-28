@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
+dotenv.config();
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./middleware/errorMiddleware");
 const passport = require("passport");
@@ -13,7 +14,6 @@ const oauthRoutes = require("./routes/oauthRoutes");
 const { protect } = require("./middleware/auth");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const asyncHandler = require("./middleware/asyncHandler");
-dotenv.config();
 
 // ==================== DEPENDENCY INJECTION ====================
 const { createContainer } = require('./containerBootstrap');
