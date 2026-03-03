@@ -8,7 +8,12 @@ const gamification = require('../utils/gamification');
 // @access  Private
 router.get('/status', protect, async (req, res) => {
   try {
-    const status = await gamification.getStatus(req.user.id);
+    const authenticatedUserId = req.userId || req.user?.id;
+    if (!authenticatedUserId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const status = await gamification.getStatus(authenticatedUserId);
     if (!status) {
       return res.status(404).json({ success: false, message: 'User gamification data not found' });
     }
