@@ -1,3 +1,24 @@
+const googleCallback = asyncHandler(async (req, res) => {
+  const user = req.user;
+  if (!user.emailVerified) {
+    user.emailVerified = true;
+    user.emailOtpHash = null;
+    user.emailOtpExpires = null;
+    user.emailOtpSentAt = null;
+    await User.saveWithUniqueStudentId(user);
+  }
+
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
+  user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+  await User.saveWithUniqueStudentId(user);
+
+  setAuthCookies(res, accessToken, refreshToken);
+
+  const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`;
+  return res.redirect(redirectUrl);
+});
+// Google OAuth callback restored.
 const bcrypt = require('bcryptjs');
 const { z } = require('zod');
 const crypto = require('crypto');
@@ -629,26 +650,7 @@ const deleteAccount = asyncHandler(async (req, res) => {
   });
 });
 
-const googleCallback = asyncHandler(async (req, res) => {
-  const user = req.user;
-  if (!user.emailVerified) {
-    user.emailVerified = true;
-    user.emailOtpHash = null;
-    user.emailOtpExpires = null;
-    user.emailOtpSentAt = null;
-    await User.saveWithUniqueStudentId(user);
-  }
-
-  const accessToken = signAccessToken(user);
-  const refreshToken = signRefreshToken(user);
-  user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-  await User.saveWithUniqueStudentId(user);
-
-  setAuthCookies(res, accessToken, refreshToken);
-
-  const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`;
-  return res.redirect(redirectUrl);
-});
+// Google OAuth callback removed for Firebase migration.
 
 const forgotPassword = async (req, res) => {
   try {

@@ -4,59 +4,59 @@ const Budget = require('../models/Budget');
 const SavingsGoal = require('../models/SavingGoal');
 const Subscription = require('../models/Subscription');
 
+const asyncHandler = require('../middleware/asyncHandler');
 // Dashboard Summary
-const getDashboardSummary = async (req, res) => {
-    try {
-        const userId = req.userId;
-        const currentDate = new Date();
-        const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const startOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-        const endOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0, 23, 59, 59, 999);
+const getDashboardSummary = asyncHandler(async (req, res) => {
+    const userId = req.userId;
+    const currentDate = new Date();
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const startOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    const endOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0, 23, 59, 59, 999);
 
-        // Get all data in parallel
-        const [transactions, budget, savingsGoals, user, subscriptions] = await Promise.all([
-            Transaction.find({ userId }),
-            Budget.findOne({ userId, isActive: true }),
-            SavingsGoal.find({ userId, isActive: true }),
-            User.findById(userId).select('-passwordHash -refreshTokenHash'),
-            Subscription.find({ userId, isActive: true })
-        ]);
+    // Get all data in parallel
+    const [transactions, budget, savingsGoals, user, subscriptions] = await Promise.all([
+        Transaction.find({ userId }),
+        Budget.findOne({ userId, isActive: true }),
+        SavingsGoal.find({ userId, isActive: true }),
+        User.findById(userId).select('-passwordHash -refreshTokenHash'),
+        Subscription.find({ userId, isActive: true })
+    ]);
 
-        // Calculate monthly expenses and income
-        const monthlyTransactions = transactions.filter(t => t.date >= startOfMonth);
-        const prevMonthTransactions = transactions.filter(
-            t => t.date >= startOfPrevMonth && t.date <= endOfPrevMonth
-        );
+    // Calculate monthly expenses and income
+    const monthlyTransactions = transactions.filter(t => t.date >= startOfMonth);
+    const prevMonthTransactions = transactions.filter(
+        t => t.date >= startOfPrevMonth && t.date <= endOfPrevMonth
+    );
 
-        const monthlyExpenses = monthlyTransactions
-            .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
+    const monthlyExpenses = monthlyTransactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
 
-        const monthlyIncome = monthlyTransactions
-            .filter(t => t.type === 'income')
-            .reduce((sum, t) => sum + t.amount, 0);
+    const monthlyIncome = monthlyTransactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
 
-        const prevMonthExpenses = prevMonthTransactions
-            .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
+    const prevMonthExpenses = prevMonthTransactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
 
-        // Calculate total savings
-        const totalSavings = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+    // Calculate total savings
+    const totalSavings = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
 
-        // Get recent transactions (last 10)
-        const recentTransactions = transactions
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 10)
-            .map(t => ({
-                id: t._id,
-                type: t.type,
-                amount: t.amount,
-                category: t.category,
-                description: t.description,
-                date: t.date,
-                paymentMethod: t.paymentMethod,
-                mood: t.mood
-            }));
+    // Get recent transactions (last 10)
+    const recentTransactions = transactions
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 10)
+        .map(t => ({
+            id: t._id,
+            type: t.type,
+            amount: t.amount,
+            category: t.category,
+            description: t.description,
+            date: t.date,
+            paymentMethod: t.paymentMethod,
+            mood: t.mood
+        }));
 
         // Calculate budget data
         const monthlyBudget = budget?.totalBudget || 0;
@@ -152,50 +152,42 @@ const getDashboardSummary = async (req, res) => {
                 category: sub.category
             }));
 
-        res.json({
-            success: true,
-            user: {
-                id: user._id,
-                fullName: user.fullName,
-                email: user.email,
-                studentId: user.studentId
-            },
-            stats: {
-                totalBalance,
-                monthlyExpenses,
-                monthlyIncome,
-                budgetLeft,
-                totalSavings,
-                monthlyBudget,
-                budgetUsedPercentage
-            },
-            recentTransactions,
-            categorySpending,
-            weeklyExpenses: dayBuckets,
-            expenseTrend: Number(expenseTrend.toFixed(2)),
-            savingsGoals: savingsGoals.map(g => ({
-                id: g._id,
-                name: g.name,
-                targetAmount: g.targetAmount,
-                currentAmount: g.currentAmount,
-                targetDate: g.targetDate,
-                category: g.category,
-                priority: g.priority,
-                progress: g.progress,
-                monthlyContribution: g.monthlyContribution
-            })),
-            upcomingBills,
-            notifications: 0
-        });
-
-    } catch (error) {
-        console.error('Dashboard summary error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching dashboard data'
-        });
-    }
-};
+    res.json({
+        success: true,
+        user: {
+            id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            studentId: user.studentId
+        },
+        stats: {
+            totalBalance,
+            monthlyExpenses,
+            monthlyIncome,
+            budgetLeft,
+            totalSavings,
+            monthlyBudget,
+            budgetUsedPercentage
+        },
+        recentTransactions,
+        categorySpending,
+        weeklyExpenses: dayBuckets,
+        expenseTrend: Number(expenseTrend.toFixed(2)),
+        savingsGoals: savingsGoals.map(g => ({
+            id: g._id,
+            name: g.name,
+            targetAmount: g.targetAmount,
+            currentAmount: g.currentAmount,
+            targetDate: g.targetDate,
+            category: g.category,
+            priority: g.priority,
+            progress: g.progress,
+            monthlyContribution: g.monthlyContribution
+        })),
+        upcomingBills,
+        notifications: 0
+    });
+});
 
 module.exports = {
     getDashboardSummary

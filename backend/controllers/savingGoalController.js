@@ -1,6 +1,8 @@
+
 const SavingsGoal = require('../models/SavingGoal');
 const { isValidObjectId } = require('../utils/validation');
 const gamification = require('../utils/gamification');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // Calculate predictive fields helper
 const calculatePredictiveFields = (goal) => {
@@ -43,181 +45,144 @@ const calculatePredictiveFields = (goal) => {
     };
 };
 
-// Create Savings Goal
-const createGoal = async (req, res) => {
-    try {
+const createGoal = asyncHandler(async (req, res) => {
+    const {
+        name,
+        description = '',
+        targetAmount,
+        currentAmount = 0,
+        targetDate,
+        category = 'Other',
+        priority = 'Medium',
+        monthlyContribution = 0
+    } = req.body;
 
-        const {
-            name,
-            description = '',
-            targetAmount,
-            currentAmount = 0,
-            targetDate,
-            category = 'Other',
-            priority = 'Medium',
-            monthlyContribution = 0
-        } = req.body;
-
-        // Basic validation
-        if (!name || !targetAmount || !targetDate) {
-            return res.status(400).json({
-                success: false,
-                message: 'Name, target amount, and target date are required'
-            });
-        }
-
-        // Parse amounts
-        const parsedTarget = parseFloat(targetAmount);
-        const parsedCurrent = parseFloat(currentAmount) || 0;
-        const parsedMonthly = parseFloat(monthlyContribution) || 0;
-
-        if (isNaN(parsedTarget) || parsedTarget <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Valid target amount is required'
-            });
-        }
-
-        // Create goal
-        const savingsGoal = new SavingsGoal({
-            userId: req.userId,
-            name: name.trim(),
-            description: description.trim(),
-            targetAmount: parsedTarget,
-            currentAmount: parsedCurrent,
-            targetDate: new Date(targetDate),
-            category,
-            priority,
-            monthlyContribution: parsedMonthly,
-            isActive: true
-        });
-
-        await savingsGoal.save();
-
-        // Gamification Hook: Award First Savings Goal badge if applicable
-        const badgeAwarded = await gamification.awardBadge(req.userId, 'SAVINGS_GOAL_STARTED');
-
-        res.status(201).json({
-            success: true,
-            message: 'Savings goal created successfully',
-            gamification: badgeAwarded ? { badge: badgeAwarded.badge } : null,
-            goal: {
-                id: savingsGoal._id,
-                name: savingsGoal.name,
-                targetAmount: savingsGoal.targetAmount,
-                currentAmount: savingsGoal.currentAmount,
-                targetDate: savingsGoal.targetDate,
-                progress: savingsGoal.progress,
-                ...calculatePredictiveFields(savingsGoal)
-            }
-        });
-
-    } catch (error) {
-        console.error('❌ Create savings goal error:', error);
-        console.error('Error stack:', error.stack);
-
-        let errorMessage = 'Failed to create savings goal';
-
-        if (error.name === 'ValidationError') {
-            errorMessage = Object.values(error.errors).map(e => e.message).join(', ');
-        } else if (error.code === 11000) {
-            errorMessage = 'Duplicate goal detected';
-        }
-
-        res.status(500).json({
+    // Basic validation
+    if (!name || !targetAmount || !targetDate) {
+        return res.status(400).json({
             success: false,
-            message: errorMessage,
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Name, target amount, and target date are required'
         });
+    }
+
+    // Parse amounts
+    const parsedTarget = parseFloat(targetAmount);
+    const parsedCurrent = parseFloat(currentAmount) || 0;
+    const parsedMonthly = parseFloat(monthlyContribution) || 0;
+
+    if (isNaN(parsedTarget) || parsedTarget <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: 'Valid target amount is required'
+        });
+    }
+
+    // Create goal
+    const savingsGoal = new SavingsGoal({
+        userId: req.userId,
+        name: name.trim(),
+        description: description.trim(),
+        targetAmount: parsedTarget,
+        currentAmount: parsedCurrent,
+        targetDate: new Date(targetDate),
+        category,
+        priority,
+        monthlyContribution: parsedMonthly,
+        isActive: true
+    });
+
+    await savingsGoal.save();
+
+    // Gamification Hook: Award First Savings Goal badge if applicable
+    const badgeAwarded = await gamification.awardBadge(req.userId, 'SAVINGS_GOAL_STARTED');
+
+    res.status(201).json({
+        success: true,
+        message: 'Savings goal created successfully',
+        gamification: badgeAwarded ? { badge: badgeAwarded.badge } : null,
+        goal: {
+            id: savingsGoal._id,
+            name: savingsGoal.name,
+            targetAmount: savingsGoal.targetAmount,
+            currentAmount: savingsGoal.currentAmount,
+            targetDate: savingsGoal.targetDate,
+            progress: savingsGoal.progress,
+            ...calculatePredictiveFields(savingsGoal)
+        }
+    });
+});
     }
 };
 
 // Get all savings goals
-const getAllGoals = async (req, res) => {
-    try {
-        const goals = await SavingsGoal.find({ userId: req.userId, isActive: true });
-
-        res.json({
-            success: true,
-            goals: goals.map(g => ({
-                id: g._id,
-                name: g.name,
-                targetAmount: g.targetAmount,
-                currentAmount: g.currentAmount,
-                targetDate: g.targetDate,
-                progress: g.progress,
-                ...calculatePredictiveFields(g)
-            })),
-            count: goals.length
-        });
-    } catch (error) {
-        console.error('Get goals error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch goals' });
-    }
-};
+const getAllGoals = asyncHandler(async (req, res) => {
+    const goals = await SavingsGoal.find({ userId: req.userId, isActive: true });
+    res.json({
+        success: true,
+        goals: goals.map(g => ({
+            id: g._id,
+            name: g.name,
+            targetAmount: g.targetAmount,
+            currentAmount: g.currentAmount,
+            targetDate: g.targetDate,
+            progress: g.progress,
+            ...calculatePredictiveFields(g)
+        })),
+        count: goals.length
+    });
+});
 
 // Add amount to a savings goal
-const addAmount = async (req, res) => {
-    try {
-        const goalId = req.params.id;
-
-        if (!isValidObjectId(goalId)) {
-            return res.status(400).json({ success: false, message: 'Invalid goal ID format' });
-        }
-
-        const amount = parseFloat(req.body?.amount);
-
-        if (!amount || isNaN(amount) || amount <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Valid amount is required'
-            });
-        }
-
-        const goal = await SavingsGoal.findOneAndUpdate(
-            { _id: goalId, userId: req.userId, isActive: true },
-            [
-                {
-                    $set: {
-                        currentAmount: {
-                            $min: [
-                                "$targetAmount",
-                                { $add: ["$currentAmount", amount] }
-                            ]
-                        }
+const addAmount = asyncHandler(async (req, res) => {
+    const goalId = req.params.id;
+    if (!isValidObjectId(goalId)) {
+        return res.status(400).json({ success: false, message: 'Invalid goal ID format' });
+    }
+    const amount = parseFloat(req.body?.amount);
+    if (!amount || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: 'Valid amount is required'
+        });
+    }
+    const goal = await SavingsGoal.findOneAndUpdate(
+        { _id: goalId, userId: req.userId, isActive: true },
+        [
+            {
+                $set: {
+                    currentAmount: {
+                        $min: [
+                            "$targetAmount",
+                            { $add: ["$currentAmount", amount] }
+                        ]
                     }
                 }
-            ],
-            { new: true }
-        );
-
-        if (!goal) {
-            return res.status(404).json({
-                success: false,
-                message: 'Goal not found'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Amount added successfully',
-            goal: {
-                id: goal._id,
-                name: goal.name,
-                targetAmount: goal.targetAmount,
-                currentAmount: goal.currentAmount,
-                targetDate: goal.targetDate,
-                progress: goal.progress,
-                category: goal.category,
-                isActive: goal.isActive,
-                ...calculatePredictiveFields(goal)
             }
+        ],
+        { new: true }
+    );
+    if (!goal) {
+        return res.status(404).json({
+            success: false,
+            message: 'Goal not found'
         });
-    } catch (error) {
-        console.error('Add amount error:', error);
-        res.status(500).json({ success: false, message: 'Failed to add amount' });
     }
-};
+    res.json({
+        success: true,
+        message: 'Amount added successfully',
+        goal: {
+            id: goal._id,
+            name: goal.name,
+            targetAmount: goal.targetAmount,
+            currentAmount: goal.currentAmount,
+            targetDate: goal.targetDate,
+            progress: goal.progress,
+            category: goal.category,
+            isActive: goal.isActive,
+            ...calculatePredictiveFields(goal)
+        }
+    });
+});
 
 module.exports = {
     createGoal,

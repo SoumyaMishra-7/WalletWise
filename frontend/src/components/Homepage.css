@@ -1,3 +1,67 @@
+/* --- Enhanced Mobile Responsiveness --- */
+@media (max-width: 600px) {
+  .ww-container {
+    padding: 0 8px;
+  }
+  .ww-hero-ref {
+    padding: 40px 0 60px;
+  }
+  .ww-hero-ref-title {
+    font-size: 2.1rem;
+  }
+  .ww-hero-ref-actions {
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .ww-main-img {
+    height: 220px;
+    border-radius: 14px;
+  }
+  .ww-hero-ref-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .ww-hero-ref-visual {
+    padding-left: 0;
+    margin-top: 18px;
+  }
+  .ww-section {
+    padding: 36px 0;
+  }
+  .ww-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .ww-bento-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .ww-bento-card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  .ww-bento-visual {
+    height: 60px;
+    padding: 4px;
+  }
+  .ww-step-col, .ww-testimonial-card {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .ww-step-num {
+    font-size: 1.3rem;
+  }
+  .ww-footer {
+    padding: 32px 0;
+  }
+  .ww-footer-grid {
+    gap: 10px;
+  }
+  .ww-footer-brand {
+    margin-bottom: 8px;
+  }
+}
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
 
 :root {

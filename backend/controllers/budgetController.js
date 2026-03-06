@@ -1,11 +1,12 @@
+
 const Budget = require('../models/Budget');
 const Transaction = require('../models/Transactions');
 const { isValidObjectId } = require('../utils/validation');
 const gamification = require('../utils/gamification');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // Set/Update Budget
-const setBudget = async (req, res) => {
-    try {
+const setBudget = asyncHandler(async (req, res) => {
 
         const { totalBudget, categories, month } = req.body;
 
@@ -135,14 +136,12 @@ const setBudget = async (req, res) => {
 
     } catch (error) {
         console.error('❌ Set budget error:', error);
-
         if (error.code === 11000) {
             return res.status(400).json({
                 success: false,
                 message: 'Budget for this month already exists'
             });
         }
-
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({
@@ -150,17 +149,15 @@ const setBudget = async (req, res) => {
                 message: messages.join(', ')
             });
         }
-
         res.status(500).json({
             success: false,
             message: 'Failed to set budget. Please try again.'
         });
     }
-};
+});
 
 // Get Current Budget
-const getCurrentBudget = async (req, res) => {
-    try {
+const getCurrentBudget = asyncHandler(async (req, res) => {
 
 
         const currentMonth = new Date().toISOString().slice(0, 7);
@@ -205,11 +202,10 @@ const getCurrentBudget = async (req, res) => {
             message: 'Failed to fetch budget'
         });
     }
-};
+});
 
 // Get Budget by Month
-const getBudgetByMonth = async (req, res) => {
-    try {
+const getBudgetByMonth = asyncHandler(async (req, res) => {
         const { month } = req.params;
         const userId = req.userId;
 
@@ -249,11 +245,10 @@ const getBudgetByMonth = async (req, res) => {
             message: 'Failed to fetch budget'
         });
     }
-};
+});
 
 // Get All User Budgets
-const getAllBudgets = async (req, res) => {
-    try {
+const getAllBudgets = asyncHandler(async (req, res) => {
         const userId = req.userId;
         const budgets = await Budget.find({
             userId,
@@ -280,11 +275,10 @@ const getAllBudgets = async (req, res) => {
             message: 'Failed to fetch budgets'
         });
     }
-};
+});
 
 // Copy Previous Month's Budget
-const copyPreviousBudget = async (req, res) => {
-    try {
+const copyPreviousBudget = asyncHandler(async (req, res) => {
 
 
         const currentDate = new Date();
@@ -361,11 +355,10 @@ const copyPreviousBudget = async (req, res) => {
             message: 'Failed to copy previous month budget'
         });
     }
-};
+});
 
 // Delete/Deactivate Budget
-const deleteBudget = async (req, res) => {
-    try {
+const deleteBudget = asyncHandler(async (req, res) => {
         const { id } = req.params;
         const userId = req.userId;
 
@@ -401,11 +394,10 @@ const deleteBudget = async (req, res) => {
             message: 'Failed to delete budget'
         });
     }
-};
+});
 
 // Update Budget
-const updateBudget = async (req, res) => {
-    try {
+const updateBudget = asyncHandler(async (req, res) => {
         const { id } = req.params;
         const userId = req.userId;
         const updates = req.body;
@@ -496,11 +488,10 @@ const updateBudget = async (req, res) => {
             message: 'Failed to update budget'
         });
     }
-};
+});
 
 // Budget Summary/Statistics
-const getBudgetSummary = async (req, res) => {
-    try {
+const getBudgetSummary = asyncHandler(async (req, res) => {
         const userId = req.userId;
         const currentMonth = new Date().toISOString().slice(0, 7);
         const startOfMonth = new Date();
@@ -584,7 +575,7 @@ const getBudgetSummary = async (req, res) => {
             message: 'Failed to get budget summary'
         });
     }
-};
+});
 
 module.exports = {
     setBudget,
