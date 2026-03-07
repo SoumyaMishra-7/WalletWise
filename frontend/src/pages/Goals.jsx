@@ -65,6 +65,10 @@ const Goals = () => {
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [addAmount, setAddAmount] = useState(0);
   const [addingAmount, setAddingAmount] = useState(false);
+
+  // 🟢 NEW CODE: Added this line right here
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const location = useLocation();
 
   const { user } = useAuth();
@@ -193,6 +197,37 @@ const Goals = () => {
       setAddingAmount(false);
     }
   };
+
+  // 🟢 NEW CODE: The Delete Function
+  const handleDeleteGoal = async () => {
+    if (!selectedGoal) return;
+    
+    // 1. Ask for confirmation so they don't delete it by accident!
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${selectedGoal.title}"? This cannot be undone.`);
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      // 2. Tell the backend to delete it
+      const response = await api.delete(`/api/savings-goals/${selectedGoal.id}`);
+
+      if (response.data?.success) {
+        // 3. Remove it from the screen immediately without refreshing the page
+        setGoals((prev) => prev.filter((goal) => goal.id !== selectedGoal.id));
+        // 4. Close the modal
+        setSelectedGoal(null);
+      } else {
+        throw new Error(response.data?.message || 'Failed to delete goal');
+      }
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+      // Your existing api interceptor will likely catch this and show a toast error
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  // 🟢 END OF NEW CODE
 
   const summary = useMemo(() => {
     const totalGoals = goals.length;
@@ -401,6 +436,17 @@ const Goals = () => {
               >
                 Edit Goal
               </button>
+
+              {/* 🟢 UPDATED CODE: The Delete Button */}
+              <button
+                className="btn-delete"
+                onClick={handleDeleteGoal}
+                disabled={addingAmount || isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Goal'}
+              </button>
+              {/* 🟢 END OF UPDATED CODE */}
+              
             </div>
           </div>
         </div>

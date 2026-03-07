@@ -10,6 +10,9 @@ router.post('/', protect, savingGoalController.createGoal);
 router.get('/', protect, savingGoalController.getAllGoals);
 
 // Add amount to savings goal
-router.post('/:id/add', protect, savingGoalController.addAmount);
+router.patch('/:id/add', protect, savingGoalController.addAmount);
+
+// 🟢 NEW CODE: Delete savings goal
+router.delete('/:id', protect, savingGoalController.deleteGoal);
 
 module.exports = router;
