@@ -646,7 +646,16 @@ const googleCallback = asyncHandler(async (req, res) => {
 
   setAuthCookies(res, accessToken, refreshToken);
 
-  const frontendBaseUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/+$/, '');
+  const frontendBaseUrl = (
+    process.env.FRONTEND_URL ||
+    (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000')
+  ).replace(/\/+$/, '');
+  if (!frontendBaseUrl) {
+    return res.status(500).json({
+      success: false,
+      message: 'Google OAuth callback misconfigured: FRONTEND_URL is required in production.'
+    });
+  }
   const redirectUrl = `${frontendBaseUrl}/dashboard`;
   return res.redirect(redirectUrl);
 });
