@@ -24,6 +24,27 @@ const FRONTEND_URL = (
     process.env.FRONTEND_URL ||
     (isProd ? null : 'http://localhost:3000')
 )?.replace(/\/+$/, '');
+const FRONTEND_URLS = (process.env.FRONTEND_URLS || '')
+    .split(',')
+    .map((value) => value.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+const allowedOrigins = Array.from(
+    new Set(
+        [FRONTEND_URL, ...FRONTEND_URLS]
+            .filter(Boolean)
+            .flatMap((origin) => {
+                const normalized = origin.replace(/\/+$/, '');
+                if (normalized.includes('://www.')) {
+                    return [normalized, normalized.replace('://www.', '://')];
+                }
+                const protocolMatch = normalized.match(/^(https?:\/\/)(.+)$/i);
+                if (protocolMatch && !protocolMatch[2].startsWith('www.')) {
+                    return [normalized, `${protocolMatch[1]}www.${protocolMatch[2]}`];
+                }
+                return [normalized];
+            })
+    )
+);
 const MONGODB_URI =
   process.env.MONGODB_URI || (isProd ? null : 'mongodb://localhost:27017/walletwise');
 
@@ -79,7 +100,14 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // CORS Configuration
 app.use(cors({
-    origin: FRONTEND_URL,
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const normalizedOrigin = origin.replace(/\/+$/, '');
+        if (allowedOrigins.includes(normalizedOrigin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
