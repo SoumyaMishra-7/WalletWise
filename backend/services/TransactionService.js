@@ -36,6 +36,9 @@ const transactionSchema = z.object({
  * @param {Object} deps.logger — ILogger
  */
 class TransactionService {
+    // Undo window: soft-deleted transactions can be restored within this period (ms)
+    static UNDO_WINDOW_MS = 30 * 60 * 1000; // 30 minutes
+
     constructor({ transactionRepository, userRepository, gamificationService, logger }) {
         this.txRepo = transactionRepository;
         this.userRepo = userRepository;
@@ -160,7 +163,8 @@ class TransactionService {
             userId,
             isRecurring: true,
             nextExecutionDate: { $lte: new Date() },
-            walletId: null
+            walletId: null,
+            isDeleted: { $ne: true }
         });
 
         for (const rt of recurringTransactions) {
@@ -194,7 +198,7 @@ class TransactionService {
         }
 
         // Build query
-        const query = {};
+        const query = { isDeleted: { $ne: true } };
         query.userId = userId;
         if (walletId) query.walletId = walletId;
         if (type && type !== 'all') query.type = type;
@@ -253,7 +257,7 @@ class TransactionService {
             throw new AppError('Invalid transaction ID format', 400);
         }
 
-        const oldTransaction = await this.txRepo.findOne({ _id: transactionId, userId });
+        const oldTransaction = await this.txRepo.findOne({ _id: transactionId, userId, isDeleted: { $ne: true } });
         if (!oldTransaction) {
             throw new AppError('Transaction not found', 404);
         }
@@ -290,10 +294,15 @@ class TransactionService {
             throw new AppError('Invalid transaction ID format', 400);
         }
 
-        const transaction = await this.txRepo.findOne({ _id: transactionId, userId });
+        const transaction = await this.txRepo.findOne({ _id: transactionId, userId, isDeleted: { $ne: true } });
         if (!transaction) {
             throw new AppError('Transaction not found', 404);
         }
+
+        // Soft-delete the transaction
+        transaction.isDeleted = true;
+        transaction.deletedAt = new Date();
+        await transaction.save();
 
         // Revert balance
         const user = await this.userRepo.findById(userId);
@@ -303,7 +312,53 @@ class TransactionService {
             await user.save();
         }
 
-        await transaction.deleteOne();
+        return transaction;
+    }
+
+    /**
+     * Undo (restore) a soft-deleted transaction using server-side data only.
+     * No client-provided transaction data is used — prevents balance inflation attacks.
+     * @param {string} userId
+     * @param {string} transactionId
+     * @returns {Promise<Object>}
+     */
+    async undoTransaction(userId, transactionId) {
+        if (!isValidObjectId(transactionId)) {
+            throw new AppError('Invalid transaction ID format', 400);
+        }
+
+        // Find the soft-deleted transaction — server-side data only
+        const transaction = await this.txRepo.findOne({
+            _id: transactionId,
+            userId,
+            isDeleted: true
+        });
+
+        if (!transaction) {
+            throw new AppError('No deleted transaction found to restore', 404);
+        }
+
+        // Enforce undo time window
+        const elapsed = Date.now() - new Date(transaction.deletedAt).getTime();
+        if (elapsed > TransactionService.UNDO_WINDOW_MS) {
+            throw new AppError('Undo window has expired. Transaction can no longer be restored.', 410);
+        }
+
+        // Restore the transaction
+        transaction.isDeleted = false;
+        transaction.deletedAt = null;
+        await transaction.save();
+
+        // Re-apply the balance change
+        const user = await this.userRepo.findById(userId);
+        if (user) {
+            const balanceChange = transaction.type === 'income'
+                ? transaction.amount
+                : -transaction.amount;
+            user.walletBalance = (user.walletBalance || 0) + balanceChange;
+            await user.save();
+        }
+
         return transaction;
     }
 }
