@@ -141,7 +141,7 @@ html {
   border-radius: 24px;
   padding: 40px;
   width: 100%;
-  max-width: 550px;
+  max-width: 650px;
   /* Fixed width as requested */
   /* Kept shadow for lift, but background is now solid white */
   box-shadow:
@@ -165,6 +165,7 @@ html {
 .auth-header h1 {
   color: var(--text-main);
   margin-bottom: 8px;
+  margin-top: 30px;
   font-size: 2rem;
   font-weight: 700;
   background: linear-gradient(135deg,
@@ -216,7 +217,7 @@ html {
 .form-group select {
   width: 100%;
   padding: 12px 16px;
-  border: 1.5px solid #e5e7eb;
+  border: 2px solid var(--border-subtle) !important;
   border-radius: 12px;
   font-size: 1rem;
   background: #ffffff;
@@ -515,13 +516,12 @@ html {
     flex-direction: row;
     /* Horizontal integration */
     gap: 80px;
-    max-width: 1200px;
-    margin: 0 auto;
   }
 }
 
 /* Tablet / Laptop: Collapse to single column */
 @media (max-width: 1024px) {
+
   .auth-container.split-layout {
     flex-direction: column;
     gap: 40px;
@@ -529,10 +529,6 @@ html {
     /* Allow scrolling if content is tall */
     height: auto;
     min-height: 100vh;
-    align-items: center;
-    /* Center horizontally */
-    justify-content: center;
-    /* Center vertically if space permits, else top */
   }
 
   .split-layout .auth-features {
@@ -553,16 +549,31 @@ html {
 
 /* Mobile */
 @media (max-width: 640px) {
+
+  .auth-container.split-layout {
+    padding: 0;
+  }
+
+  .auth-card,
+  .split-layout.auth-card {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .auth-container.split-layout,
   .auth-container {
-    padding: 20px 16px;
+    padding: 0;
   }
 
   .auth-card {
-    padding: 28px 20px;
+    padding: 28px 10px;
   }
 
   .auth-header h1 {
     font-size: 1.8rem;
+     margin-top: 60px;
   }
 
   .form-row {

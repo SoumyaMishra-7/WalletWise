@@ -44,6 +44,7 @@ html {
 
 /* Enhanced smooth scrolling for better UX */
 @media (prefers-reduced-motion: no-preference) {
+
   html {
     scroll-behavior: smooth;
   }
@@ -55,6 +56,7 @@ html {
 
 /* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
+
   html {
     scroll-behavior: auto;
   }
@@ -123,10 +125,12 @@ body.theme-dark .ww-header.scrolled {
   gap: 12px;
   cursor: pointer;
 }
-.ww-pill{
+
+.ww-pill {
   display: inline-flex;
   gap: 4px;
 }
+
 .ww-logo-icon {
   width: 36px;
   height: 36px;
@@ -192,9 +196,11 @@ body.theme-dark .ww-header.scrolled {
   cursor: pointer;
   color: var(--text-main);
 }
-.ww-arrow{
+
+.ww-arrow {
   margin-top: 4px;
 }
+
 .ww-btn-primary {
   background: var(--color-primary);
   color: white;
@@ -206,12 +212,8 @@ body.theme-dark .ww-header.scrolled {
 }
 
 .ww-btn-white {
-  background: var(--bg-card);
-  color: var(--color-primary);
-}
-
-.ww-btn-white:hover {
   background: #f8f9fa;
+  color: var(--color-primary);
 }
 
 .ww-menu-toggle {
@@ -226,7 +228,7 @@ body.theme-dark .ww-header.scrolled {
 }
 
 .ww-hero-ref {
-  padding: 80px 0 120px;
+  padding: 50px 0 120px;
   position: relative;
   overflow: visible;
   margin-top: 10vh;
@@ -456,10 +458,21 @@ body.theme-dark .ww-header.scrolled {
 
 /* --- General --- */
 .ww-section {
-  padding: 80px 0;
+  padding: 80px 50px;
   transition:
     opacity 0.6s ease-out,
     transform 0.6s ease-out;
+}
+
+#how {
+  scroll-margin-top: 80px;
+}
+
+#about,
+#features,
+#testimonials {
+  background: var(--bg-subtle);
+  scroll-margin-top: 80px;
 }
 
 /* Smooth scroll visual feedback */
@@ -481,10 +494,6 @@ body.theme-dark .ww-header.scrolled {
   }
 }
 
-.ww-bg-subtle {
-  background: var(--bg-subtle);
-}
-
 .ww-kicker {
   text-transform: uppercase;
   color: var(--color-primary);
@@ -504,6 +513,7 @@ body.theme-dark .ww-header.scrolled {
   font-size: 2.5rem;
   margin-bottom: 20px;
   letter-spacing: -0.02em;
+  line-height: 50px;
 }
 
 .ww-desc-lg {
@@ -521,6 +531,7 @@ body.theme-dark .ww-header.scrolled {
 .ww-section-header.centered h2 {
   font-size: 2.5rem;
   margin-bottom: 16px;
+  line-height: 50px;
 }
 
 /* --- Problem Section --- */
@@ -845,6 +856,7 @@ body.theme-dark .ww-header.scrolled {
 
 /* Mobile Features */
 @media (max-width: 900px) {
+
   .ww-bento-grid {
     grid-template-columns: 1fr;
   }
@@ -867,11 +879,14 @@ body.theme-dark .ww-header.scrolled {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 40px;
-  margin-top: 40px;
+  margin-top: 60px;
 }
 
 .ww-step-col {
   position: relative;
+  border: 2px solid var(--border-light);
+  padding: 25px;
+  border-radius: var(--radius-lg);
 }
 
 .ww-step-num {
@@ -895,6 +910,8 @@ body.theme-dark .ww-header.scrolled {
 .ww-testimonial-card {
   padding: 32px;
   background: var(--bg-subtle);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
   border-radius: 20px;
   position: relative;
 }
@@ -939,6 +956,12 @@ body.theme-dark .ww-header.scrolled {
   margin-bottom: 2px;
 }
 
+.ww-user-meta .quote-info {
+  display: flex;
+  flex-direction: column;
+  gap: -5px;
+}
+
 .ww-user-meta span {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -963,6 +986,7 @@ body.theme-dark .ww-header.scrolled {
 .ww-cta-box h2 {
   font-size: 2.5rem;
   margin-bottom: 16px;
+  line-height: 50px;
 }
 
 .ww-cta-box p {
@@ -976,7 +1000,7 @@ body.theme-dark .ww-header.scrolled {
 
 /* --- Footer --- */
 .ww-footer {
-  padding: 60px 0;
+  padding: 60px 0 30px;
   border-top: 1px solid var(--border-light);
   background: var(--bg-card);
 }
@@ -984,14 +1008,14 @@ body.theme-dark .ww-header.scrolled {
 /* GRID LAYOUT */
 .ww-footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-columns: 1.8fr 1fr 1fr;
   gap: 40px;
   align-items: start;
 }
 
 /* BRAND */
 .ww-footer-brand {
-  max-width: 320px;
+  max-width: 400px;
 }
 
 .ww-brand-footer {
@@ -1006,7 +1030,7 @@ body.theme-dark .ww-header.scrolled {
 
 .ww-footer-text {
   color: var(--text-muted);
-  font-size: 0.92rem;
+  font-size: 1rem;
   line-height: 1.6;
 }
 
@@ -1014,7 +1038,8 @@ body.theme-dark .ww-header.scrolled {
 .ww-footer-links h4,
 .ww-footer-social h4 {
   color: var(--text-main);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
+  font-weight: 600;
   margin-bottom: 12px;
 }
 
@@ -1056,7 +1081,7 @@ body.theme-dark .ww-header.scrolled {
 /* SOCIAL */
 .social-icons {
   display: flex;
-  gap: 14px;
+  gap: 18px;
 }
 
 .social-icons a {
@@ -1074,7 +1099,7 @@ body.theme-dark .ww-header.scrolled {
   padding-top: 16px;
   border-top: 1px solid var(--border-light);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
@@ -1084,7 +1109,65 @@ body.theme-dark .ww-header.scrolled {
 }
 
 /* RESPONSIVE */
+
+@media (max-width: 1200px) {
+
+  /* hero section */
+  .ww-hero-ref {
+    padding: 50px 50px 120px;
+  }
+}
+
+@media (max-width: 1100px) {
+
+  /* --- Steps & Testimonials --- */
+  .ww-steps-row,
+  .ww-testimonial-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
+
+  /* --- General --- */
+  .ww-section {
+    padding: 80px 30px;
+  }
+
+  /* hero section */
+  .ww-hero-ref {
+    padding: 50px 30px 120px;
+  }
+
+  .ww-hero-ref-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* about section */
+
+  .ww-text-block {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .ww-text-block h2,
+  .ww-section-header.centered h2,
+  .ww-cta-box h2 {
+    font-size: 2rem;
+    line-height: 50px;
+  }
+
+  .ww-desc-lg {
+    font-size: 1.15rem;
+  }
+
+  /* problem section */
+  .ww-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
   .ww-footer-grid {
     grid-template-columns: 1fr;
     gap: 28px;
@@ -1098,4 +1181,44 @@ body.theme-dark .ww-header.scrolled {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+@media (max-width: 700px) {
+
+  /* --- Steps & Testimonials --- */
+  .ww-steps-row,
+  .ww-testimonial-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+
+  /* --- General --- */
+  .ww-section {
+    padding: 80px 0;
+  }
+
+  /* hero section */
+  .ww-hero-ref {
+    padding: 30px 0 120px;
+  }
+
+  .ww-hero-ref-title {
+    font-size: 2.8rem;
+    line-height: 1.20;
+  }
+
+  /* problem section */
+
+  .ww-conn-card {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .icon-box {
+    width: 30px;
+    height: 30px;
+  }
+
 }

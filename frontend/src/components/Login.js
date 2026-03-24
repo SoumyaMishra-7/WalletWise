@@ -70,7 +70,6 @@ const Login = () => {
     <div className="auth-container">
       <ToastContainer position="top-right" autoClose={3000} />
 
-
       <div className="auth-card">
         <Link to="/" className="back-to-home">
           <FaArrowLeft /> Back to Home

@@ -181,7 +181,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="auth-container split-layout">
+    <div className="auth-container">
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -193,17 +193,6 @@ const Signup = () => {
         draggable
         pauseOnHover
       />
-
-      <div className="auth-features">
-        <h1>Student Benefits</h1>
-        <ul>
-          <li>No-cost student plan</li>
-          <li>Smart budgeting templates</li>
-          <li>Insightful weekly summaries</li>
-          <li>Alerts for overspending</li>
-          <li>Export-ready reports</li>
-        </ul>
-      </div>
 
       <div className="auth-card">
         <Link to="/" className="back-to-home">

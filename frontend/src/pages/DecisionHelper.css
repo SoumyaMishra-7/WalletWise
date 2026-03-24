@@ -115,6 +115,10 @@ body.theme-dark .decision-page,
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--decision-muted);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 10px;
 }
 
 .form-group input,
@@ -302,6 +306,7 @@ body.theme-dark .decision-page,
 }
 
 @media (max-width: 900px) {
+
     .decision-grid {
         grid-template-columns: 1fr;
     }

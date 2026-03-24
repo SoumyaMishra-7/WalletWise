@@ -139,7 +139,7 @@ const Homepage = () => {
                   Get Started
                 </button>
                 <a href="#features" className="ww-btn-link ww-btn-lg">
-                  Explore Features <ChevronRight size={20} className="ww-arrow"/>
+                  Explore Features <ChevronRight size={20} className="ww-arrow" />
                 </a>
               </motion.div>
 
@@ -682,8 +682,9 @@ const Homepage = () => {
         {/* Testimonials */}
         <section className="ww-section" id="testimonials">
           <div className="ww-container">
-            <div className="ww-section-header">
-              <h2>Student Voices</h2>
+            <div className="ww-section-header centered">
+              <p className="ww-kicker">Testimonials</p>
+              <h2>Real Stories. Real Impact.</h2>
             </div>
             <motion.div
               className="ww-testimonial-grid"
@@ -723,7 +724,7 @@ const Homepage = () => {
                     <div className="ww-user-avatar-placeholder">
                       {t.name[0]}
                     </div>
-                    <div>
+                    <div className="quote-info">
                       <h4>{t.name}</h4>
                       <span>{t.role}</span>
                     </div>
