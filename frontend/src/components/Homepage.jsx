@@ -383,14 +383,14 @@ const Homepage = () => {
 
                 <div className="ww-dot dot-orange"></div>
                 <div className="ww-dot dot-green"></div>
-                <div className="ww-dot dot-blue"></div>
+              
               </div>
             </motion.div>
           </div>
         </section>
 
         {/* About Section */}
-        <section className="ww-section" id="about">
+       <section className="ww-section" id="about">
           <div className="ww-container">
             <div className="ww-text-block">
               <p className="ww-kicker">About WalletWise</p>
