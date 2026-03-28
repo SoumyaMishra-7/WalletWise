@@ -30,7 +30,6 @@ exports.getAnalyticsSummary = async (req, res) => {
     }));
 
     // 6 Month Trend
-
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
 
@@ -67,7 +66,6 @@ exports.getAnalyticsSummary = async (req, res) => {
       if (a.year !== b.year) return a.year - b.year;
       return a.month - b.month;
     });
-
 
     // Fetch last 6 months transactions for recurring detection
 
@@ -115,7 +113,6 @@ exports.getAnalyticsSummary = async (req, res) => {
     }
 
     // Last 3 months average per category
-
     const threeMonthsAgo = new Date(startOfMonth);
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
@@ -137,7 +134,6 @@ exports.getAnalyticsSummary = async (req, res) => {
         }
       }
     ]);
-
 
     const anomalies = [];
 
@@ -163,14 +159,12 @@ exports.getAnalyticsSummary = async (req, res) => {
     // Sort recurring by highest frequency
     recurring.sort((a, b) => b.occurrences - a.occurrences);
 
-
     res.json({
       categoryTotals: formatted,
       trends: formattedTrends,
       recurring,
       anomalies
     });
-
 
   } catch (err) {
     console.error(err);

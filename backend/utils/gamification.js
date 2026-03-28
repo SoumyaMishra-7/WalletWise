@@ -8,24 +8,28 @@ const BADGES = {
     description: 'Set your first budget',
     icon: '🎯'
   },
+
   FIRST_TRANSACTION: {
     id: 'first_transaction',
     name: 'First Step',
     description: 'Logged your very first transaction',
     icon: '🌱'
   },
+
   STREAK_7: {
     id: 'streak_7',
     name: 'Consistency Planner',
     description: 'Maintained a 7-day transaction tracking streak',
     icon: '🔥'
   },
+
   SAVINGS_GOAL_STARTED: {
     id: 'savings_goal_started',
     name: 'Emergency Fund Starter',
     description: 'Created your first savings goal',
     icon: '🏦'
   },
+
   LEVEL_5: {
     id: 'level_5',
     name: 'Financial Padawan',

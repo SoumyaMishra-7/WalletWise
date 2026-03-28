@@ -10,14 +10,17 @@ const userSchema = new mongoose.Schema({
     unique: true,
     set: value => (value === '' || value === null ? undefined : value)
   },
+
   fullName: {
     type: String,
     trim: true
   },
+
   avatar: {
     type: String,
     default: ''
   },
+
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -26,148 +29,186 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email']
   },
+
   emailVerified: {
     type: Boolean,
     default: false
   },
+
   emailOtpHash: {
     type: String
   },
+
   emailOtpExpires: {
     type: Date
   },
+
   emailOtpSentAt: {
     type: Date
   },
   passwordResetOtpHash: {
     type: String
   },
+
   passwordResetOtpExpires: {
     type: Date
   },
+
   passwordResetOtpSentAt: {
     type: Date
   },
+
   passwordResetTokenHash: {
     type: String
   },
+
   passwordResetTokenExpires: {
     type: Date
   },
+
   passwordResetTokenSentAt: {
     type: Date
   },
+
   passwordHash: {
     type: String
   },
+
   passwordResetOtpHash: {
     type: String
   },
+
   passwordResetOtpExpires: {
     type: Date
   },
+
   passwordResetOtpSentAt: {
     type: Date
   },
+
   provider: {
     type: String,
     enum: ['local', 'google', 'both'],
     default: 'local'
   },
+
   googleId: {
     type: String
   },
+
   phoneNumber: {
     type: String,
     trim: true,
     default: ''
   },
+
   department: {
     type: String,
     trim: true
   },
+
   year: {
     type: String,
     enum: ['1st', '2nd', '3rd', '4th', '5th'],
     default: '1st'
   },
+
   // Profile Settings
   currency: {
     type: String,
     default: 'USD'
   },
+
   dateFormat: {
     type: String,
     default: 'MM/DD/YYYY'
   },
+
   language: {
     type: String,
     default: 'English'
   },
+
   theme: {
     type: String,
     enum: ['light', 'dark'],
     default: 'light'
   },
+
   // Financial Settings
   incomeFrequency: {
     type: String,
     default: 'Monthly'
   },
+
   incomeSources: {
     type: String,
     default: ''
   },
+
   priorities: {
     type: String,
     default: 'Saving'
   },
+
   riskTolerance: {
     type: String,
     default: 'Moderate'
   },
+
   walletBalance: {
     type: Number,
     default: 0
   },
+
   wwcBalance: {
     type: Number,
     default: 10000
   },
+
   refreshTokenHash: {
     type: String
   },
+
   // Gamification Fields
   totalXP: {
     type: Number,
     default: 0
   },
+
   currentStreak: {
     type: Number,
     default: 0
   },
+
   highestStreak: {
     type: Number,
     default: 0
   },
+
   lastActiveDate: {
     type: Date
   },
+
   unlockedBadges: [{
     type: String
   }],
+
   // Privacy Vault Fields
   vaultEnabled: {
     type: Boolean,
     default: false
   },
+
   vaultSalt: {
     type: String
   },
+
   createdAt: {
     type: Date,
     default: Date.now
   },
+
   updatedAt: {
     type: Date,
     default: Date.now

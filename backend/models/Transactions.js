@@ -8,43 +8,52 @@ const transactionSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+
   type: {
     type: String,
     enum: ['expense', 'income'],
     required: true
   },
+
   amount: {
     type: Number,
     required: true,
     min: 0
   },
+
   category: {
     type: String,
     enum: CATEGORIES,
     required: true
   },
+
   description: {
     type: String,
     trim: true
   },
+
   date: {
     type: Date,
     default: Date.now
   },
+
   paymentMethod: {
     type: String,
     enum: ['cash', 'card', 'upi', 'online'],
     default: 'cash'
   },
+
   isRecurring: {
     type: Boolean,
     default: false
   },
+
   recurringInterval: {
     type: String,
     enum: ["daily", "weekly", "monthly", null],
     default: null
   },
+
   nextExecutionDate: {
     type: Date,
     default: null
@@ -55,22 +64,26 @@ const transactionSchema = new mongoose.Schema({
     enum: ['happy', 'stressed', 'bored', 'sad', 'calm', 'neutral'],
     default: 'neutral'
   },
+
   // Issue 270: Shared Wallets Fields
   walletId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Wallet',
     default: null
   },
+
   paidBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
   },
+
   // Privacy Vault Fields
   isEncrypted: {
     type: Boolean,
     default: false
   },
+
   encryptedData: {
     type: String, // Stores Base64 encoded JSON of { ciphertext, iv }
     default: null

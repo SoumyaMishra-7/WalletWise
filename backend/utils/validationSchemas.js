@@ -53,6 +53,7 @@ const transactionSchema = z.object({
     (value) => (typeof value === 'string' ? value.trim().toLowerCase() : value),
     z.enum(['income', 'expense'], { errorMap: () => ({ message: 'Type must be income or expense' }) })
   ),
+
   amount: z.preprocess(
     (value) => {
       if (typeof value === 'string') {
@@ -63,22 +64,27 @@ const transactionSchema = z.object({
     },
     z.number().finite().positive('Amount must be positive')
   ),
+
   category: z.preprocess(
     (value) => (typeof value === 'string' ? value.trim().toLowerCase() : value),
     z.string().min(1, 'Category is required').max(50, 'Category name too long')
   ),
+
   description: z.preprocess(
     (value) => (typeof value === 'string' ? value.trim() : value),
     z.string().max(200, 'Description too long').optional().default('')
   ),
+
   paymentMethod: z.preprocess(
     (value) => (typeof value === 'string' ? value.trim().toLowerCase() : value),
     z.enum(['cash', 'card', 'upi', 'online']).optional().default('cash')
   ),
+
   mood: z.preprocess(
     (value) => (typeof value === 'string' ? value.trim().toLowerCase() : value),
     z.enum(['happy', 'stressed', 'bored', 'sad', 'calm', 'neutral']).optional().default('neutral')
   ),
+
   date: z.preprocess((value) => {
     if (value === undefined || value === null || value === '') {
       return undefined;

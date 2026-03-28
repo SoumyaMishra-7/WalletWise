@@ -7,11 +7,13 @@ const budgetSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+
   totalBudget: {
     type: Number,
     required: [true, 'Total budget amount is required'],
     min: [1, 'Budget amount must be greater than 0']
   },
+
   categories: [{
     name: {
       type: String,
@@ -39,11 +41,13 @@ const budgetSchema = new mongoose.Schema({
       default: '#667eea'
     }
   }],
+
   month: {
     type: String,
     required: true,
     match: [/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format']
   },
+  
   isActive: {
     type: Boolean,
     default: true

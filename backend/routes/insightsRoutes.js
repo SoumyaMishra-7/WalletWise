@@ -22,4 +22,3 @@ router.post('/evaluate', evaluatePurchase);
 router.get('/mood-correlation', getMoodCorrelation);
 
 module.exports = router;
-

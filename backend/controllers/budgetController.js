@@ -6,7 +6,6 @@ const gamification = require('../utils/gamification');
 // Set/Update Budget
 const setBudget = async (req, res) => {
     try {
-
         const { totalBudget, categories, month } = req.body;
 
         // Validation
@@ -105,8 +104,8 @@ const setBudget = async (req, res) => {
                 month: budgetMonth,
                 isActive: true
             });
-            await budget.save();
 
+            await budget.save();
         }
 
         // Gamification Hook: Award First Budget badge if applicable
@@ -161,9 +160,8 @@ const setBudget = async (req, res) => {
 // Get Current Budget
 const getCurrentBudget = async (req, res) => {
     try {
-
-
         const currentMonth = new Date().toISOString().slice(0, 7);
+
         const budget = await Budget.findOne({
             userId: req.userId,
             month: currentMonth,

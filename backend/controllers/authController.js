@@ -190,7 +190,6 @@ const sendPasswordResetInstructions = async (user, { skipEmail } = {}) => {
   return { otp, token, resetLink, delivered: true };
 };
 
-
 const register = asyncHandler(async (req, res) => {
   console.log('📝 Incoming Registration Request:', JSON.stringify(req.body, null, 2));
 

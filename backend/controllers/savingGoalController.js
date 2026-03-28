@@ -46,7 +46,6 @@ const calculatePredictiveFields = (goal) => {
 // Create Savings Goal
 const createGoal = async (req, res) => {
     try {
-
         const {
             name,
             description = '',
