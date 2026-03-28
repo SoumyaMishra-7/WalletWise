@@ -103,9 +103,10 @@ class MockTransactionRepository {
             for (const [key, value] of Object.entries(query)) {
                 if (key === '$or' || key === '$and') continue; // Skip complex operators
                 if (typeof value === 'object' && value !== null) {
-                    // Handle $gte, $lte, etc.
+                    // Handle $gte, $lte, $ne, etc.
                     if (value.$gte && t[key] < value.$gte) return false;
                     if (value.$lte && t[key] > value.$lte) return false;
+                    if (value.$ne !== undefined && t[key] === value.$ne) return false;
                 } else {
                     if (t[key]?.toString() !== value?.toString()) return false;
                 }

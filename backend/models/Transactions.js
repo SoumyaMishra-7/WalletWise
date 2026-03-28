@@ -64,7 +64,6 @@ const transactionSchema = new mongoose.Schema({
   paidBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null
   },
   // Privacy Vault Fields
   isEncrypted: {
@@ -74,6 +73,15 @@ const transactionSchema = new mongoose.Schema({
   encryptedData: {
     type: String, // Stores Base64 encoded JSON of { ciphertext, iv }
     default: null
+  },
+  // Soft-delete fields for secure server-side undo
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date,
+    default: null
   }
 }, { timestamps: true });
 
@@ -81,5 +89,6 @@ const transactionSchema = new mongoose.Schema({
 transactionSchema.index({ userId: 1, type: 1, date: -1 });
 transactionSchema.index({ userId: 1, category: 1 });
 transactionSchema.index({ userId: 1, description: 1 });
+transactionSchema.index({ userId: 1, isDeleted: 1 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);
