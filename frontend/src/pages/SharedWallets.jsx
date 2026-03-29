@@ -95,6 +95,7 @@ const SharedWallets = () => {
           <h1><FaWallet className="icon-mr" /> Shared Wallets</h1>
           <p>Create group wallets, invite members, and track shared balances.</p>
         </div>
+
         <button className="btn-primary create-btn" onClick={() => setShowCreateModal(true)}>
           <FaPlus /> Create Wallet
         </button>
@@ -105,6 +106,7 @@ const SharedWallets = () => {
           <span className="summary-label">Total Wallets</span>
           <span className="summary-value">{wallets.length}</span>
         </div>
+
         <div className="summary-chip">
           <span className="summary-label">Total Members</span>
           <span className="summary-value">{totalMembers}</span>
@@ -126,6 +128,7 @@ const SharedWallets = () => {
                   <h3>{wallet.name}</h3>
                   <span className="wallet-currency">{wallet.currency}</span>
                 </div>
+
                 <p className="wallet-desc">{wallet.description}</p>
                 <div className="wallet-card-footer">
                   <div className="wallet-stats">
@@ -135,15 +138,18 @@ const SharedWallets = () => {
                       {Math.abs(wallet.balance).toFixed(2)}
                     </span>
                   </div>
+
                   <div className="members-count">
                     <FaUsers /> {wallet.members?.length || 1} Members
                   </div>
                 </div>
               </Link>
+
               <div className="wallet-card-actions">
                 <Link to={`/wallets/${wallet._id}`} className="btn-secondary small action-link">
                   Open Wallet
                 </Link>
+
                 <button
                   type="button"
                   className="btn-primary small"
@@ -172,6 +178,7 @@ const SharedWallets = () => {
                   placeholder="e.g. Apartment Expenses"
                 />
               </div>
+              
               <div className="form-group">
                 <label>Description</label>
                 <textarea
@@ -180,6 +187,7 @@ const SharedWallets = () => {
                   placeholder="What is this wallet for?"
                 />
               </div>
+
               <div className="form-group">
                 <label>Currency</label>
                 <select
@@ -192,6 +200,7 @@ const SharedWallets = () => {
                   <option value="GBP">GBP (£)</option>
                 </select>
               </div>
+
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary">Create</button>
@@ -208,6 +217,7 @@ const SharedWallets = () => {
             <p className="wallet-modal-subtitle">
               {selectedWallet?.name ? `Wallet: ${selectedWallet.name}` : 'Invite a user by email'}
             </p>
+
             <form onSubmit={handleInviteMember}>
               <div className="form-group">
                 <label>User Email Address</label>
@@ -219,6 +229,7 @@ const SharedWallets = () => {
                   placeholder="friend@example.com"
                 />
               </div>
+
               <div className="form-group">
                 <label>Role</label>
                 <select
@@ -229,6 +240,7 @@ const SharedWallets = () => {
                   <option value="admin">Admin</option>
                 </select>
               </div>
+              
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowInviteModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary">Add Member</button>

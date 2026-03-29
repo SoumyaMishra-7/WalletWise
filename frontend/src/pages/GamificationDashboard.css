@@ -34,7 +34,7 @@ body.theme-dark .gamification-container,
 .gami-header h1 {
   font-size: 2.5rem;
   color: var(--gami-text);
-  margin-bottom: 0.5rem;
+  margin: 5rem 0 0.5rem;
 }
 
 .gami-header p {
@@ -45,7 +45,7 @@ body.theme-dark .gamification-container,
 .back-btn {
   position: absolute;
   left: 0;
-  top: 50%;
+  top: -20%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
@@ -428,7 +428,7 @@ body.theme-dark .gamification-container,
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .calendar-title {
@@ -436,7 +436,7 @@ body.theme-dark .gamification-container,
   justify-content: space-between;
   align-items: baseline;
   gap: 0.5rem;
-  margin-bottom: 0.8rem;
+  margin-bottom: 2rem;
 }
 
 .calendar-title h3 {
@@ -619,6 +619,7 @@ body.theme-dark .boost-box,
 }
 
 @media (max-width: 768px) {
+  
   .stats-hero {
     flex-direction: column;
     padding: 2rem 1rem;

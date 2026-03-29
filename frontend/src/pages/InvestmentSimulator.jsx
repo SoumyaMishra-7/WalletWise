@@ -88,6 +88,7 @@ const InvestmentSimulator = () => {
                 <Link to="/dashboard" className="back-link">
                     <FaArrowLeft /> Back to Dashboard
                 </Link>
+
                 <span className="eyebrow">Virtual Trading</span>
                 <h1>Micro-Investment Simulator 📈</h1>
                 <p>Learn to invest your budget surplus safely. Zero financial risk.</p>
@@ -103,6 +104,7 @@ const InvestmentSimulator = () => {
                                 <span className="label">Invested Value</span>
                                 <span className="value">${totalValue.toFixed(2)}</span>
                             </div>
+
                             <div className="balance-item">
                                 <span className="label">Virtual Cash (From Savings)</span>
                                 <span className="value">${availableToInvest.toFixed(2)}</span>
@@ -124,6 +126,7 @@ const InvestmentSimulator = () => {
                                             <th>Action</th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
                                         {portfolio.map(inv => (
                                             <tr key={inv._id}>
@@ -148,6 +151,7 @@ const InvestmentSimulator = () => {
                     <section className="education-area card">
                         <h2><FaGraduationCap /> Learning Hub</h2>
                         <p>Hover over terms to learn their definitions:</p>
+                        
                         <div className="terms-grid">
                             {Object.entries(educationalTerms).map(([term, def]) => (
                                 <div

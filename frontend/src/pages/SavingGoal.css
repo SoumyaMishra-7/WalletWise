@@ -506,6 +506,7 @@ body.theme-dark .close-savings-btn:hover {
 
 /* Responsive Design */
 @media (max-width: 640px) {
+  
   .savings-modal-content {
     width: 95%;
     margin: 10px;

@@ -19,6 +19,7 @@ export const VaultProvider = ({ children }) => {
     const checkVaultStatus = useCallback(async () => {
         if (!isAuthenticated) return;
         setLoadingVault(true);
+        
         try {
             const res = await api.get('/api/vault/status');
             if (res.data.success) {

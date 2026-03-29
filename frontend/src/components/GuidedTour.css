@@ -92,6 +92,7 @@
 }
 
 @media (max-width: 768px) {
+  
   .guided-tour-tooltip {
     width: calc(100vw - 24px) !important;
     left: 12px !important;

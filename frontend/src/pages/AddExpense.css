@@ -17,7 +17,7 @@
   background: var(--bg-card, #ffffff);
   border-radius: 28px;
   width: 100%;
-  max-width: 480px;
+  max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-soft, 0 25px 50px -12px rgba(0, 0, 0, 0.2));
@@ -440,6 +440,7 @@
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 480px) {
+
   .form-row-flex {
     flex-direction: column;
     gap: 0;

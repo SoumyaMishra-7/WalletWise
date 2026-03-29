@@ -24,10 +24,12 @@ const FRONTEND_URL = (
     process.env.FRONTEND_URL ||
     (isProd ? null : 'http://localhost:3000')
 )?.replace(/\/+$/, '');
+
 const FRONTEND_URLS = (process.env.FRONTEND_URLS || '')
     .split(',')
     .map((value) => value.trim().replace(/\/+$/, ''))
     .filter(Boolean);
+
 const allowedOrigins = Array.from(
     new Set(
         [FRONTEND_URL, ...FRONTEND_URLS]
@@ -45,6 +47,7 @@ const allowedOrigins = Array.from(
             })
     )
 );
+
 const MONGODB_URI =
     process.env.MONGODB_URI || (isProd ? null : 'mongodb://localhost:27017/walletwise');
 
@@ -175,7 +178,6 @@ app.use(globalLimiter);
 app.use('/api/v1/auth', authLimiter);
 app.use('/api/auth', authLimiter);
 
-
 // ==================== DATABASE CONNECTION ====================
 console.log(`🔗 Connecting to MongoDB: ${MONGODB_URI}`);
 
@@ -220,6 +222,7 @@ app.get('/api/health', (req, res) => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+
         endpoints: {
             auth: {
                 register: 'POST /api/auth/register',
@@ -266,6 +269,7 @@ app.get('/', (req, res) => {
         message: 'WalletWise Backend API is running',
         version: '1.0.0',
         database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+
         endpoints: {
             auth: {
                 register: 'POST /api/auth/register',
@@ -315,14 +319,11 @@ app.all('*', (req, res, next) => {
 app.use(globalErrorHandler);
 app.use(errHandler);
 
-
 // ==================== START SERVER ====================
 // Initialize Scheduler
 if (process.env.NODE_ENV !== 'test') {
-
     // const { initScheduler } = require('./utils/scheduler');
     // initScheduler();
-
 }
 
 const PORT = process.env.PORT || 5000;

@@ -5,6 +5,7 @@ const BASE_URL = 'http://localhost:5000/api';
 async function testPayloadLimit() {
     console.log('\n--- Testing Payload Limit ---');
     const largeData = 'a'.repeat(2 * 1024 * 1024); // 2MB
+
     try {
         await axios.post(`${BASE_URL}/health`, { data: largeData });
         console.log('❌ Failed: 2MB payload was accepted');
@@ -24,6 +25,7 @@ async function testPayloadLimit() {
 async function testRateLimiting() {
     console.log('\n--- Testing Rate Limiting ---');
     console.log('Sending several requests to trigger speed limiter...');
+
     for (let i = 0; i < 60; i++) {
         const start = Date.now();
         try {

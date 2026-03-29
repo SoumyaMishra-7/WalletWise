@@ -12,14 +12,20 @@ Welcome! Thanks for your interest in improving **WalletWise** — every bug fix,
 - Or open a new one with clear details
 - For UI work, attach mockups/references
 
+---
+
 ### 2️⃣ Claim It
 
 - Comment on the issue to express interest
 - Large tasks (e.g., landing page redesign) may require sharing your approach first
 
+---
+
 ### 3️⃣ Get Assigned
 
 - Wait for assignment before starting or submitting a PR (mandatory during SSoC)
+
+---
 
 ### 4️⃣ Setup Locally
 
@@ -36,7 +42,6 @@ npm install
 # Start the development server
 npm start
 ```
-
 ---
 
 ## ✅ Pull Request Guidelines

@@ -19,6 +19,8 @@ WalletWise is a next-generation personal finance platform designed to **teach, g
 
 Unlike traditional finance apps that merely record transactions, WalletWise **actively interprets behaviour**, **predicts future obligations**, and **assists users in making smarter financial decisions** in real time.
 
+---
+
 ### 🎯 Core Philosophy
 
 > **Finance should not just be tracked — it should be understood.**
@@ -29,6 +31,7 @@ WalletWise transforms raw financial data into actionable intelligence, helping u
 
 ⚠️ **Current Status:** WalletWise is under active development. Core transaction tracking and monthly budgeting features are implemented. Predictive budgeting, AI behaviour analysis, and the decision helper module are planned and currently in progress.
 
+---
 
 ## 🚀 Why WalletWise Exists
 
@@ -322,6 +325,8 @@ WalletWise is designed for:
 - Node.js (v16+)
 - npm or yarn
 
+---
+
 ## Installation
 
 ### 1. Clone the Repository
@@ -330,6 +335,7 @@ WalletWise is designed for:
 git clone https://github.com/SoumyaMishra-7/WalletWise.git
 cd WalletWise
 ```
+---
 
 ### 2. Backend Setup
 
@@ -359,6 +365,8 @@ npm run dev
 
 The server will start on `http://localhost:5000` by default.
 
+---
+
 ### 3. Frontend Setup
 
 The frontend application is built with React.
@@ -386,10 +394,14 @@ The application will open at `http://localhost:3000`.
 - [x] Category-based classification
 - [x] Monthly budget controller
 
+---
+
 ### Phase 2: Intelligence 🚧
 - [ ] Predictive budgeting engine
 - [ ] AI behaviour analysis
 - [x] Decision helper module
+
+---
 
 ### Phase 3: Advanced Features 📅
 - [ ] Multi-user support (family accounts)

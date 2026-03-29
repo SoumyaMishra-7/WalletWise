@@ -287,7 +287,7 @@
 .advanced-drawer {
   width: 92%;
   max-width: 1600px;
-  margin: 0 auto 3rem;
+  margin: 0 1rem 3rem;
   padding: 1.5rem 0 0;
   border-top: 1px dashed var(--border-subtle);
 }
@@ -338,7 +338,7 @@
   max-width: 1600px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
   gap: 1.5rem;
 }
 
@@ -396,6 +396,8 @@
 
 .category-stats>div {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .category-stats strong {
@@ -544,12 +546,13 @@
   background: #f1f5f9;
   border-radius: 999px;
   overflow: hidden;
+  margin-left: 20px;
 }
 
 .needs-wants-bar span {
   font-size: 0.75rem;
   text-align: center;
-  padding: 0.4rem;
+  padding: 0.4rem !important;
   color: white;
   min-width: 0;
   overflow-wrap: anywhere;
@@ -603,7 +606,7 @@
 .metrics-grid {
   width: 92%;
   max-width: 1600px;
-  margin: 0 auto;
+  margin: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
@@ -673,6 +676,7 @@
 }
 
 @media (max-width: 1024px) {
+
   .budget-header {
     flex-direction: column;
     align-items: flex-start;

@@ -176,6 +176,7 @@ const DecisionHelper = () => {
                                         {result.status === 'Risky' && <LucideShieldAlert size={32} />}
                                         {result.status === 'Not Recommended' && <LucideXCircle size={32} />}
                                     </div>
+                                    
                                     <h3>{result.status}</h3>
                                     <div className="factors-list">
                                         {result.factors.map(f => <span key={f} className="factor-pill">{f}</span>)}
@@ -192,6 +193,7 @@ const DecisionHelper = () => {
                                         <label>Budget Left</label>
                                         <p>{formatCurrency(result.metrics.budgetLeft)}</p>
                                     </div>
+
                                     <div className="metric-item">
                                         <label>Upcoming Bills (15d)</label>
                                         <p>{formatCurrency(result.metrics.upcomingBills)}</p>
@@ -203,9 +205,11 @@ const DecisionHelper = () => {
                                         <LucideZap size={18} />
                                         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Financial Impact</span>
                                     </div>
+
                                     <div style={{ marginTop: '1rem', height: '8px', background: 'var(--decision-surface-muted)', borderRadius: '4px', overflow: 'hidden' }}>
                                         <div style={{ width: `${Math.min(result.metrics.purchaseImpact, 100)}%`, height: '100%', background: 'var(--primary-color, #6366f1)' }}></div>
                                     </div>
+
                                     <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--decision-muted)' }}>
                                         This purchase takes up {result.metrics.purchaseImpact.toFixed(1)}% of your total monthly budget.
                                     </p>

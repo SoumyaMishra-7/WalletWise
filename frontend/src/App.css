@@ -142,9 +142,6 @@ body {
   color: var(--white);
 }
 
-
-
-
 /* Form Styles */
 .form-group {
   margin-bottom: 20px;
@@ -332,6 +329,7 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+
   .modal-content {
     margin: 10px;
     max-height: 85vh;
@@ -348,6 +346,7 @@ body {
 }
 
 @media (max-width: 480px) {
+
   :root {
     --radius: 8px;
   }

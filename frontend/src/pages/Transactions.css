@@ -277,8 +277,6 @@
   font-size: 1rem;
 }
 
-
-
 .page-loading,
 .page-error {
   width: 92%;
@@ -357,6 +355,7 @@
 }
 
 @media (max-width: 960px) {
+  
   .transactions-topbar {
     flex-direction: column;
   }

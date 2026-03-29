@@ -151,7 +151,6 @@ html {
   position: relative;
   z-index: 10;
   animation: auth-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-
   /* Ensure it doesn't shrink in flex layout */
   flex-shrink: 0;
 }
@@ -573,7 +572,7 @@ html {
 
   .auth-header h1 {
     font-size: 1.8rem;
-     margin-top: 60px;
+    margin-top: 60px;
   }
 
   .form-row {

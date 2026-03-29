@@ -1,5 +1,4 @@
 // backend/utils/gamificationConstants.js
-
 const XP_AWARDS = {
     TRANSACTION: 10,
     STREAK_BONUS_MULTIPLIER: 5, // 5 XP extra per day of streak

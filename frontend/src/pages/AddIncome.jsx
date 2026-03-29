@@ -222,6 +222,7 @@ const AddIncome = ({ isOpen, onClose, onSuccess }) => {
                 </button>
               )}
             </div>
+
             <textarea
               id="description"
               name="description"
@@ -239,6 +240,7 @@ const AddIncome = ({ isOpen, onClose, onSuccess }) => {
             <button type="button" className="btn-secondary" onClick={onClose} disabled={loading}>
               Cancel
             </button>
+            
             <button
               type="submit"
               className="btn-primary"

@@ -7,7 +7,7 @@
 }
 
 .settings-container {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -272,6 +272,7 @@ body.theme-dark .form-group input:-webkit-autofill:active {
   display: flex;
   gap: 1rem;
   margin-left: auto;
+  width: 30%;
 }
 
 /* Buttons */
@@ -345,6 +346,7 @@ body.theme-dark .form-group input:-webkit-autofill:active {
 }
 
 @media (max-width: 768px) {
+  
   .footer-content {
     flex-direction: column;
     gap: 1rem;
@@ -371,8 +373,10 @@ body.theme-dark .form-group input:-webkit-autofill:active {
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 48px;
-  height: 26px;
+  width: 55px;
+  height: 28px;
+  border: 2px solid var(--border-subtle);
+  border-radius: 30px;
 }
 
 .toggle-switch input {
@@ -412,7 +416,7 @@ input:focus+.slider {
 }
 
 input:checked+.slider:before {
-  transform: translateX(22px);
+  transform: translateX(26px);
 }
 
 .slider.round {

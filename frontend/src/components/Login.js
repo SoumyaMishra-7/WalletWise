@@ -74,6 +74,7 @@ const Login = () => {
         <Link to="/" className="back-to-home">
           <FaArrowLeft /> Back to Home
         </Link>
+
         <div className="auth-header">
           <h1>WalletWise</h1>
           <p className="subtitle">Welcome back! Login to continue.</p>
@@ -101,6 +102,7 @@ const Login = () => {
               <FaLock className="input-icon" />
               Password
             </label>
+
             <div className="password-input-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -111,6 +113,7 @@ const Login = () => {
                 placeholder="Enter password (min 6 chars)"
                 required
               />
+
               <button
                 type="button"
                 className="password-toggle"
@@ -126,6 +129,7 @@ const Login = () => {
               <input type="checkbox" />
               Remember me
             </label>
+            
             <Link to="/forgot-password" className="forgot-password">
               Forgot Password?
             </Link>

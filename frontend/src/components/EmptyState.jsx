@@ -23,6 +23,7 @@ const EmptyState = ({
                 <div className="empty-state-icon-wrapper">
                     {Icon ? <Icon size={48} className="empty-state-icon" /> : <PlusCircle size={48} className="empty-state-icon" />}
                 </div>
+
                 <h3 className="empty-state-title">{title || 'No results found'}</h3>
                 <p className="empty-state-description">
                     {description || 'We couldn\'t find what you\'re looking for. Try adjusting your filters or adding a new entry.'}

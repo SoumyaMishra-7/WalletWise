@@ -341,6 +341,7 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
                     </>
                   )}
                 </button>
+
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -415,6 +416,7 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
               <label htmlFor="date">Date</label>
               <input type="date" id="date" name="date" value={formData.date} onChange={handleChange} disabled={loading} />
             </div>
+            
             <div className="expense-form-group flex-1">
               <label htmlFor="paymentMethod">Payment Method</label>
               <select id="paymentMethod" name="paymentMethod" value={formData.paymentMethod} onChange={handleChange} disabled={loading}>

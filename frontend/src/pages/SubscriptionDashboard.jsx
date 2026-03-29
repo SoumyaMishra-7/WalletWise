@@ -153,21 +153,25 @@ const SubscriptionDashboard = () => {
                         </svg>
                         Back to Dashboard
                     </Link>
+
                     <div className="sub-badge">
                         <LucideCalendarDays size={16} />
                         Smart Tracker
                     </div>
                 </div>
+
                 <div className="sub-hero">
                     <div>
                         <h1>Subscription & Bill Tracker</h1>
                         <p>Manage recurring payments and spot vampire costs.</p>
                     </div>
+
                     <div className="sub-actions">
                         <button onClick={handleScan} disabled={scanning} className="btn-scan">
                             {scanning ? <span className="spinner"></span> : <LucideSearch size={18} />}
                             {scanning ? 'Scanning...' : 'Scan for Bills'}
                         </button>
+
                         <button onClick={() => setShowAddModal(true)} className="btn-add">
                             <LucidePlus size={18} /> Add Manually
                         </button>
@@ -182,6 +186,7 @@ const SubscriptionDashboard = () => {
                         <div className="stat-icon-wrapper danger">
                             <LucideAlertTriangle size={24} />
                         </div>
+
                         <div>
                             <p className="stat-label">Total Monthly Cost</p>
                             <h2 className="stat-value">{formatCurrency(totalMonthly)}</h2>
@@ -192,6 +197,7 @@ const SubscriptionDashboard = () => {
                         <div className="stat-icon-wrapper success">
                             <LucideCheckCircle2 size={24} />
                         </div>
+
                         <div>
                             <p className="stat-label">Active Subscriptions</p>
                             <h2 className="stat-value">{subscriptions.length}</h2>
@@ -202,6 +208,7 @@ const SubscriptionDashboard = () => {
                         <div className="stat-icon-wrapper info">
                             <LucideCreditCard size={24} />
                         </div>
+
                         <div>
                             <p className="stat-label">Next Bill Due</p>
                             <h2 className="stat-value text-sm">
@@ -228,10 +235,12 @@ const SubscriptionDashboard = () => {
                                         <span className="bill-day">{new Date(sub.nextDueDateDisplay).getDate()}</span>
                                         <span className="bill-month">{new Date(sub.nextDueDateDisplay).toLocaleString('default', { month: 'short' })}</span>
                                     </div>
+
                                     <div className="bill-info">
                                         <h4>{sub.name}</h4>
                                         <span className="bill-cycle">{sub.billingCycle}</span>
                                     </div>
+
                                     <div className="bill-amount">
                                         {formatCurrency(sub.amount)}
                                     </div>
@@ -255,6 +264,7 @@ const SubscriptionDashboard = () => {
                                     <th>Actions</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 {subscriptions.map(sub => (
                                     <tr key={sub._id}>
@@ -293,6 +303,7 @@ const SubscriptionDashboard = () => {
                                     required
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label>Amount</label>
                                 <input
@@ -302,6 +313,7 @@ const SubscriptionDashboard = () => {
                                     required
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label>Next Due Date</label>
                                 <input
@@ -311,6 +323,7 @@ const SubscriptionDashboard = () => {
                                     required
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label>Billing Cycle</label>
                                 <select
@@ -322,6 +335,7 @@ const SubscriptionDashboard = () => {
                                     <option value="weekly">Weekly</option>
                                 </select>
                             </div>
+                            
                             <div className="modal-actions">
                                 <button type="button" onClick={() => setShowAddModal(false)} className="btn-secondary">Cancel</button>
                                 <button type="submit" className="btn-primary">Add Subscription</button>

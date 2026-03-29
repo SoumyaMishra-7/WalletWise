@@ -560,27 +560,12 @@ const Reports = () => {
             </svg>
             Back to Dashboard
           </Link>
+
           <span className="eyebrow">Campus Spending</span>
           <h1>This Month at a Glance</h1>
           <p>{headerNote}</p>
         </div>
       </header>
-      <div className="reports-actions-bar">
-        <div className="download-menu-container">
-          <button
-            className="download-btn primary-button"
-            onClick={() => setDownloadMenuOpen(!downloadMenuOpen)}
-          >
-            <FaDownload /> Download Report
-          </button>
-          {downloadMenuOpen && (
-            <div className="download-dropdown">
-              <button onClick={handleExportCSV}>Export as CSV</button>
-              <button onClick={handleExportPDF}>Export as PDF</button>
-            </div>
-          )}
-        </div>
-      </div>
 
       {loading && (
         <div className="reports-status loading">
@@ -588,17 +573,37 @@ const Reports = () => {
         </div>
       )}
 
-      <div className="tabs-bar">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`tab-pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => handleTabClick(tab.id)}
-          >
-            <span className="tab-emoji">{tab.emoji}</span>
-            {tab.label}
-          </button>
-        ))}
+      <div className="tab-group">
+        <div className="tabs-bar">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`tab-pill ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => handleTabClick(tab.id)}
+            >
+              <span className="tab-emoji">{tab.emoji}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="reports-actions-bar">
+          <div className="download-menu-container">
+            <button
+              className="download-btn primary-button"
+              onClick={() => setDownloadMenuOpen(!downloadMenuOpen)}
+            >
+              <FaDownload /> Download Report
+            </button>
+
+            {downloadMenuOpen && (
+              <div className="download-dropdown">
+                <button onClick={handleExportCSV}>Export as CSV</button>
+                <button onClick={handleExportPDF}>Export as PDF</button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="tabs-panels" ref={panelsRef} onScroll={handlePanelsScroll}>
@@ -608,6 +613,7 @@ const Reports = () => {
               <span className="panel-emoji">M</span>
               <h2>This Month</h2>
             </div>
+
             <div className="month-summary">
               <div>
                 <p>Total spent</p>
@@ -616,6 +622,7 @@ const Reports = () => {
                   {totalPercent}% of budget
                 </span>
               </div>
+
               <div className="mini-progress">
                 <div style={{ width: `${Math.min(totalPercent, 100)}%` }}></div>
               </div>
@@ -627,6 +634,7 @@ const Reports = () => {
                 <div className="chart-frame">
                   <Pie data={monthPie} options={pieOptions} />
                 </div>
+                
                 <div className="legend-list">
                   {reportData.pieCategories.length > 0 ? reportData.pieCategories.map((item) => (
                     <div key={item.id} className="legend-item">
@@ -646,6 +654,7 @@ const Reports = () => {
                   )}
                 </div>
               </div>
+
               <div className="chart-card">
                 <h4>Weekly breakdown</h4>
                 <div className="chart-frame">
@@ -662,15 +671,18 @@ const Reports = () => {
               <span className="panel-emoji">T</span>
               <h2>Trends</h2>
             </div>
+
             <div className="trend-summary">
               <p>Last month vs this month</p>
               <span className="trend-note">Spending changes by category.</span>
             </div>
+
             <div className="chart-card">
               <div className="chart-frame tall">
                 <Bar data={trendBar} options={trendOptions} />
               </div>
             </div>
+
             <div className="trend-list">
               {reportData.trends.length > 0 ? reportData.trends.map((item) => (
                 <div key={item.label} className="trend-item">
@@ -695,6 +707,7 @@ const Reports = () => {
               <span className="panel-emoji">I</span>
               <h2>Insights</h2>
             </div>
+
             <div className="insight-list">
               {reportData.insights.map((item, index) => (
                 <div key={`${item.text}-${index}`} className={`insight-item ${item.status}`}>
@@ -713,6 +726,7 @@ const Reports = () => {
               <span className="panel-emoji">S</span>
               <h2>Spending</h2>
             </div>
+
             <div className="spending-top">
               <div>
                 <h4>Top 3 places</h4>
@@ -730,6 +744,7 @@ const Reports = () => {
                   )}
                 </div>
               </div>
+              
               <div className="chart-card">
                 <h4>Daily trend</h4>
                 <div className="chart-frame">

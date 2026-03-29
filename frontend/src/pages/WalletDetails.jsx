@@ -105,6 +105,7 @@ const WalletDetails = () => {
           <h1>{wallet.name}</h1>
           <p>{wallet.description}</p>
         </div>
+
         <div className="wallet-balance-area">
           <span className="balance-label">Group Balance</span>
           <h2 className={`balance-total ${wallet.balance >= 0 ? 'positive' : 'negative'}`}>
@@ -135,6 +136,7 @@ const WalletDetails = () => {
                       Paid by: {tx.paidBy?.fullName || tx.paidBy?.name || tx.paidBy?.email || 'Unknown'}
                     </span>
                   </div>
+
                   <div className={`tx-amount ${tx.type}`}>
                     {tx.type === 'income' ? '+' : '-'}{currencySymbol}{tx.amount}
                   </div>
@@ -161,6 +163,7 @@ const WalletDetails = () => {
                   <div className="avatar-placeholder">
                     {getDisplayName(member.user).charAt(0) || <FaUser />}
                   </div>
+
                   <div>
                     <span className="member-name">
                       {getDisplayName(member.user)} {String(member.user?._id) === String(user?._id) && '(You)'}
@@ -170,6 +173,7 @@ const WalletDetails = () => {
                     </span>
                   </div>
                 </div>
+
                 {isAdmin && String(member.user?._id) !== String(wallet.owner?._id) && (
                   <button className="remove-member-btn" onClick={() => handleRemoveMember(member.user?._id)}>
                     <FaTrash />
@@ -196,6 +200,7 @@ const WalletDetails = () => {
                   placeholder="friend@example.com"
                 />
               </div>
+              
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowAddMember(false)}>Cancel</button>
                 <button type="submit" className="btn-primary">Invite</button>

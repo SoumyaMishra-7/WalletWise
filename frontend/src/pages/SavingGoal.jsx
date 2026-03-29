@@ -174,6 +174,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             <h2>Create Savings Goal</h2>
             <p className="subtitle">Plan and track your financial goals</p>
           </div>
+
           <button
             className="close-savings-btn"
             onClick={handleClose}
@@ -223,6 +224,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             <label htmlFor="goalName">
               Goal Name *
             </label>
+
             <input
               type="text"
               id="goalName"
@@ -241,6 +243,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             <label htmlFor="description">
               Description (Optional)
             </label>
+
             <textarea
               id="description"
               value={formData.description || ''}
@@ -250,6 +253,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
               disabled={loading}
               maxLength="500"
             />
+
             <div className="char-count">
               {formData.description ? formData.description.length : 0}/500
             </div>
@@ -260,6 +264,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             <label htmlFor="targetAmount">
               Target Amount ({currencySymbol}) *
             </label>
+
             <div className="amount-input-group">
               <span className="currency-label">{currencySymbol}</span>
               <input
@@ -282,6 +287,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             <label htmlFor="currentAmount">
               Current Savings ({currencySymbol})
             </label>
+
             <div className="amount-input-group">
               <span className="currency-label">{currencySymbol}</span>
               <input
@@ -335,6 +341,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
                 </button>
               ))}
             </div>
+
             <div className="helper-text">
               When do you want to achieve this goal?
             </div>
@@ -402,6 +409,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
             >
               Cancel
             </button>
+
             <button
               type="submit"
               className="savings-btn-submit"
@@ -426,6 +434,7 @@ const SavingGoal = ({ isOpen, onClose, onGoalCreated }) => {
           )}
         </form>
       </div>
+      
       <ConfirmDialog
         isOpen={showConfirm}
         message="Are you sure you want to close? Any unsaved changes will be lost."

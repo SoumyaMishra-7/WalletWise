@@ -24,8 +24,7 @@ body.theme-dark .decision-page,
 }
 
 .decision-header {
-    max-width: 800px;
-    margin: 0 auto 3rem;
+    margin: 0 6rem 3rem;
 }
 
 .decision-header-top {
@@ -81,7 +80,7 @@ body.theme-dark .decision-page,
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 2rem;
-    max-width: 1100px;
+    max-width: 1300px;
     margin: 0 auto;
 }
 
@@ -285,6 +284,7 @@ body.theme-dark .decision-page,
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    width: 100%;
 }
 
 .metric-item {

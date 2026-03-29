@@ -1,5 +1,4 @@
 ﻿const jwt = require('jsonwebtoken');
-
 const ACCESS_TOKEN_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '10m';
 const REFRESH_TOKEN_EXPIRES = process.env.JWT_REFRESH_EXPIRES || '1d';
 

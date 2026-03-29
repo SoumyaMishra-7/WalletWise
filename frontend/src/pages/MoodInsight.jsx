@@ -77,11 +77,13 @@ const MoodInsight = () => {
               <div className="stat-label">Impulsive</div>
               <div className="stat-amount">₹{impulsiveVsIntentional.impulsiveTotal.toLocaleString()}</div>
             </div>
+
             <div className="stat-item">
               <div className="stat-value intentional">{intPct}%</div>
               <div className="stat-label">Intentional</div>
               <div className="stat-amount">₹{impulsiveVsIntentional.intentionalTotal.toLocaleString()}</div>
             </div>
+
             <div className="stat-item">
               <div className="stat-value" style={{ color: '#90caf9' }}>{totalTransactions}</div>
               <div className="stat-label">Transactions</div>
@@ -94,6 +96,7 @@ const MoodInsight = () => {
               <div className="impulsive-fill" style={{ width: `${impPct}%` }} />
               <div className="intentional-fill" style={{ width: `${intPct}%` }} />
             </div>
+
             <div className="ratio-labels">
               <span>🔴 Impulsive</span>
               <span>🟢 Intentional</span>
@@ -113,6 +116,7 @@ const MoodInsight = () => {
                 <th>Avg</th>
               </tr>
             </thead>
+
             <tbody>
               {moodBreakdown.map((row) => (
                 <tr key={row.mood}>
@@ -138,10 +142,12 @@ const MoodInsight = () => {
               return (
                 <li key={t.mood} className="trigger-item">
                   <div className={`trigger-rank rank-${t.rank}`}>{t.rank}</div>
+
                   <div className="trigger-info">
                     <div className="trigger-mood">
                       {MOOD_EMOJIS[t.mood] || '🙂'} {t.mood}
                     </div>
+                    
                     <div className="trigger-amount">₹{t.total.toLocaleString()} spent</div>
                     {catInfo && (
                       <div className="trigger-category">

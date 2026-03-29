@@ -1,4 +1,5 @@
 let SibApiV3Sdk = null;
+
 try {
   SibApiV3Sdk = require('sib-api-v3-sdk');
 } catch (_err) {

@@ -43,6 +43,7 @@ const ResetPassword = () => {
         password,
         confirmPassword
       });
+
       if (response?.data?.success) {
         toast.success('Password reset successful');
         navigate('/login');
@@ -76,6 +77,7 @@ const ResetPassword = () => {
               <FaLock className="input-icon" />
               New Password
             </label>
+
             <div className="password-input">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -86,6 +88,7 @@ const ResetPassword = () => {
                 placeholder="Enter new password"
                 required
               />
+
               <button
                 type="button"
                 className="password-toggle"
@@ -101,6 +104,7 @@ const ResetPassword = () => {
               <FaLock className="input-icon" />
               Confirm Password
             </label>
+
             <div className="password-input">
               <input
                 type={showConfirm ? 'text' : 'password'}
@@ -111,6 +115,7 @@ const ResetPassword = () => {
                 placeholder="Confirm new password"
                 required
               />
+
               <button
                 type="button"
                 className="password-toggle"

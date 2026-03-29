@@ -14,7 +14,6 @@ const startOfWeek = (d) => {
 
 const daysBetween = (a, b) => Math.round((b.getTime() - a.getTime()) / (24 * 60 * 60 * 1000));
 
-
 const getAnomalies = async (req, res) => {
   try {
     const summary = await insightsService.getInsightsSummary(req.userId);
@@ -24,7 +23,6 @@ const getAnomalies = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-
 
 const getSubscriptionAlerts = async (req, res) => {
   try {
@@ -36,7 +34,6 @@ const getSubscriptionAlerts = async (req, res) => {
   }
 };
 
-
 const getSeasonal = async (req, res) => {
   try {
     const summary = await insightsService.getInsightsSummary(req.userId);
@@ -46,7 +43,6 @@ const getSeasonal = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-
 
 const getWeekendWeekday = async (req, res) => {
   try {
@@ -58,7 +54,6 @@ const getWeekendWeekday = async (req, res) => {
   }
 };
 
-
 const getInsightsSummary = async (req, res) => {
   try {
     const userId = req.userId;
@@ -69,7 +64,6 @@ const getInsightsSummary = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-
 
 const evaluatePurchase = async (req, res) => {
   try {
@@ -248,21 +242,25 @@ const getMoodCorrelation = async (req, res) => {
         `${impulsivePercentage}% of your spending in the last 30 days was driven by impulsive moods.`
       );
     }
+
     if (topTriggers.length > 0) {
       const top = topTriggers[0];
       tips.push(
         `Your biggest trigger is '${top.mood}' — consider a 24-hour cooling-off rule for purchases when feeling ${top.mood}.`
       );
     }
+
     if (impulsiveCategoryBreakdown.length > 0) {
       const topCat = impulsiveCategoryBreakdown[0];
       tips.push(
         `When ${topCat.mood}, you tend to spend the most on ${topCat.category} (₹${topCat.totalAmount.toFixed(0)}).`
       );
     }
+
     if (impulsivePercentage === 0 && overallTotal > 0) {
       tips.push('Great job! None of your recent spending appears to be driven by impulsive moods.');
     }
+
     if (txs.length === 0) {
       tips.push('No expense transactions found in the last 30 days to analyze.');
     }

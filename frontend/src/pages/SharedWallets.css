@@ -6,7 +6,6 @@
   --wallet-text: var(--text-main, #1f2937);
   --wallet-muted: var(--text-muted, #6b7280);
   --wallet-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -319,9 +318,10 @@ body.theme-dark .wallet-details-container,
   padding: 0.75rem 1.5rem;
   background: var(--wallet-surface-muted);
   border: 1px solid var(--wallet-border);
-  border-radius: 6px;
+  border-radius: 15px;
   cursor: pointer;
   color: var(--wallet-text);
+  border: 2px solid var(--border-light);
 }
 
 .btn-secondary:hover {
@@ -396,6 +396,7 @@ body.theme-dark .wallet-details-container,
 }
 
 @media (max-width: 768px) {
+  
   .create-btn {
     width: fit-content;
     min-width: 0;

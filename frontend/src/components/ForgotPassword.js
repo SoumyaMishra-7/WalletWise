@@ -102,6 +102,7 @@ const ForgotPassword = () => {
               <FaEnvelope className="input-icon" />
               Email Address
             </label>
+
             <input
               type="email"
               id="email"
@@ -112,6 +113,7 @@ const ForgotPassword = () => {
               required
             />
           </div>
+
           <button
             type="submit"
             className="auth-btn"
@@ -138,4 +140,5 @@ const ForgotPassword = () => {
     </div>
   );
 };
+
 export default ForgotPassword;

@@ -7,25 +7,30 @@ const walletSchema = new mongoose.Schema({
     trim: true,
     maxlength: [50, 'Name cannot be more than 50 characters']
   },
+
   description: {
     type: String,
     trim: true,
     maxlength: [200, 'Description cannot be more than 200 characters']
   },
+
   currency: {
     type: String,
     required: true,
     default: 'USD'
   },
+
   balance: {
     type: Number,
     default: 0
   },
+
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
+
   members: [{
     user: {
       type: mongoose.Schema.Types.ObjectId,

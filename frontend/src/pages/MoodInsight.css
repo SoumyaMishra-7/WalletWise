@@ -353,6 +353,7 @@
 
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
+  
   .mood-grid {
     grid-template-columns: 1fr;
   }

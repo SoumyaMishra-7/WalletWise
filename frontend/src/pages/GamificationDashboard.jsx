@@ -260,6 +260,7 @@ const GamificationDashboard = () => {
         <button className="back-btn" onClick={() => navigate(-1)}>
           <FaArrowLeft /> Back
         </button>
+
         <h1>Your Financial Journey</h1>
         <p>Turn good habits into great rewards.</p>
       </header>
@@ -270,6 +271,7 @@ const GamificationDashboard = () => {
             <span>Lvl</span>
             <h2>{level}</h2>
           </div>
+
           <svg viewBox="0 0 36 36" className="circular-chart orange">
             <path
               className="circle-bg"
@@ -286,6 +288,7 @@ const GamificationDashboard = () => {
         <div className="xp-details">
           <h3>{totalXP} XP <span>Total Experience</span></h3>
           <p>{Math.max(0, nextLevelXP - totalXP)} XP to Level {level + 1}</p>
+
           <div className="xp-bar-container">
             <div className="xp-bar-fill" style={{ width: `${progress}%` }}></div>
           </div>
@@ -293,6 +296,7 @@ const GamificationDashboard = () => {
 
         <div className="streak-box">
           <FaFireAlt className={`streak-icon ${currentStreak > 0 ? 'active' : ''}`} />
+
           <div className="streak-text">
             <h3>{currentStreak} Day{currentStreak !== 1 ? 's' : ''}</h3>
             <p>Current Streak</p>
@@ -307,6 +311,7 @@ const GamificationDashboard = () => {
             <h2><FaHeart /> Daily Savings Love</h2>
             <p>Small saves every day become your emergency superpower.</p>
           </div>
+
           <div className={`savings-streak-chip ${isTwoDaySavingStreak ? 'ready' : ''}`}>
             {isTwoDaySavingStreak ? <FaCheckCircle /> : <FaPiggyBank />}
             {isTwoDaySavingStreak ? '2-day streak unlocked' : 'Keep saving daily'}
@@ -319,9 +324,11 @@ const GamificationDashboard = () => {
               <h3>{monthNames[calendarMeta.month]} {calendarMeta.year}</h3>
               <span>Auto-checks when daily savings are positive</span>
             </div>
+
             <div className="calendar-weekdays">
               {weekdayNames.map((name) => <span key={name}>{name}</span>)}
             </div>
+
             <div className="calendar-days">
               {calendarCells.map((day, idx) => {
                 if (!day) return <div key={`empty-${idx}`} className="day-cell empty"></div>;
@@ -345,10 +352,12 @@ const GamificationDashboard = () => {
                 <strong>Micro-save idea</strong>
                 <p>If you save {formatCurrency(suggestionData.microSave)} daily, you can build {formatCurrency(suggestionData.monthImpact)} more this month.</p>
               </div>
+              
               <div className="reflection-item">
                 <strong>When you need it most</strong>
                 <p>Consistent small savings can absorb surprise transport, medical, or utility bills without stress.</p>
               </div>
+
               <div className="reflection-item">
                 <strong>Top spending cue</strong>
                 <p>
@@ -364,6 +373,7 @@ const GamificationDashboard = () => {
                 2-day savings boost:
                 <strong> {formatCurrency(twoDayBoostAmount)}</strong>
               </p>
+              
               <button
                 className="btn-primary boost-btn"
                 type="button"

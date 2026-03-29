@@ -21,8 +21,7 @@ const hydrateTokenFromUrl = () => {
     saveAccessToken(token);
     currentUrl.searchParams.delete('access_token');
     window.history.replaceState({}, document.title, `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
-  } catch (_error) {
-  }
+  } catch (_error) { }
 };
 
 export const AuthProvider = ({ children }) => {

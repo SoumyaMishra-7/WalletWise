@@ -18,7 +18,7 @@
   background: var(--bg-card, white);
   border-radius: 12px;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-soft, 0 20px 60px rgba(0, 0, 0, 0.3));
@@ -96,7 +96,6 @@ form {
 
 .budget-form-group label {
   display: block;
-  margin-bottom: 8px;
   font-weight: 500;
   color: var(--text-main, #333);
 }
@@ -104,6 +103,7 @@ form {
 .total-budget-input {
   display: flex;
   align-items: center;
+  margin-top: 10px;
 }
 
 .budget-currency {
@@ -120,7 +120,7 @@ form {
   width: 100%;
   padding: 12px;
   border: 1px solid var(--border-subtle, #ddd);
-  border-radius: 0 6px 6px 0;
+  border-radius: 10px;
   font-size: 16px;
   box-sizing: border-box;
   background: var(--bg-card);
@@ -142,7 +142,7 @@ form {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 30px;
 }
 
 .copy-last-month-btn {
@@ -216,7 +216,7 @@ form {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-bottom: 20px;
+  margin: 20px 0 30px;
 }
 
 .category-tab {

@@ -26,6 +26,7 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen, navigate }) => {
           >
             Home
           </a>
+          
           <a
             href="#about"
             className="text-zinc-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition relative pb-1 after:content-['']

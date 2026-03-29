@@ -218,6 +218,7 @@ const Goals = () => {
             </svg>
             Back to Dashboard
           </Link>
+
           <span className="eyebrow">Student Goals</span>
           <h1>Make room for tuition, books, and the fun stuff.</h1>
           <p>Track every goal in one place and keep your savings on pace with deadlines.</p>
@@ -230,11 +231,13 @@ const Goals = () => {
             <p className="summary-label">Goals Summary</p>
             <h2>{summary.totalGoals} goals in motion</h2>
           </div>
+
           <div className="summary-stats">
             <div>
               <span>Total Saved</span>
               <strong>{formatCurrency(summary.totalSaved)}</strong>
             </div>
+
             <div>
               <span>Next Deadline</span>
               <strong>{summary.nextDeadline}</strong>
@@ -282,10 +285,12 @@ const Goals = () => {
                   <div className="goal-icon">
                     <GoalIcon />
                   </div>
+
                   <div className="goal-text">
                     <span className="goal-type">{goal.type}</span>
                     <h3>{goal.title}</h3>
                   </div>
+
                   <div className="goal-deadline">
                     <FaClock />
                     {formatDeadline(goal.targetDate)}
@@ -296,6 +301,7 @@ const Goals = () => {
                   <div className="progress-bar">
                     <div className="progress-fill" style={{ width: `${progress}%` }}></div>
                   </div>
+
                   <div className="progress-meta">
                     <span>{progress}%</span>
                     <span>{formatCurrency(goal.current)} / {formatCurrency(goal.target)}</span>
@@ -307,6 +313,7 @@ const Goals = () => {
                     <span>Saved</span>
                     <strong>{formatCurrency(goal.current)}</strong>
                   </div>
+
                   <button
                     type="button"
                     className="quick-add"
@@ -336,15 +343,18 @@ const Goals = () => {
               <div className="goal-modal-icon">
                 {React.createElement(iconForGoal(selectedGoal))}
               </div>
+
               <div>
                 <p className="modal-label">{selectedGoal.type}</p>
                 <h2>{selectedGoal.title}</h2>
                 <span className="modal-deadline">Deadline: {formatDeadline(selectedGoal.targetDate)}</span>
               </div>
+
               <button className="modal-close" onClick={() => setSelectedGoal(null)} aria-label="Close">
                 x
               </button>
             </div>
+
             <div className="goal-modal-progress">
               <div className="progress-bar">
                 <div
@@ -352,21 +362,25 @@ const Goals = () => {
                   style={{ width: `${progressForGoal(selectedGoal)}%` }}
                 ></div>
               </div>
+
               <div className="progress-meta">
                 <span>{progressForGoal(selectedGoal)}%</span>
                 <span>{formatCurrency(selectedGoal.current)} / {formatCurrency(selectedGoal.target)}</span>
               </div>
             </div>
+
             <div className="goal-modal-stats">
               <div>
                 <span>Saved</span>
                 <strong>{formatCurrency(selectedGoal.current)}</strong>
               </div>
+
               <div>
                 <span>Target</span>
                 <strong>{formatCurrency(selectedGoal.target)}</strong>
               </div>
             </div>
+
             <div className="goal-modal-add">
               <div className="amount-field">
                 <label htmlFor="goal-add-amount">Add amount</label>
@@ -379,6 +393,7 @@ const Goals = () => {
                   onChange={(event) => setAddAmount(Number(event.target.value))}
                 />
               </div>
+
               <button
                 className="btn-secondary"
                 onClick={() => setAddAmount(suggestedAmountForGoal(selectedGoal))}
@@ -387,10 +402,12 @@ const Goals = () => {
                 Use suggested {formatCurrency(suggestedAmountForGoal(selectedGoal))}
               </button>
             </div>
+
             <div className="goal-modal-actions">
               <button className="btn-primary" onClick={handleAddCustomAmount} disabled={addingAmount}>
                 {addingAmount ? 'Adding...' : `Add ${formatCurrency(addAmount || 0)}`}
               </button>
+              
               <button
                 className="btn-secondary"
                 onClick={() => {

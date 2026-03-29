@@ -35,6 +35,7 @@
   font-weight: 700;
   margin: 0.5rem 0 0.4rem;
   color: var(--text-main, #1e293b);
+  line-height: 55px;
 }
 
 .goals-header p {
@@ -385,6 +386,7 @@
 }
 
 @media (max-width: 960px) {
+  
   .goals-header {
     flex-direction: column;
   }

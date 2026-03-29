@@ -304,6 +304,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
           <div className="header-left">
             <h2>Set Monthly Budget</h2>
           </div>
+
           <button className="close-budget-btn" onClick={handleClose}>
             ×
           </button>
@@ -321,14 +322,14 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
             <label htmlFor="totalBudget">
               Total Monthly Budget *
             </label>
+
             <div className="total-budget-input">
-              <span className="budget-currency">{currencySymbol}</span>
               <input
                 type="number"
                 id="totalBudget"
                 value={formData.totalBudget}
                 onChange={handleTotalBudgetChange}
-                placeholder="0"
+                placeholder="$ 0"
                 min="0"
                 required
                 autoFocus
@@ -349,6 +350,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               >
                 Copy Last Month
               </button>
+
               <button
                 type="button"
                 className="smart-suggest-btn"
@@ -368,6 +370,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               >
                 Student
               </button>
+
               <button
                 type="button"
                 className="allocation-btn balanced"
@@ -376,6 +379,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               >
                 Balanced
               </button>
+
               <button
                 type="button"
                 className="allocation-btn saver"
@@ -412,6 +416,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
               <div className="category-header" style={{ backgroundColor: formData.categories[activeCategory].color + '20' }}>
                 <div className="category-color" style={{ backgroundColor: formData.categories[activeCategory].color }}></div>
                 <h3>{formData.categories[activeCategory].name}</h3>
+
                 <div className="category-stats">
                   <span className="stat-percentage">{formData.categories[activeCategory].percentage}%</span>
                   <span className="stat-amount">{currencySymbol}{formData.categories[activeCategory].amount.toLocaleString(locale)}</span>
@@ -433,8 +438,8 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                       style={{ '--track-color': formData.categories[activeCategory].color }}
                       disabled={loading}
                     />
+
                     <div className="slider-value">
-                      <span>{formData.categories[activeCategory].percentage}%</span>
                       <input
                         type="number"
                         min="0"
@@ -462,6 +467,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                       className="amount-input"
                       disabled={loading}
                     />
+
                     <span className="amount-hint">
                       Max: {currencySymbol}{(formData.totalBudget || 0).toLocaleString(locale)}
                     </span>
@@ -478,12 +484,14 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                   {totalAllocated}%
                 </span>
               </div>
+
               <div className="summary-item">
                 <span className="summary-label">Remaining:</span>
                 <span className={`summary-value ${remainingPercentage === 0 ? 'valid' : 'warning'}`}>
                   {remainingPercentage}%
                 </span>
               </div>
+
               <div className="summary-item">
                 <span className="summary-label">Total Amount:</span>
                 <span className="summary-value amount">
@@ -503,6 +511,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
             >
               Cancel
             </button>
+
             <button
               type="submit"
               className="budget-btn-submit"
@@ -513,6 +522,7 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
           </div>
         </form>
       </div>
+      
       <ConfirmDialog
         isOpen={showConfirm}
         message="Are you sure you want to close? Any unsaved budget changes will be lost."

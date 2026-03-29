@@ -368,7 +368,9 @@ const Homepage = () => {
                       This Week <span className="green-text">75% +</span>
                     </span>
                   </div>
+
                   <div className="ww-graph-amount">$954</div>
+
                   <div className="ww-mini-wave">
                     <svg viewBox="0 0 100 30" fill="none">
                       <path
@@ -412,10 +414,12 @@ const Homepage = () => {
             <div className="ww-content-left">
               <p className="ww-kicker">Why students struggle</p>
               <h2>Why money feels stressful in college</h2>
+
               <p className="ww-desc">
                 Juggling bills, budgets, and savings shouldn’t be another source
                 of stress.
               </p>
+
               <ul className="ww-check-list">
                 <li>
                   <CheckCircle2 size={20} className="check-icon" />
@@ -424,6 +428,7 @@ const Homepage = () => {
                     across banks, apps, and loans.
                   </span>
                 </li>
+
                 <li>
                   <CheckCircle2 size={20} className="check-icon" />
                   <span>
@@ -431,6 +436,7 @@ const Homepage = () => {
                     built for irregular student income.
                   </span>
                 </li>
+
                 <li>
                   <CheckCircle2 size={20} className="check-icon" />
                   <span>
@@ -506,6 +512,7 @@ const Homepage = () => {
                   </div>
                   <span>Tuition</span>
                 </motion.div>
+
                 <motion.div
                   className="ww-conn-card card-rent"
                   animate={{ y: [5, -5, 5] }}
@@ -521,6 +528,7 @@ const Homepage = () => {
                   </div>
                   <span>Rent Split</span>
                 </motion.div>
+
                 <motion.div
                   className="ww-conn-card card-break"
                   animate={{ y: [-5, 5, -5] }}
@@ -686,6 +694,7 @@ const Homepage = () => {
               <p className="ww-kicker">Testimonials</p>
               <h2>Real Stories. Real Impact.</h2>
             </div>
+
             <motion.div
               className="ww-testimonial-grid"
               initial="hidden"
@@ -720,10 +729,12 @@ const Homepage = () => {
                 >
                   <div className="ww-quote-mark">“</div>
                   <p className="ww-quote-text">{t.quote}</p>
+
                   <div className="ww-user-meta">
                     <div className="ww-user-avatar-placeholder">
                       {t.name[0]}
                     </div>
+
                     <div className="quote-info">
                       <h4>{t.name}</h4>
                       <span>{t.role}</span>
@@ -743,6 +754,7 @@ const Homepage = () => {
               Set budgets, track spending, and hit your goals with a dashboard
               designed for real student routines.
             </p>
+
             <button
               className="ww-btn ww-btn-white"
               onClick={() => navigate("/signup")}
@@ -762,6 +774,7 @@ const Homepage = () => {
                 <Wallet size={20} />
                 <span>WalletWise</span>
               </div>
+
               <p className="ww-footer-text">
                 Smart finance tracking made simple. Manage expenses, track goals,
                 and grow financially with confidence.

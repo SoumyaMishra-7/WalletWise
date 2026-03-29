@@ -66,6 +66,7 @@ const VerifyResetOtp = () => {
               <FaLock className="input-icon" />
               OTP Code
             </label>
+            
             <input
               type="text"
               id="otp"

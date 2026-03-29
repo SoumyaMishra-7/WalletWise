@@ -4,10 +4,12 @@ const { isValidObjectId } = require('../utils/validation');
 
 const transactionSchema = z.object({
     type: z.enum(['income', 'expense']),
+
     amount: z.preprocess(
         (val) => (typeof val === 'string' ? Number(val) : val),
         z.number().finite().positive("Amount must be greater than 0")
     ),
+
     category: z.string().min(1, "Category is required"),
     description: z.string().optional().default(''),
     paymentMethod: z.string().optional().default('cash'),
@@ -16,6 +18,7 @@ const transactionSchema = z.object({
         (val) => (val ? new Date(val) : undefined),
         z.date().optional()
     ),
+
     isRecurring: z.boolean().optional().default(false),
     recurringInterval: z.enum(['daily', 'weekly', 'monthly']).optional(),
     forceDuplicate: z.boolean().optional().default(false),

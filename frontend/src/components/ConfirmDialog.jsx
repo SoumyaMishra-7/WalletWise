@@ -23,9 +23,7 @@ const ConfirmDialog = ({
         <p>{message}</p>
 
         <div className="confirm-actions">
-          <div
-            className={`slider ${active}`}
-          ></div>
+          <div className={`slider ${active}`}></div>
 
           <button
             className={`action-btn ${active === "cancel" ? "active" : ""}`}

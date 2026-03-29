@@ -502,6 +502,7 @@
   display: flex;
   gap: 1rem;
   align-items: center;
+  margin-top: 1rem;
 }
 
 .actions-refreshed {
@@ -638,6 +639,9 @@
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border-subtle);
   transition: var(--transition-elegant);
+  display: flex;
+  flex-direction: column;
+  align-items: start !important;
 }
 
 .stat-card:hover {
@@ -661,7 +665,7 @@
   letter-spacing: -0.02em;
   color: #0f172a;
   /* strong readable */
-  margin: 0.25rem 0;
+  margin: 0.8rem 0;
 }
 
 .stat-trend,
@@ -680,6 +684,10 @@
   border-radius: 20px;
   overflow: hidden;
   margin-bottom: 0.5rem;
+}
+
+.stat-content {
+  width: 80%;
 }
 
 .progress-fill {
@@ -884,6 +892,13 @@
   flex: 1;
   position: relative;
   width: 100%;
+}
+
+.chart-empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: auto;
 }
 
 /* ==========================================================================
@@ -1139,12 +1154,14 @@
    10. RESPONSIVE DESIGN
    ========================================================================== */
 @media (max-width: 1200px) {
+
   .charts-section {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 1024px) {
+
   .dashboard-header-area {
     flex-direction: column;
     gap: 1.5rem;
@@ -1156,6 +1173,7 @@
 }
 
 @media (max-width: 768px) {
+
   .dashboard-header {
     padding: 1rem;
   }
@@ -1210,6 +1228,7 @@
 }
 
 @media (max-width: 640px) {
+
   .dashboard-content {
     width: 95%;
     padding: 1rem 0;
@@ -1256,6 +1275,7 @@
 }
 
 @media (max-width: 480px) {
+
   .quick-actions-grid {
     grid-template-columns: 1fr;
   }

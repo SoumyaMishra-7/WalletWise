@@ -30,7 +30,6 @@ async function migrateBalances() {
             }
 
             // Optional: Consider initial balance if the app supported it, but it seems it starts at 0.
-
             if (user.walletBalance !== calculatedBalance) {
                 console.log(`Updating user ${user.email}: Old Balance=${user.walletBalance}, New Balance=${calculatedBalance}`);
                 user.walletBalance = calculatedBalance;
@@ -41,7 +40,6 @@ async function migrateBalances() {
         }
 
         console.log('Migration completed successfully.');
-
     } catch (error) {
         console.error('Migration error:', error);
     } finally {

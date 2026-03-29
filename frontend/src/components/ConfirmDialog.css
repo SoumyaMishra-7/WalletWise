@@ -23,6 +23,7 @@
 .confirm-modal h3 {
   margin-bottom: 8px;
   font-weight: 600;
+  color: gray;
 }
 
 .confirm-modal p {
@@ -48,6 +49,7 @@
   cursor: pointer;
   z-index: 2;
   transition: color 0.25s ease;
+  color: gray;
 }
 
 .action-btn.active {

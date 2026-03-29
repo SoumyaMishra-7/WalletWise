@@ -57,7 +57,7 @@
 }
 
 .sub-page {
-  padding: 32px;
+  padding: 32px 50px;
   background-color: var(--sub-bg);
   min-height: 100vh;
   color: var(--sub-text-primary);
@@ -591,6 +591,7 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
+
   .sub-page {
     padding: 20px;
   }
@@ -620,6 +621,7 @@
 }
 
 @media (max-width: 480px) {
+  
   .sub-hero h1 {
     font-size: 1.5rem;
   }

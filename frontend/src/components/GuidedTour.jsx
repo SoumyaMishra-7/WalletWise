@@ -105,6 +105,7 @@ const GuidedTour = ({ isOpen, steps = [], onClose }) => {
           <button type="button" className="tour-action-muted" onClick={() => onClose?.(false)}>
             Skip
           </button>
+
           <div className="tour-action-group">
             <button
               type="button"
@@ -114,6 +115,7 @@ const GuidedTour = ({ isOpen, steps = [], onClose }) => {
             >
               Back
             </button>
+            
             <button
               type="button"
               className="tour-action-primary"

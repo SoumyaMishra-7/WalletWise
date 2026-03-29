@@ -95,6 +95,7 @@ const ForgotPassword = () => {
                 <Link to="/login" className="back-to-home">
                     <FaArrowLeft /> Back to Login
                 </Link>
+                
                 <div className="auth-header">
                     <h1>WalletWise</h1>
                     <p className="subtitle">
