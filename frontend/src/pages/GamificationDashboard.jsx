@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { toast } from 'react-hot-toast';
 import {
-  FaArrowLeft,
   FaCheckCircle,
   FaFireAlt,
   FaHeart,
@@ -257,10 +256,6 @@ const GamificationDashboard = () => {
   return (
     <div className="gamification-container">
       <header className="gami-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <FaArrowLeft /> Back
-        </button>
-
         <h1>Your Financial Journey</h1>
         <p>Turn good habits into great rewards.</p>
       </header>

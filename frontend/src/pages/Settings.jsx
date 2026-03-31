@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Link, useNavigate } from 'react-router-dom';
-import AppNavbar from '../components/AppNavbar';
 import './Settings.css';
 import { FaWallet, FaBullseye, FaArrowLeft, FaCheck, FaExclamationTriangle, FaTimes, FaTrash } from 'react-icons/fa';
 
@@ -165,15 +164,9 @@ const Settings = () => {
 
   return (
     <div className="settings-page">
-      <AppNavbar />
-
       <div className="settings-container">
         {/* Header */}
         <header className="settings-header">
-          <Link to="/dashboard" className="back-link">
-            <FaArrowLeft />
-            Back to Dashboard
-          </Link>
 
           <div className="header-content">
             <span className="eyebrow">Configuration</span>

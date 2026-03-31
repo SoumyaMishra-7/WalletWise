@@ -3,7 +3,6 @@ import api from '../api/client';
 import { Link } from 'react-router-dom';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import AppNavbar from '../components/AppNavbar';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../context/AuthContext';
 import './Budget.css';
@@ -260,12 +259,9 @@ const Budget = () => {
 
   if (loading) {
     return (
-      <>
-        <AppNavbar />
-        <div className="budget-page">
-          <Spinner size={50} text="Loading budget..." />
-        </div>
-      </>
+      <div className="budget-page">
+        <Spinner size={50} text="Loading budget..." />
+      </div>
     );
   }
 
@@ -273,13 +269,6 @@ const Budget = () => {
     <div className="budget-page">
       <header className="budget-header">
         <div>
-          <Link to="/dashboard" className="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </Link>
-
           <span className="eyebrow">Student Budget</span>
           <h1>Keep it simple, stay on track</h1>
           <p>See your pace, visualize your categories, and set a monthly budget in minutes.</p>

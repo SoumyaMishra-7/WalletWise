@@ -149,41 +149,25 @@ const AppNavbar = () => {
               </div>
             </div>
 
-            <div className="dropdown-divider"></div>
-
-            <Link
-              to="/profile"
-              className="dropdown-item"
-              role="menuitem"
-              onClick={() => setShowUserMenu(false)}
-            >
-              <FaUser />
-              <span>Profile</span>
-            </Link>
-
-            <div className="dropdown-divider"></div>
-
-            <Link
-              to="/settings"
-              className="dropdown-item"
-              role="menuitem"
-              onClick={() => setShowUserMenu(false)}
-            >
-              <FaCog />
-              <span>Settings</span>
-            </Link>
+            <div className="dropdown-items-group">
+              <Link to="/profile" className="dropdown-item" role="menuitem" onClick={() => setShowUserMenu(false)}>
+                <span className="dropdown-item-icon blue"><FaUser /></span>
+                <span>Profile</span>
+              </Link>
+              <Link to="/settings" className="dropdown-item" role="menuitem" onClick={() => setShowUserMenu(false)}>
+                <span className="dropdown-item-icon slate"><FaCog /></span>
+                <span>Settings</span>
+              </Link>
+            </div>
 
             <div className="dropdown-divider"></div>
 
-            <button
-              onClick={handleLogout}
-              className="dropdown-item logout"
-              role="menuitem"
-              type="button"
-            >
-              <FaSignOutAlt />
-              <span>Logout</span>
-            </button>
+            <div className="dropdown-items-group">
+              <button onClick={handleLogout} className="dropdown-item logout" role="menuitem" type="button">
+                <span className="dropdown-item-icon red"><FaSignOutAlt /></span>
+                <span>Sign out</span>
+              </button>
+            </div>
           </div>
         )}
       </div>

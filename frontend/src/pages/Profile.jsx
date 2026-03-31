@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import AppNavbar from '../components/AppNavbar';
 import BadgeGallery from '../components/Gamification/BadgeGallery';
 
 import './Settings.css';
@@ -158,15 +157,8 @@ const Profile = () => {
 
     return (
         <div className="settings-page">
-            <AppNavbar />
-
             <div className="settings-container">
                 <header className="settings-header">
-                    <Link to="/dashboard" className="back-link">
-                        <FaArrowLeft />
-                        Back to Dashboard
-                    </Link>
-
                     <div className="header-content">
                         <span className="eyebrow">User Profile</span>
                         <h1>Personal Information</h1>
