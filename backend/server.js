@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -45,6 +45,7 @@ app.locals.container = container;
 app.set('trust proxy', 1);
 
 // ==================== SECURITY HEADERS ====================
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -53,7 +54,7 @@ app.use(helmet({
             styleSrc: ["'self'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://i.pravatar.cc", "https://www.google.com"],
-            connectSrc: ["'self'", "http://localhost:5000", "https://api.walletwise.com", "https://tessdata.projectnaptha.com", "https://unpkg.com"],
+            connectSrc: ["'self'", BACKEND_URL, "http://localhost:5000", "https://tessdata.projectnaptha.com", "https://unpkg.com"],
             workerSrc: ["'self'", "blob:"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: [],

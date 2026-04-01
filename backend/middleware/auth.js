@@ -1,5 +1,14 @@
-﻿const { verifyAccessToken } = require('../utils/tokens');
+const { verifyAccessToken } = require('../utils/tokens');
 const currencyMiddleware = require('./currencyConverter.middleware');
+
+const isProd = process.env.NODE_ENV === 'production';
+
+const cookieClearOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? 'none' : 'lax',
+  path: '/'
+};
 
 const protect = (req, res, next) => {
   try {
@@ -25,7 +34,9 @@ const protect = (req, res, next) => {
     // Pipe the request through currency middleware after authentication
     currencyMiddleware(req, res, next);
   } catch (error) {
-    res.clearCookie('access_token');
+    // Must pass the same options used when setting the cookie, otherwise
+    // the browser ignores the clear in production (secure + sameSite=none).
+    res.clearCookie('access_token', cookieClearOptions);
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired token. Please login again.'
