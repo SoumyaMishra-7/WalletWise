@@ -72,15 +72,17 @@ const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showProfileNavMenu, setShowProfileNavMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const hasPromptedTourRef = useRef(false);
+  const refreshingRef = useRef(false);
   // const { isDark, toggleTheme } = useTheme(); // CACHE BUST TEMPORARY COMMENT
 
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const profileNavMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user: authUser, loading: authLoading, logout, reloadUser } = useAuth();
@@ -90,6 +92,12 @@ const Dashboard = () => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setShowUserMenu(false);
+      }
+      if (
+        profileNavMenuRef.current &&
+        !profileNavMenuRef.current.contains(event.target)
+      ) {
+        setShowProfileNavMenu(false);
       }
       if (
         mobileMenuRef.current &&
@@ -172,21 +180,27 @@ const Dashboard = () => {
     },
     { id: "budget", label: "Budget", icon: FaChartPie, path: "/budget" },
     { id: "goals", label: "Goals", icon: FaBullseye, path: "/goals" },
-    { id: "wallets", label: "Wallets", icon: FaWallet, path: "/wallets" },
     { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
+  ];
+
+  const profileNavItems = [
+    { id: "goals-profile", label: "Goals", icon: FaBullseye, path: "/goals" },
+    { id: "wallets", label: "Wallets", icon: FaWallet, path: "/wallets" },
     { id: "subscriptions", label: "Subscriptions", icon: FaCog, path: "/subscriptions" },
     { id: "settings", label: "Settings", icon: FaCog, path: "/settings" },
   ];
 
   const mobileNavItems = [
     ...navItems,
+    ...profileNavItems,
     { id: "profile", label: "Profile", icon: FaUserCircle, path: "/profile" },
     { id: "rewards", label: "Rewards", icon: FaTrophy, path: "/gamification" },
   ];
 
   // Fetch dashboard data
   const fetchDashboardData = useCallback(async (isForced = false) => {
-    if (refreshing && !isForced) return; // Prevent multiple simultaneous manual refreshes
+    if (refreshingRef.current && !isForced) return;
+    refreshingRef.current = true;
     setRefreshing(true);
     try {
       console.log('???? Fetching dashboard data...');
@@ -234,9 +248,10 @@ const Dashboard = () => {
     } catch (err) {
       // Interceptor handles the toast
     } finally {
+      refreshingRef.current = false;
       setRefreshing(false);
     }
-  }, [refreshing]);
+  }, []);
 
   // ============ AUTH & DATA FETCHING ============
   useEffect(() => {
@@ -276,9 +291,9 @@ const Dashboard = () => {
   // Initial fetch and manual refreshes decoupled
   useEffect(() => {
     if (!authLoading && authUser) {
-      fetchDashboardData(refreshTrigger > 0);
+      fetchDashboardData();
     }
-  }, [authLoading, authUser, refreshTrigger, fetchDashboardData]);
+  }, [authLoading, authUser, fetchDashboardData]);
 
   // ============ HANDLERS ============
   const handleLogout = async () => {
@@ -289,6 +304,8 @@ const Dashboard = () => {
   const handleNavigation = (path) => {
     navigate(path);
     setIsMobileMenuOpen(false);
+    setShowProfileNavMenu(false);
+    setShowUserMenu(false);
   };
 
   const handleSuccess = async () => {
@@ -720,7 +737,7 @@ const Dashboard = () => {
               </div>
             </li>
 
-            {mobileNavItems.map((item) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
@@ -736,6 +753,62 @@ const Dashboard = () => {
                 </li>
               );
             })}
+
+            <li className="desktop-nav-profile" ref={profileNavMenuRef}>
+              <button
+                type="button"
+                className={`nav-link nav-dropdown-trigger ${showProfileNavMenu ? "active" : ""}`}
+                onClick={() => {
+                  setShowUserMenu(false);
+                  setShowProfileNavMenu((prev) => !prev);
+                }}
+                aria-expanded={showProfileNavMenu}
+                aria-haspopup="true"
+              >
+                <FaUserCircle className="nav-icon" />
+                <span>Profile</span>
+                <FaChevronDown className={`nav-dropdown-arrow ${showProfileNavMenu ? "open" : ""}`} />
+              </button>
+
+              {showProfileNavMenu && (
+                <div className="nav-dropdown-menu" role="menu">
+                  {profileNavItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`nav-dropdown-item ${isActive(item.path) ? "active" : ""}`}
+                        onClick={() => handleNavigation(item.path)}
+                        role="menuitem"
+                      >
+                        <Icon />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </li>
+
+            {mobileNavItems
+              .filter((item) => !navItems.some((navItem) => navItem.id === item.id))
+              .map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.path);
+                return (
+                  <li key={item.id} className="mobile-drawer-only">
+                    <button
+                      onClick={() => handleNavigation(item.path)}
+                      className={`nav-link ${active ? "active" : ""}`}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      <Icon className="nav-icon" />
+                      <span>{item.label}</span>
+                    </button>
+                  </li>
+                );
+              })}
 
             <li className="mobile-drawer-only mobile-actions-panel">
               <button
