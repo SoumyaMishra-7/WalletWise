@@ -899,14 +899,36 @@ const Dashboard = () => {
               <div className="dropdown-divider"></div>
 
               <Link
-                to="/profile"
+                to="/dashboard"
                 className="dropdown-item"
                 role="menuitem"
                 onClick={() => setShowUserMenu(false)}
-                title="View profile"
+                title="Open dashboard"
               >
-                <FaUserCircle />
-                <span>Profile</span>
+                <FaHome />
+                <span>Dashboard</span>
+              </Link>
+
+              <Link
+                to="/transactions"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => setShowUserMenu(false)}
+                title="Open transactions"
+              >
+                <FaExchangeAlt />
+                <span>Transactions</span>
+              </Link>
+
+              <Link
+                to="/budget"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => setShowUserMenu(false)}
+                title="Open budget"
+              >
+                <FaChartPie />
+                <span>Budget</span>
               </Link>
 
               <Link
@@ -918,6 +940,17 @@ const Dashboard = () => {
               >
                 <FaBullseye />
                 <span>Goals</span>
+              </Link>
+
+              <Link
+                to="/reports"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => setShowUserMenu(false)}
+                title="Open reports"
+              >
+                <FaChartBar />
+                <span>Reports</span>
               </Link>
 
               <Link

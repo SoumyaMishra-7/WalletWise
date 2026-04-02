@@ -10,7 +10,6 @@ import {
   FaChartPie,
   FaBullseye,
   FaChartBar,
-  FaUser,
   FaSun,
   FaMoon,
   FaCalendarCheck
@@ -40,10 +39,8 @@ const AppNavbar = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showProfileNavMenu, setShowProfileNavMenu] = useState(false);
   const mobileMenuRef = useRef(null);
   const userMenuRef = useRef(null);
-  const profileNavMenuRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -52,9 +49,6 @@ const AppNavbar = () => {
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setShowUserMenu(false);
-      }
-      if (profileNavMenuRef.current && !profileNavMenuRef.current.contains(event.target)) {
-        setShowProfileNavMenu(false);
       }
     };
 
@@ -114,53 +108,6 @@ const AppNavbar = () => {
             );
           })}
 
-          <li className="nav-profile-item" ref={profileNavMenuRef}>
-            <button
-              type="button"
-              className={`nav-link nav-dropdown-trigger ${showProfileNavMenu ? 'active' : ''}`}
-              onClick={() => setShowProfileNavMenu((prev) => !prev)}
-              aria-expanded={showProfileNavMenu}
-              aria-haspopup="true"
-            >
-              <FaUser className="nav-icon" />
-              <span>Profile</span>
-              <FaChevronDown className={`nav-dropdown-arrow ${showProfileNavMenu ? 'open' : ''}`} />
-            </button>
-
-            {showProfileNavMenu && (
-              <div className="nav-dropdown-menu" role="menu">
-                {profileNavItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.id}
-                      to={item.path}
-                      className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}
-                      onClick={() => {
-                        setShowProfileNavMenu(false);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      role="menuitem"
-                    >
-                      <Icon />
-                      <span>{item.label}</span>
-                    </NavLink>
-                  );
-                })}
-              </div>
-            )}
-          </li>
-
-          <li className="mobile-only-nav-item">
-            <NavLink
-              to="/profile"
-              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <FaUser className="nav-icon" />
-              <span>Profile</span>
-            </NavLink>
-          </li>
         </ul>
       </nav>
 
@@ -209,27 +156,37 @@ const AppNavbar = () => {
 
             <div className="dropdown-divider"></div>
 
-            <Link
-              to="/profile"
-              className="dropdown-item"
-              role="menuitem"
-              onClick={() => setShowUserMenu(false)}
-            >
-              <FaUser />
-              <span>Profile</span>
-            </Link>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => setShowUserMenu(false)}
+                >
+                  <Icon />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
 
-            <div className="dropdown-divider"></div>
-
-            <Link
-              to="/settings"
-              className="dropdown-item"
-              role="menuitem"
-              onClick={() => setShowUserMenu(false)}
-            >
-              <FaCog />
-              <span>Settings</span>
-            </Link>
+            {profileNavItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => setShowUserMenu(false)}
+                >
+                  <Icon />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
 
             <div className="dropdown-divider"></div>
 
