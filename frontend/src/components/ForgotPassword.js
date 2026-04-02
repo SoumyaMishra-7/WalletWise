@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
-import api from '../api/client';
 
 import './Auth.css';
 

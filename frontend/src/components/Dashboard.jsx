@@ -123,7 +123,7 @@ const Dashboard = () => {
   const [showVaultUnlock, setShowVaultUnlock] = useState(false);
 
   // Vault mechanics
-  const { isVaultEnabled, isUnlocked, cryptoKey } = useVault();
+  const { isUnlocked, cryptoKey } = useVault();
   const [decryptedNotes, setDecryptedNotes] = useState({}); // { txId: "Decrypted Text" }
 
   const handleUnlockVaultSuccess = async () => {
@@ -171,8 +171,17 @@ const Dashboard = () => {
       path: "/transactions",
     },
     { id: "budget", label: "Budget", icon: FaChartPie, path: "/budget" },
+    { id: "goals", label: "Goals", icon: FaBullseye, path: "/goals" },
     { id: "wallets", label: "Wallets", icon: FaWallet, path: "/wallets" },
+    { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
     { id: "subscriptions", label: "Subscriptions", icon: FaCog, path: "/subscriptions" },
+    { id: "settings", label: "Settings", icon: FaCog, path: "/settings" },
+  ];
+
+  const mobileNavItems = [
+    ...navItems,
+    { id: "profile", label: "Profile", icon: FaUserCircle, path: "/profile" },
+    { id: "rewards", label: "Rewards", icon: FaTrophy, path: "/gamification" },
   ];
 
   // Fetch dashboard data
@@ -227,7 +236,7 @@ const Dashboard = () => {
     } finally {
       setRefreshing(false);
     }
-  }, [refreshing, logout, navigate]);
+  }, [refreshing]);
 
   // ============ AUTH & DATA FETCHING ============
   useEffect(() => {
@@ -262,18 +271,14 @@ const Dashboard = () => {
     };
 
     fetchUserData();
-  }, [navigate, authUser, authLoading]);
+  }, [authUser, authLoading]);
 
   // Initial fetch and manual refreshes decoupled
   useEffect(() => {
     if (!authLoading && authUser) {
       fetchDashboardData(refreshTrigger > 0);
     }
-  }, [authLoading, authUser, refreshTrigger]);
-
-  const triggerRefresh = useCallback(() => {
-    setRefreshTrigger(prev => prev + 1);
-  }, []);
+  }, [authLoading, authUser, refreshTrigger, fetchDashboardData]);
 
   // ============ HANDLERS ============
   const handleLogout = async () => {
@@ -673,7 +678,10 @@ const Dashboard = () => {
         <nav className="nav-center" ref={mobileMenuRef}>
           <button
             className="mobile-menu-toggle"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={() => {
+              setShowUserMenu(false);
+              setIsMobileMenuOpen(!isMobileMenuOpen);
+            }}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-nav-menu"
@@ -687,7 +695,32 @@ const Dashboard = () => {
             id="mobile-nav-menu"
             className={`nav-menu ${isMobileMenuOpen ? 'active' : ''}`}
           >
-            {navItems.map((item) => {
+            <li className="mobile-drawer-only mobile-menu-header">
+              <div className="mobile-menu-profile">
+                <div className="mobile-menu-avatar" aria-hidden="true">
+                  {user?.fullName?.charAt(0) || user?.name?.charAt(0) || "U"}
+                </div>
+                <div className="mobile-menu-user-meta">
+                  <p className="mobile-menu-name">{user?.fullName || user?.name || "User"}</p>
+                  <p className="mobile-menu-email">{user?.email || ""}</p>
+                </div>
+              </div>
+              <div className="mobile-menu-gamification">
+                <div className="mobile-gamification-pill" title="Transaction Streak">
+                  <FaFire />
+                  <span>{user?.currentStreak || 0} streak</span>
+                </div>
+                <div
+                  className="mobile-gamification-pill"
+                  title={`Level ${currentLevelInfo.level}: ${currentLevelInfo.title}`}
+                >
+                  <FaStar />
+                  <span>Lvl {currentLevelInfo.level}</span>
+                </div>
+              </div>
+            </li>
+
+            {mobileNavItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
@@ -699,11 +732,72 @@ const Dashboard = () => {
                   >
                     <Icon className="nav-icon" />
                     <span>{item.label}</span>
-                    {active && <div className="nav-indicator"></div>}
                   </button>
                 </li>
               );
             })}
+
+            <li className="mobile-drawer-only mobile-actions-panel">
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  fetchDashboardData(true);
+                }}
+                disabled={refreshing}
+              >
+                <FaSync className={refreshing ? "spin" : ""} />
+                <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleAIInsights();
+                }}
+              >
+                <FaBrain />
+                <span>AI Insights</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  navigate('/decision-helper');
+                }}
+              >
+                <FaMagic />
+                <span>Decision Helper</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsTourOpen(true);
+                }}
+              >
+                <FaStar />
+                <span>Start Tour</span>
+              </button>
+            </li>
+
+            <li className="mobile-drawer-only">
+              <button
+                onClick={handleLogout}
+                className="nav-link mobile-logout"
+                type="button"
+              >
+                <FaSignOutAlt className="nav-icon" />
+                <span>Logout</span>
+              </button>
+            </li>
           </ul>
         </nav>
 
