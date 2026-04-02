@@ -72,7 +72,6 @@ const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showProfileNavMenu, setShowProfileNavMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isTourOpen, setIsTourOpen] = useState(false);
@@ -82,7 +81,6 @@ const Dashboard = () => {
 
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const profileNavMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user: authUser, loading: authLoading, logout, reloadUser } = useAuth();
@@ -92,12 +90,6 @@ const Dashboard = () => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setShowUserMenu(false);
-      }
-      if (
-        profileNavMenuRef.current &&
-        !profileNavMenuRef.current.contains(event.target)
-      ) {
-        setShowProfileNavMenu(false);
       }
       if (
         mobileMenuRef.current &&
@@ -304,7 +296,6 @@ const Dashboard = () => {
   const handleNavigation = (path) => {
     navigate(path);
     setIsMobileMenuOpen(false);
-    setShowProfileNavMenu(false);
     setShowUserMenu(false);
   };
 
@@ -754,43 +745,6 @@ const Dashboard = () => {
               );
             })}
 
-            <li className="desktop-nav-profile" ref={profileNavMenuRef}>
-              <button
-                type="button"
-                className={`nav-link nav-dropdown-trigger ${showProfileNavMenu ? "active" : ""}`}
-                onClick={() => {
-                  setShowUserMenu(false);
-                  setShowProfileNavMenu((prev) => !prev);
-                }}
-                aria-expanded={showProfileNavMenu}
-                aria-haspopup="true"
-              >
-                <FaUserCircle className="nav-icon" />
-                <span>Profile</span>
-                <FaChevronDown className={`nav-dropdown-arrow ${showProfileNavMenu ? "open" : ""}`} />
-              </button>
-
-              {showProfileNavMenu && (
-                <div className="nav-dropdown-menu" role="menu">
-                  {profileNavItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={`nav-dropdown-item ${isActive(item.path) ? "active" : ""}`}
-                        onClick={() => handleNavigation(item.path)}
-                        role="menuitem"
-                      >
-                        <Icon />
-                        <span>{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </li>
-
             {mobileNavItems
               .filter((item) => !navItems.some((navItem) => navItem.id === item.id))
               .map((item) => {
@@ -953,6 +907,39 @@ const Dashboard = () => {
               >
                 <FaUserCircle />
                 <span>Profile</span>
+              </Link>
+
+              <Link
+                to="/goals"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => setShowUserMenu(false)}
+                title="Open goals"
+              >
+                <FaBullseye />
+                <span>Goals</span>
+              </Link>
+
+              <Link
+                to="/wallets"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => setShowUserMenu(false)}
+                title="Open wallets"
+              >
+                <FaWallet />
+                <span>Wallets</span>
+              </Link>
+
+              <Link
+                to="/subscriptions"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => setShowUserMenu(false)}
+                title="Open subscriptions"
+              >
+                <FaCog />
+                <span>Subscriptions</span>
               </Link>
 
               <Link
