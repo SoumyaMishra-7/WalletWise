@@ -655,6 +655,101 @@ const Dashboard = () => {
   };
 
   const currentLevelInfo = calculateLevel(user?.totalXP || 0);
+  const budgetStatusTone =
+    stats.monthlyBudget === 0
+      ? "neutral"
+      : stats.budgetUsedPercentage >= 100
+        ? "danger"
+        : stats.budgetUsedPercentage >= 75
+          ? "warning"
+          : "good";
+  const budgetStatusCopy =
+    stats.monthlyBudget === 0
+      ? "Set a budget to unlock pace tracking."
+      : stats.budgetUsedPercentage >= 100
+        ? "You have crossed your plan and need a reset."
+        : stats.budgetUsedPercentage >= 75
+          ? "You are entering the caution zone this month."
+          : "You are spending within a healthy range.";
+  const heroPulseItems = [
+    {
+      id: "income",
+      label: "Income Landed",
+      value: formatCurrency(stats.incomeThisMonth),
+      meta: "Captured this month",
+      tone: "good",
+    },
+    {
+      id: "pace",
+      label: "Daily Spend Pace",
+      value: `${formatCurrency(dailyPaceValue)}/day`,
+      meta: "Based on this month so far",
+      tone: "cool",
+    },
+    {
+      id: "streak",
+      label: "Consistency",
+      value: `${user?.currentStreak || 0} day streak`,
+      meta: `Level ${currentLevelInfo.level} ${currentLevelInfo.title}`,
+      tone: "warm",
+    },
+  ];
+  const quickActions = [
+    {
+      id: "expense",
+      title: "Add Expense",
+      description: "Capture spending before it disappears into the month.",
+      icon: FaMoneyBillWave,
+      iconTone: "blue",
+      eyebrow: "Track instantly",
+      onClick: () => setShowAddExpenseModal(true),
+    },
+    {
+      id: "income",
+      title: "Add Income",
+      description: "Record salary, allowance, freelance, or side-hustle cash.",
+      icon: FaHandHoldingUsd,
+      iconTone: "green",
+      eyebrow: "Grow balance",
+      onClick: () => setShowAddIncomeModal(true),
+    },
+    {
+      id: "budget",
+      title: "Set Budget",
+      description: "Shape a monthly plan with clear limits and breathing room.",
+      icon: FaChartLine,
+      iconTone: "orange",
+      eyebrow: "Control the month",
+      onClick: () => setShowSetBudgetModal(true),
+    },
+    {
+      id: "goals",
+      title: "Set Goals",
+      description: "Turn future plans into tracked savings milestones.",
+      icon: FaBullseye,
+      iconTone: "purple",
+      eyebrow: "Plan ahead",
+      onClick: handleOpenGoals,
+    },
+    {
+      id: "analysis",
+      title: "AI Analysis",
+      description: "Spot behavior patterns and hidden pressure points fast.",
+      icon: FaBrain,
+      iconTone: "pink",
+      eyebrow: "Understand behavior",
+      onClick: handleAIInsights,
+    },
+    {
+      id: "reports",
+      title: "View Reports",
+      description: "Open the full visual breakdown of your financial story.",
+      icon: FaChartBar,
+      iconTone: "teal",
+      eyebrow: "Read the trends",
+      onClick: () => navigate("/reports"),
+    },
+  ];
 
   // ============ RENDERING ============
   if (loading) {
@@ -1006,79 +1101,120 @@ const Dashboard = () => {
       <div className="dashboard-content" data-tour="dashboard-header">
         {/* Dashboard Header with Greeting and Actions */}
         <div className="dashboard-header-area">
-          <div className="dashboard-header-left">
-            <h1 className="dashboard-title">Dashboard</h1>
-            <div className="greeting-section">
-              {/* FIXED: Single span for greeting text */}
-              <h2 className="greeting-text">
-                Good {timeOfDay},{" "}
-                <span className="user-name">
-                  {user?.fullName || user?.name}!
-                </span>
-              </h2>
+          <div className="hero-panel">
+            <div className="hero-orb hero-orb-one" aria-hidden="true"></div>
+            <div className="hero-orb hero-orb-two" aria-hidden="true"></div>
 
-              <p className="current-date">
-                <FaCalendarAlt className="date-icon" />
-                {currentDate}
-              </p>
+            <div className="dashboard-header-left">
+              <span className="section-eyebrow">Financial Command Center</span>
+              <h1 className="dashboard-title">Dashboard</h1>
+              <div className="greeting-section">
+                <h2 className="greeting-text">
+                  Good {timeOfDay},{" "}
+                  <span className="user-name">
+                    {user?.fullName || user?.name}!
+                  </span>
+                </h2>
+
+                <p className="hero-description">
+                  Everything important is staged here: momentum, pressure points,
+                  and the next move that keeps your month in control.
+                </p>
+
+                <p className="current-date">
+                  <FaCalendarAlt className="date-icon" />
+                  {currentDate}
+                </p>
+              </div>
+
+              <div className="hero-pulse-grid">
+                {heroPulseItems.map((item) => (
+                  <div key={item.id} className={`hero-pulse-card ${item.tone}`}>
+                    <span className="hero-pulse-label">{item.label}</span>
+                    <strong className="hero-pulse-value">{item.value}</strong>
+                    <span className="hero-pulse-meta">{item.meta}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="dashboard-header-right">
-            <div className="action-buttons">
-              <button
-                className={`refresh-btn ${refreshing ? "refreshing" : ""}`}
-                data-tour="refresh-btn"
-                onClick={fetchDashboardData}
-                disabled={refreshing}
-                aria-busy={refreshing}
-                aria-disabled={refreshing}
-                title={
-                  refreshing
-                    ? "Refreshing dashboard..."
-                    : "Refresh dashboard data"
-                }
-              >
-                <FaSync className={refreshing ? "spin" : ""} />
-                <span>{refreshing ? "Refreshing..." : "Refresh Data"}</span>
-              </button>
+            <div className="dashboard-header-right">
+              <div className="hero-spotlight-card">
+                <span className="spotlight-kicker">Live Budget Pulse</span>
+                <div className={`spotlight-badge ${budgetStatusTone}`}>
+                  {stats.monthlyBudget > 0
+                    ? `${Math.round(stats.budgetUsedPercentage)}% used`
+                    : "No budget yet"}
+                </div>
+                <p className="spotlight-copy">{budgetStatusCopy}</p>
+                <div className="spotlight-metrics">
+                  <div>
+                    <span>Budget Left</span>
+                    <strong>{formatCurrency(Math.max(stats.budgetLeft, 0))}</strong>
+                  </div>
+                  <div>
+                    <span>Total Budget</span>
+                    <strong>
+                      {stats.monthlyBudget > 0 ? formatCurrency(stats.monthlyBudget) : "Not set"}
+                    </strong>
+                  </div>
+                </div>
+              </div>
 
-              <button
-                className="ai-insights-btn"
-                data-tour="ai-insights-btn"
-                onClick={handleAIInsights}
-                title="View AI-powered spending insights"
-                aria-label="AI Insights"
-              >
-                <FaBrain className="ai-icon" />
-                <span>AI Insights</span>
-              </button>
+              <div className="action-buttons">
+                <button
+                  className={`refresh-btn ${refreshing ? "refreshing" : ""}`}
+                  data-tour="refresh-btn"
+                  onClick={fetchDashboardData}
+                  disabled={refreshing}
+                  aria-busy={refreshing}
+                  aria-disabled={refreshing}
+                  title={
+                    refreshing
+                      ? "Refreshing dashboard..."
+                      : "Refresh dashboard data"
+                  }
+                >
+                  <FaSync className={refreshing ? "spin" : ""} />
+                  <span>{refreshing ? "Refreshing..." : "Refresh Data"}</span>
+                </button>
 
-              <button
-                className="ai-insights-btn"
-                data-tour="decision-helper-btn"
-                onClick={() => navigate('/decision-helper')}
-                title="AI-powered purchase advisor"
-                aria-label="Decision Helper"
-                style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: 'white', border: 'none' }}
-              >
-                <FaMagic className="ai-icon" />
-                <span>Decision Helper</span>
-              </button>
+                <button
+                  className="ai-insights-btn"
+                  data-tour="ai-insights-btn"
+                  onClick={handleAIInsights}
+                  title="View AI-powered spending insights"
+                  aria-label="AI Insights"
+                >
+                  <FaBrain className="ai-icon" />
+                  <span>AI Insights</span>
+                </button>
 
-              <button
-                className="tour-btn"
-                onClick={() => setIsTourOpen(true)}
-                title="Start guided product tour"
-                aria-label="Start guided product tour"
-              >
-                <FaStar className="ai-icon" />
-                <span>Start Tour</span>
-              </button>
+                <button
+                  className="decision-btn"
+                  data-tour="decision-helper-btn"
+                  onClick={() => navigate('/decision-helper')}
+                  title="AI-powered purchase advisor"
+                  aria-label="Decision Helper"
+                >
+                  <FaMagic className="ai-icon" />
+                  <span>Decision Helper</span>
+                </button>
+
+                <button
+                  className="tour-btn"
+                  onClick={() => setIsTourOpen(true)}
+                  title="Start guided product tour"
+                  aria-label="Start guided product tour"
+                >
+                  <FaStar className="ai-icon" />
+                  <span>Start Tour</span>
+                </button>
+              </div>
+              {lastUpdated && !refreshing && (
+                <p className="actions-refreshed">Refreshed {lastUpdated}</p>
+              )}
             </div>
-            {lastUpdated && !refreshing && (
-              <p className="actions-refreshed">Refreshed {lastUpdated}</p>
-            )}
           </div>
         </div>
 
@@ -1209,73 +1345,39 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="quick-actions-section" data-tour="quick-actions">
-          <h2 className="section-title">Quick Actions</h2>
+          <div className="section-heading-row">
+            <div>
+              <span className="section-eyebrow">Move Fast</span>
+              <h2 className="section-title">Quick Actions</h2>
+            </div>
+            <p className="section-description">
+              High-frequency actions designed to keep your financial flow frictionless.
+            </p>
+          </div>
           <div className="quick-actions-grid">
-            <button
-              onClick={() => setShowAddExpenseModal(true)}
-              className="action-card"
-            >
-              <div className="action-icon blue">
-                <FaMoneyBillWave />
-              </div>
-              <h3>Add Expense</h3>
-              <p>Record a new expense</p>
-            </button>
-
-            <button
-              onClick={() => setShowAddIncomeModal(true)}
-              className="action-card"
-            >
-              <div className="action-icon green">
-                <FaHandHoldingUsd />
-              </div>
-              <h3>Add Income</h3>
-              <p>Record new income</p>
-            </button>
-
-            <button
-              onClick={() => setShowSetBudgetModal(true)}
-              className="action-card"
-            >
-              <div className="action-icon orange">
-                <FaChartLine />
-              </div>
-              <h3>Set Budget</h3>
-              <p>Manage your budget</p>
-            </button>
-
-            <button onClick={handleOpenGoals} className="action-card">
-              <div className="action-icon purple">
-                <FaBullseye />
-              </div>
-              <h3>Set Goals</h3>
-              <p>Plan and track goals</p>
-            </button>
-
-            <button onClick={handleAIInsights} className="action-card">
-              <div className="action-icon pink">
-                <FaBrain />
-              </div>
-              <h3>AI Analysis</h3>
-              <p>Get spending insights</p>
-            </button>
-
-            <button
-              onClick={() => navigate("/reports")}
-              className="action-card"
-            >
-              <div className="action-icon teal">
-                <FaChartBar />
-              </div>
-              <h3>View Reports</h3>
-              <p>Detailed analytics</p>
-            </button>
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={action.id}
+                  onClick={action.onClick}
+                  className="action-card"
+                >
+                  <span className="action-eyebrow">{action.eyebrow}</span>
+                  <div className={`action-icon ${action.iconTone}`}>
+                    <Icon />
+                  </div>
+                  <h3>{action.title}</h3>
+                  <p>{action.description}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Charts Section with Empty States */}
         <div className="charts-section" data-tour="charts">
-          <div className="chart-container">
+          <div className="chart-container chart-feature">
             <div className="chart-header">
               <h3>Monthly Pacing & Projection</h3>
               <span className="chart-subtitle">Where you'll end up this month</span>
@@ -1341,6 +1443,7 @@ const Dashboard = () => {
         <div className="recent-transactions" data-tour="recent-transactions">
           <div className="section-header">
             <div>
+              <span className="section-eyebrow">Latest Activity</span>
               <h3>Recent Transactions</h3>
               <p className="section-subtitle">
                 {recentTransactions.length} transactions this month
@@ -1424,7 +1527,10 @@ const Dashboard = () => {
         {savingsGoals.length > 0 ? (
           <div className="savings-summary">
             <div className="section-header">
-              <h3>Savings Goals</h3>
+              <div>
+                <span className="section-eyebrow">Future Planning</span>
+                <h3>Savings Goals</h3>
+              </div>
               <span className="section-subtitle">Progress towards targets</span>
             </div>
 
