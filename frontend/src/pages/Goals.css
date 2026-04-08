@@ -435,3 +435,34 @@
     bottom: 1rem;
   }
 }
+
+/* 🟢 NEW CODE: Delete Goal Button */
+ .goal-modal-actions .btn-delete {
+  background: linear-gradient(90deg, #ef4444, #e11d48); 
+  color: #ffffff; 
+  border: 2px solid transparent; 
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+  height: 48px; 
+}
+
+.goal-modal-actions .btn-delete:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border: 2px solid #ffffff; 
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.7); 
+  filter: brightness(1.1);
+}
+
+.goal-modal-actions .btn-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border-color: transparent;
+}

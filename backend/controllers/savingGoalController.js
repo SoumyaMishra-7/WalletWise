@@ -217,9 +217,47 @@ const addAmount = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to add amount' });
     }
 };
+// 🟢 NEW: Code for the delete button
+// Delete a savings goal
+const deleteGoal = async (req, res) => {
+    try {
+        const goalId = req.params.id;
+
+        // 1. Check if the ID is formatted correctly
+        if (!isValidObjectId(goalId)) {
+            return res.status(400).json({ success: false, message: 'Invalid goal ID format' });
+        }
+
+        // 2. Find it and delete it. 
+        // We include userId: req.userId to make sure a user can only delete their OWN goals!
+        const goal = await SavingsGoal.findOneAndDelete({ 
+            _id: goalId, 
+            userId: req.userId 
+        });
+
+        // 3. If it didn't find the goal, return an error
+        if (!goal) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Goal not found or you are not authorized to delete it' 
+            });
+        }
+
+        // 4. Send success back to the React frontend
+        res.json({ 
+            success: true, 
+            message: 'Goal deleted successfully' 
+        });
+
+    } catch (error) {
+        console.error('Delete goal error:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete goal' });
+    }
+};
 
 module.exports = {
     createGoal,
     getAllGoals,
-    addAmount
+    addAmount,
+    deleteGoal // 🟢 NEW: Code for the delete button
 };
