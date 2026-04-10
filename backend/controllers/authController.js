@@ -145,6 +145,11 @@ const getPasswordResetExpiryMinutes = () => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 15;
 };
 
+const getFrontendBaseUrl = () => (
+  process.env.FRONTEND_URL ||
+  (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000')
+).replace(/\/+$/, '');
+
 const sendPasswordResetInstructions = async (user, { skipEmail } = {}) => {
   const expiryMinutes = getPasswordResetExpiryMinutes();
   const expiresAt = otpExpiresAt(expiryMinutes);
@@ -159,8 +164,8 @@ const sendPasswordResetInstructions = async (user, { skipEmail } = {}) => {
   user.passwordResetTokenSentAt = new Date();
   await user.save();
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  const resetLink = `${frontendUrl}/forgot-password/reset?token=${token}`;
+  const frontendBaseUrl = getFrontendBaseUrl();
+  const resetLink = `${frontendBaseUrl}/forgot-password/reset?token=${token}`;
 
   if (skipEmail) {
     return { otp, token, resetLink, delivered: false };
@@ -510,9 +515,18 @@ const resetPassword = async (req, res) => {
       user.provider = 'both';
     }
 
+    const accessToken = signAccessToken(user);
+    const refreshToken = signRefreshToken(user);
+    user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
     await user.save();
+    setAuthCookies(res, accessToken, refreshToken);
 
-    return res.json({ success: true, message: 'Password reset successful' });
+    return res.json({
+      success: true,
+      message: 'Password reset successful',
+      token: accessToken,
+      user: safeUser(user)
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Failed to reset password' });
   }
@@ -645,10 +659,7 @@ const googleCallback = asyncHandler(async (req, res) => {
 
   setAuthCookies(res, accessToken, refreshToken);
 
-  const frontendBaseUrl = (
-    process.env.FRONTEND_URL ||
-    (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000')
-  ).replace(/\/+$/, '');
+  const frontendBaseUrl = getFrontendBaseUrl();
   if (!frontendBaseUrl) {
     return res.status(500).json({
       success: false,

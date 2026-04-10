@@ -3,8 +3,11 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import 'react-toastify/dist/ReactToastify.css';
 import './Auth.css';
+
+const AUTH_TOKEN_KEY = 'walletwise_access_token';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -14,6 +17,7 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { reloadUser } = useAuth();
   const token = searchParams.get('token') || '';
 
   useEffect(() => {
@@ -45,8 +49,14 @@ const ResetPassword = () => {
       });
 
       if (response?.data?.success) {
+        if (response.data.token) {
+          window.localStorage.setItem(AUTH_TOKEN_KEY, response.data.token);
+        }
+        sessionStorage.removeItem('resetEmail');
+        sessionStorage.removeItem('resetOtp');
+        await reloadUser();
         toast.success('Password reset successful');
-        navigate('/login');
+        navigate('/dashboard', { replace: true });
       } else {
         toast.error(response?.data?.message || 'Password reset failed');
       }
