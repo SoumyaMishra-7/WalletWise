@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
-
+import api from '../api/client';
 import './Auth.css';
 
 const ForgotPassword = () => {
@@ -32,50 +32,38 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
+      const { data } = await api.post('/auth/forgot-password', { email });
 
-      // We use the api client if available, or fetch as fallback
-      // Based on the merged logic, we prefer the flow that leads to OTP verification
-      const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiBase}/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (data?.success) {
+        sessionStorage.setItem('resetEmail', email);
         toast.success('OTP sent to your email successfully!', {
           autoClose: 2000,
           pauseOnHover: false
         });
 
-        // Navigate to reset password page with email in query params
         setTimeout(() => {
-          navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+          navigate('/forgot-password/verify');
         }, 2000);
       } else {
         toast.error(data.message || 'Failed to send OTP. Please try again.');
 
-        // Fallback for mock dev test if needed
-        const devResetLink = data.devResetLink;
-        if (devResetLink) {
-          toast.info('Email service is not configured. Opening development reset link.');
-          window.location.href = devResetLink;
+        if (data?.devOtp) {
+          toast.info(`Dev Mode OTP: ${data.devOtp}`, { autoClose: false });
         }
-        // Fallback or secondary check for development links
-        if (data.devResetLink) {
+
+        if (data?.devResetLink) {
           toast.info('Email service is not configured. Opening development reset link.');
           window.location.href = data.devResetLink;
           return;
         }
-        toast.error(data.message || 'Failed to send OTP. Please try again.');
       }
     } catch (error) {
       console.error('Forgot password error:', error);
-      toast.error('An error occurred. Please try again later.');
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.errors?.[0]?.msg ||
+        'An error occurred. Please try again later.';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
