@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useContext, useMemo, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../api/client';
 
@@ -46,9 +46,9 @@ export const ThemeProvider = ({ children }) => {
       }
       setIsHydrating(false);
     }
-  }, [loading, authUser]);
+  }, [loading, authUser, theme]);
 
-  const toggleTheme = async () => {
+  const toggleTheme = useCallback(async () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     // Optimistic UI update
     setTheme(newTheme);
@@ -62,7 +62,7 @@ export const ThemeProvider = ({ children }) => {
         console.error('Failed to sync theme preference to backend:', err);
       }
     }
-  };
+  }, [theme, authUser, updateProfile]);
 
   const value = useMemo(
     () => ({
@@ -71,7 +71,7 @@ export const ThemeProvider = ({ children }) => {
       setTheme,
       toggleTheme,
     }),
-    [theme, authUser]
+    [theme, toggleTheme]
   );
 
   // Optional: Prevent brief UI flickers on hard refresh by holding render until the DB confirms our theme state

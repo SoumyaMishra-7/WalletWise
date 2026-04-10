@@ -84,6 +84,36 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
     { value: 'online', label: 'Online Banking' }
   ];
 
+  const finalizeSubmit = async (transactionData) => {
+    if (transactionToEdit) {
+      const id = transactionToEdit._id || transactionToEdit.id;
+      if (id) {
+        transactionData._id = id;
+      }
+    }
+
+    try {
+      if (onSuccess) {
+        await onSuccess(transactionData);
+      }
+      onClose();
+
+      if (!transactionToEdit) {
+        setFormData({
+          amount: '',
+          category: 'food',
+          date: new Date().toISOString().split('T')[0],
+          paymentMethod: 'cash',
+          description: '',
+          mood: 'neutral'
+        });
+        setIsEncrypted(false);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -101,48 +131,29 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
       mood: formData.mood
     };
 
+    setLoading(true);
+
     if (isEncrypted) {
       if (!isUnlocked || !cryptoKey) {
+        setLoading(false);
         setShowVaultUnlock(true);
         return; // pause submission until unlocked
       }
-      // Encrypt the description on the client
-      encryptNote(formData.description || '', cryptoKey).then((cipherBlob) => {
+      try {
+        const cipherBlob = await encryptNote(formData.description || '', cryptoKey);
         transactionData.isEncrypted = true;
         transactionData.encryptedData = cipherBlob;
         transactionData.description = ''; // never send plaintext
-        finalizeSubmit(transactionData);
-      }).catch(err => alert("Encryption failed."));
+        await finalizeSubmit(transactionData);
+      } catch (err) {
+        console.error("Encryption failed:", err);
+        alert("Encryption failed.");
+        setLoading(false);
+      }
     } else {
       transactionData.isEncrypted = false;
       transactionData.description = formData.description || '';
-      finalizeSubmit(transactionData);
-    }
-  };
-
-  const finalizeSubmit = (transactionData) => {
-    if (transactionToEdit) {
-      const id = transactionToEdit._id || transactionToEdit.id;
-      if (id) {
-        transactionData._id = id;
-      }
-    }
-
-    if (onSuccess) {
-      onSuccess(transactionData);
-    }
-    onClose();
-
-    if (!transactionToEdit) {
-      setFormData({
-        amount: '',
-        category: 'food',
-        date: new Date().toISOString().split('T')[0],
-        paymentMethod: 'cash',
-        description: '',
-        mood: 'neutral'
-      });
-      setIsEncrypted(false);
+      await finalizeSubmit(transactionData);
     }
   };
 

@@ -5,6 +5,7 @@ import {
   FaChevronDown,
   FaSignOutAlt,
   FaCog,
+  FaUserCircle,
   FaHome,
   FaExchangeAlt,
   FaChartPie,
@@ -23,10 +24,12 @@ const navItems = [
   { id: 'transactions', label: 'Transactions', icon: FaExchangeAlt, path: '/transactions' },
   { id: 'budget', label: 'Budget', icon: FaChartPie, path: '/budget' },
   { id: 'goals', label: 'Goals', icon: FaBullseye, path: '/goals' },
-  { id: 'reports', label: 'Reports', icon: FaChartBar, path: '/reports' }
+  { id: 'reports', label: 'Reports', icon: FaChartBar, path: '/reports' },
+  { id: 'profile-top', label: 'Profile', icon: FaUserCircle, path: '/profile' }
 ];
 
 const profileNavItems = [
+  { id: 'profile', label: 'Profile', icon: FaUserCircle, path: '/profile' },
   { id: 'goals-profile', label: 'Goals', icon: FaBullseye, path: '/goals' },
   { id: 'wallets', label: 'Wallets', icon: FaWallet, path: '/wallets' },
   { id: 'subscriptions', label: 'Subscriptions', icon: FaCalendarCheck, path: '/subscriptions' },

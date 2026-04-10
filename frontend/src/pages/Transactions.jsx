@@ -62,10 +62,9 @@ const Transactions = () => {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   // Vault Mechanics
-  const { isVaultEnabled, isUnlocked, cryptoKey } = useVault();
+  const { isUnlocked, cryptoKey } = useVault();
   const [showVaultUnlock, setShowVaultUnlock] = useState(false);
   const [decryptedNotes, setDecryptedNotes] = useState({});
 
@@ -78,7 +77,7 @@ const Transactions = () => {
       const plainText = await decryptNote(tx.encryptedData, cryptoKey);
       setDecryptedNotes(prev => ({ ...prev, [tx._id || tx.id]: plainText }));
     } catch (err) {
-      setError("Decryption failed. Invalid vault session.");
+      console.error("Decryption failed. Invalid vault session.", err);
     }
   };
 
@@ -148,7 +147,7 @@ const Transactions = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, limit, sortMode, debouncedSearch, activeQuickFilter, startDate, endDate, navigate]);
+  }, [currentPage, limit, sortMode, debouncedSearch, activeQuickFilter, startDate, endDate]);
 
   useEffect(() => {
     fetchTransactions();

@@ -7,8 +7,6 @@ import VaultUnlock from '../components/Vault/VaultUnlock';
 import { Lock, Unlock } from 'lucide-react';
 import './AddExpense.css'; // Reusing the clean CSS
 
-import api from '../api/client';
-
 const AddIncome = ({ isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     amount: '',

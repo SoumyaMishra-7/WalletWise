@@ -173,6 +173,7 @@ const Dashboard = () => {
     { id: "budget", label: "Budget", icon: FaChartPie, path: "/budget" },
     { id: "goals", label: "Goals", icon: FaBullseye, path: "/goals" },
     { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
+    { id: "profile-top", label: "Profile", icon: FaUserCircle, path: "/profile" },
   ];
 
   const profileNavItems = [
@@ -1046,6 +1047,17 @@ const Dashboard = () => {
               >
                 <FaChartBar />
                 <span>Reports</span>
+              </Link>
+
+              <Link
+                to="/profile"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => setShowUserMenu(false)}
+                title="Open profile"
+              >
+                <FaUserCircle />
+                <span>Profile</span>
               </Link>
 
               <Link

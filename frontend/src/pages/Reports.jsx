@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FaDownload } from 'react-icons/fa';
-import Spinner from '../components/Spinner';
 import { useAuth } from '../context/AuthContext';
 
 import {
@@ -49,11 +48,11 @@ const Reports = () => {
 
   const { user } = useAuth();
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = useCallback((amount) => {
     const currency = user?.currency || 'USD';
     const locale = currency === 'INR' ? 'en-IN' : 'en-US';
     return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
-  };
+  }, [user?.currency]);
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -276,7 +275,7 @@ const Reports = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [formatCurrency]);
 
   useEffect(() => {
     fetchReports();
