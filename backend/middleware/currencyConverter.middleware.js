@@ -10,10 +10,12 @@ const currencyMiddleware = async (req, res, next) => {
         const requestPath = req.originalUrl || req.url || '';
         const shouldPreserveExactTransactionValues =
             /\/(api\/v1\/)?transactions(\/|$)/.test(requestPath) ||
-            /\/(api\/v1\/)?dashboard(\/|$)/.test(requestPath);
+            /\/(api\/v1\/)?dashboard(\/|$)/.test(requestPath) ||
+            /\/(api\/v1\/)?budget(\/|$)/.test(requestPath);
 
-        // Preserve exact amounts for transaction create/read and dashboard totals.
-        // This ensures entered income maps 1:1 to wallet balance and total balance.
+        // Preserve exact amounts for transaction, dashboard, and budget routes.
+        // These flows already assume stored values are shown directly, and converting
+        // only budget responses causes inconsistent utilization/spend totals.
         if (shouldPreserveExactTransactionValues) {
             return next();
         }
