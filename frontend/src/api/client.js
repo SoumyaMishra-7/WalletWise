@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast';
 
 const AUTH_TOKEN_KEY = 'walletwise_access_token';
 
-const rawBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const rawBaseUrl = process.env.REACT_APP_API_URL || 'https://walletwise-3.onrender.com';
 const sanitizedBaseUrl = rawBaseUrl.replace(/\/+$/, '');
 const API_BASE_URL = sanitizedBaseUrl.endsWith('/api')
   ? sanitizedBaseUrl

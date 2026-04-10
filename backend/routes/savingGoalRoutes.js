@@ -11,5 +11,6 @@ router.get('/', protect, savingGoalController.getAllGoals);
 
 // Add amount to savings goal
 router.post('/:id/add', protect, savingGoalController.addAmount);
+router.patch('/:id/add', protect, savingGoalController.addAmount);
 
 module.exports = router;

@@ -173,22 +173,11 @@ const addAmount = async (req, res) => {
             });
         }
 
-        const goal = await SavingsGoal.findOneAndUpdate(
-            { _id: goalId, userId: req.userId, isActive: true },
-            [
-                {
-                    $set: {
-                        currentAmount: {
-                            $min: [
-                                "$targetAmount",
-                                { $add: ["$currentAmount", amount] }
-                            ]
-                        }
-                    }
-                }
-            ],
-            { new: true }
-        );
+        const goal = await SavingsGoal.findOne({
+            _id: goalId,
+            userId: req.userId,
+            isActive: true
+        });
 
         if (!goal) {
             return res.status(404).json({
@@ -196,6 +185,9 @@ const addAmount = async (req, res) => {
                 message: 'Goal not found'
             });
         }
+
+        goal.currentAmount = Math.min(goal.targetAmount, goal.currentAmount + amount);
+        await goal.save();
 
         res.json({
             success: true,

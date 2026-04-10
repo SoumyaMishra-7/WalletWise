@@ -209,7 +209,7 @@ const Signup = () => {
           className="demo-btn google-btn"
           onClick={() => {
             const apiBase =
-              process.env.REACT_APP_API_URL || "http://localhost:5000";
+              process.env.REACT_APP_API_URL || "https://walletwise-3.onrender.com";
             window.sessionStorage.setItem("walletwise-show-tour-once", "true");
             window.location.href = `${apiBase}/auth/google`;
           }}

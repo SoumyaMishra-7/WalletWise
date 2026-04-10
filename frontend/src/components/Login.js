@@ -158,7 +158,7 @@ const Login = () => {
             type="button"
             className="demo-btn google-btn"
             onClick={() => {
-              const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+              const apiBase = process.env.REACT_APP_API_URL || 'https://walletwise-3.onrender.com';
               window.sessionStorage.removeItem('walletwise-show-tour-once');
               window.location.href = `${apiBase}/auth/google`;
             }}
