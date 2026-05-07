@@ -17,7 +17,7 @@ import {
   FaWallet, FaSignOutAlt, FaUserCircle, FaChevronDown,
   FaMoneyBillWave, FaChartLine, FaPiggyBank,
   FaHandHoldingUsd, FaBullseye, FaChartBar,
-  FaBrain, FaArrowUp, FaCalendarAlt,
+  FaBrain, FaArrowUp, FaCalendarAlt, FaClock,
   FaSync, FaHome, FaExchangeAlt,
   FaCog, FaChartPie, FaMagic, FaTrophy,
   FaLock, FaUnlock, FaFire, FaStar
@@ -160,6 +160,7 @@ const Dashboard = () => {
   const [categorySpending, setCategorySpending] = useState([]);
   const [weeklyExpenses, setWeeklyExpenses] = useState([]);
   const [savingsGoals, setSavingsGoals] = useState([]);
+  const [showDemoData, setShowDemoData] = useState(false);
 
   // Navigation items with proper routes
   const navItems = [
@@ -453,20 +454,81 @@ const Dashboard = () => {
     }
   };
 
+  const demoDashboard = {
+    stats: {
+      totalBalance: 18450,
+      spentThisMonth: 3275,
+      incomeThisMonth: 12000,
+      budgetLeft: 1725,
+      savings: 8400,
+      monthlyBudget: 5000,
+      budgetUsedPercentage: 65.5,
+      expenseTrend: -8,
+    },
+    weeklyExpenses: [
+      { day: "Mon", amount: 420 },
+      { day: "Tue", amount: 560 },
+      { day: "Wed", amount: 310 },
+      { day: "Thu", amount: 780 },
+      { day: "Fri", amount: 490 },
+      { day: "Sat", amount: 620 },
+      { day: "Sun", amount: 95 },
+    ],
+    categorySpending: [
+      { name: "Food", amount: 1250 },
+      { name: "Transport", amount: 640 },
+      { name: "Books", amount: 725 },
+      { name: "Subscriptions", amount: 360 },
+      { name: "Social", amount: 300 },
+    ],
+    savingsGoals: [
+      {
+        name: "Laptop Fund",
+        category: "Education",
+        currentAmount: 32000,
+        targetAmount: 50000,
+        progress: 64,
+        targetDate: new Date(new Date().setDate(new Date().getDate() + 45)).toISOString(),
+      },
+      {
+        name: "Emergency Buffer",
+        category: "Safety",
+        currentAmount: 9000,
+        targetAmount: 15000,
+        progress: 60,
+        targetDate: new Date(new Date().setDate(new Date().getDate() + 90)).toISOString(),
+      },
+    ],
+    recentTransactions: [
+      { _id: "demo-1", type: "expense", category: "Food", description: "Campus lunch", amount: 180, date: new Date().toISOString() },
+      { _id: "demo-2", type: "expense", category: "Transport", description: "Metro card top-up", amount: 300, date: new Date(Date.now() - 86400000).toISOString() },
+      { _id: "demo-3", type: "income", category: "Freelance", description: "Design project", amount: 4500, date: new Date(Date.now() - 172800000).toISOString() },
+      { _id: "demo-4", type: "expense", category: "Books", description: "Course material", amount: 725, date: new Date(Date.now() - 259200000).toISOString() },
+    ],
+  };
+
+  const activeStats = showDemoData ? demoDashboard.stats : stats;
+  const activeWeeklyExpenses = showDemoData ? demoDashboard.weeklyExpenses : weeklyExpenses;
+  const activeCategorySpending = showDemoData ? demoDashboard.categorySpending : categorySpending;
+  const activeSavingsGoals = showDemoData ? demoDashboard.savingsGoals : savingsGoals;
+  const activeRecentTransactions = showDemoData ? demoDashboard.recentTransactions : recentTransactions;
+  const hasLiveWeeklyExpenseData = weeklyExpenses.some((exp) => exp.amount > 0);
+  const hasLiveCategorySpendingData = categorySpending.some((cat) => cat.amount > 0);
+
   // ============ CHART CONFIGURATIONS ============
 
   // Weekly expenses chart with empty state handling
   const weeklyExpensesChart = {
     labels:
-      weeklyExpenses.length > 0
-        ? weeklyExpenses.map((item) => item.day)
+      activeWeeklyExpenses.length > 0
+        ? activeWeeklyExpenses.map((item) => item.day)
         : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
         label: "Daily Expenses",
         data:
-          weeklyExpenses.length > 0
-            ? weeklyExpenses.map((item) => item.amount)
+          activeWeeklyExpenses.length > 0
+            ? activeWeeklyExpenses.map((item) => item.amount)
             : [0, 0, 0, 0, 0, 0, 0],
         borderColor: "#f87171",
         backgroundColor: "rgba(248, 113, 113, 0.1)",
@@ -480,14 +542,14 @@ const Dashboard = () => {
   // Category spending chart with empty state
   const spendingByCategoryChart = {
     labels:
-      categorySpending.length > 0
-        ? categorySpending.map((item) => item.name)
+      activeCategorySpending.length > 0
+        ? activeCategorySpending.map((item) => item.name)
         : ["No Data"],
     datasets: [
       {
         data:
-          categorySpending.length > 0
-            ? categorySpending.map((item) => item.amount)
+          activeCategorySpending.length > 0
+            ? activeCategorySpending.map((item) => item.amount)
             : [100],
         backgroundColor: [
           "#38bdf8",
@@ -516,7 +578,7 @@ const Dashboard = () => {
   const monthLabels = Array.from({ length: daysInMonthNum }, (_, i) => i + 1);
 
   // Calculate daily pace
-  const dailyPaceValue = stats.spentThisMonth / Math.max(currentDayNum, 1);
+  const dailyPaceValue = activeStats.spentThisMonth / Math.max(currentDayNum, 1);
 
   // Actual spending up to today
   const actualData = monthLabels.map(day => {
@@ -558,10 +620,10 @@ const Dashboard = () => {
     ]
   };
 
-  if (stats.monthlyBudget > 0) {
+  if (activeStats.monthlyBudget > 0) {
     projectionChartData.datasets.push({
       label: "Budget Limit",
-      data: monthLabels.map(() => stats.monthlyBudget),
+      data: monthLabels.map(() => activeStats.monthlyBudget),
       borderColor: "#ef4444",
       borderWidth: 1,
       fill: false,
@@ -657,26 +719,26 @@ const Dashboard = () => {
 
   const currentLevelInfo = calculateLevel(user?.totalXP || 0);
   const budgetStatusTone =
-    stats.monthlyBudget === 0
+    activeStats.monthlyBudget === 0
       ? "neutral"
-      : stats.budgetUsedPercentage >= 100
+      : activeStats.budgetUsedPercentage >= 100
         ? "danger"
-        : stats.budgetUsedPercentage >= 75
+        : activeStats.budgetUsedPercentage >= 75
           ? "warning"
           : "good";
   const budgetStatusCopy =
-    stats.monthlyBudget === 0
+    activeStats.monthlyBudget === 0
       ? "Set a budget to unlock pace tracking."
-      : stats.budgetUsedPercentage >= 100
+      : activeStats.budgetUsedPercentage >= 100
         ? "You have crossed your plan and need a reset."
-        : stats.budgetUsedPercentage >= 75
+        : activeStats.budgetUsedPercentage >= 75
           ? "You are entering the caution zone this month."
-          : "You are spending within a healthy range.";
+          : "Safe-to-spend room is healthy for the month.";
   const heroPulseItems = [
     {
       id: "income",
       label: "Income Landed",
-      value: formatCurrency(stats.incomeThisMonth),
+      value: formatCurrency(activeStats.incomeThisMonth),
       meta: "Captured this month",
       tone: "good",
     },
@@ -1154,20 +1216,20 @@ const Dashboard = () => {
               <div className="hero-spotlight-card">
                 <span className="spotlight-kicker">Live Budget Pulse</span>
                 <div className={`spotlight-badge ${budgetStatusTone}`}>
-                  {stats.monthlyBudget > 0
-                    ? `${Math.round(stats.budgetUsedPercentage)}% used`
+                  {activeStats.monthlyBudget > 0
+                    ? `${Math.round(activeStats.budgetUsedPercentage)}% used`
                     : "No budget yet"}
                 </div>
                 <p className="spotlight-copy">{budgetStatusCopy}</p>
                 <div className="spotlight-metrics">
                   <div>
-                    <span>Budget Left</span>
-                    <strong>{formatCurrency(Math.max(stats.budgetLeft, 0))}</strong>
+                    <span>Safe to Spend</span>
+                    <strong>{formatCurrency(Math.max(activeStats.budgetLeft, 0))}</strong>
                   </div>
                   <div>
                     <span>Total Budget</span>
                     <strong>
-                      {stats.monthlyBudget > 0 ? formatCurrency(stats.monthlyBudget) : "Not set"}
+                      {activeStats.monthlyBudget > 0 ? formatCurrency(activeStats.monthlyBudget) : "Not set"}
                     </strong>
                   </div>
                 </div>
@@ -1222,9 +1284,22 @@ const Dashboard = () => {
                   <FaStar className="ai-icon" />
                   <span>Start Tour</span>
                 </button>
+
+                <button
+                  className={`demo-toggle-btn ${showDemoData ? "active" : ""}`}
+                  onClick={() => setShowDemoData((current) => !current)}
+                  type="button"
+                  title="Toggle portfolio demo data"
+                  aria-pressed={showDemoData}
+                >
+                  <FaChartLine className="ai-icon" />
+                  <span>{showDemoData ? "Live Data" : "Demo Data"}</span>
+                </button>
               </div>
-              {lastUpdated && !refreshing && (
-                <p className="actions-refreshed">Refreshed {lastUpdated}</p>
+              {(lastUpdated || showDemoData) && !refreshing && (
+                <p className="actions-refreshed">
+                  {showDemoData ? "Portfolio demo mode" : `Refreshed ${lastUpdated}`}
+                </p>
               )}
             </div>
           </div>
@@ -1239,14 +1314,14 @@ const Dashboard = () => {
             </div>
 
             <div className="stat-content">
-              <h3>Total Balance</h3>
-              <p className="stat-value">{formatCurrency(stats.totalBalance)}</p>
+              <h3>Liquidity Overview</h3>
+              <p className="stat-value">{formatCurrency(activeStats.totalBalance)}</p>
 
               <div className="stat-trend">
                 <FaArrowUp className="trend-up" />
                 <span>
-                  Balance: {formatCurrency(stats.incomeThisMonth)} (income) −{" "}
-                  {formatCurrency(stats.spentThisMonth)} (spending)
+                  {formatCurrency(activeStats.incomeThisMonth)} income minus{" "}
+                  {formatCurrency(activeStats.spentThisMonth)} spending
                 </span>
               </div>
             </div>
@@ -1258,9 +1333,9 @@ const Dashboard = () => {
             </div>
 
             <div className="stat-content">
-              <h3>Monthly Spending</h3>
+              <h3>Spending Velocity</h3>
               <p className="stat-value">
-                {formatCurrency(stats.spentThisMonth)}
+                {formatCurrency(activeStats.spentThisMonth)}
               </p>
 
               <div className="progress-container">
@@ -1268,19 +1343,19 @@ const Dashboard = () => {
                   <div
                     className="progress-fill"
                     style={{
-                      width: `${Math.min(stats.budgetUsedPercentage, 100)}%`,
+                      width: `${Math.min(activeStats.budgetUsedPercentage, 100)}%`,
                     }}
                   ></div>
                 </div>
 
                 <span className="progress-text">
-                  {stats.monthlyBudget > 0
-                    ? `${formatCurrency(stats.budgetLeft)} left of ${formatCurrency(stats.monthlyBudget)}`
+                  {activeStats.monthlyBudget > 0
+                    ? `${formatCurrency(activeStats.budgetLeft)} safe to spend of ${formatCurrency(activeStats.monthlyBudget)}`
                     : "No budget set"}
                 </span>
               </div>
 
-              {stats.monthlyBudget === 0 && (
+              {activeStats.monthlyBudget === 0 && !showDemoData && (
                 <button
                   onClick={() => setShowSetBudgetModal(true)}
                   className="cta-button small"
@@ -1298,13 +1373,13 @@ const Dashboard = () => {
 
             <div className="stat-content">
               <h3>Total Savings</h3>
-              <p className="stat-value">{formatCurrency(stats.savings)}</p>
+              <p className="stat-value">{formatCurrency(activeStats.savings)}</p>
 
               <div className="stat-trend">
-                <span>{savingsGoals.length} active goals</span>
+                <span>{activeSavingsGoals.length} active goals</span>
               </div>
 
-              {stats.savings === 0 && (
+              {activeStats.savings === 0 && !showDemoData && (
                 <button
                   onClick={() => setShowSavingsGoalModal(true)}
                   className="cta-button small"
@@ -1323,7 +1398,7 @@ const Dashboard = () => {
             <div className="stat-content">
               <h3>Budget Status</h3>
               <p className="stat-value">
-                {Math.round(stats.budgetUsedPercentage)}% used
+                {Math.round(activeStats.budgetUsedPercentage)}% used
               </p>
 
               <div className="progress-container">
@@ -1331,19 +1406,19 @@ const Dashboard = () => {
                   <div
                     className="progress-fill"
                     style={{
-                      width: `${Math.min(stats.budgetUsedPercentage, 100)}%`,
+                      width: `${Math.min(activeStats.budgetUsedPercentage, 100)}%`,
                     }}
                   ></div>
                 </div>
 
                 <span className="progress-text">
-                  {stats.monthlyBudget > 0
-                    ? `${formatCurrency(stats.monthlyBudget)} total`
+                  {activeStats.monthlyBudget > 0
+                    ? `${formatCurrency(activeStats.monthlyBudget)} total`
                     : "No budget set"}
                 </span>
               </div>
 
-              {stats.monthlyBudget === 0 && (
+              {activeStats.monthlyBudget === 0 && !showDemoData && (
                 <button
                   onClick={() => setShowSetBudgetModal(true)}
                   className="cta-button small"
@@ -1392,7 +1467,7 @@ const Dashboard = () => {
           <div className="chart-container chart-feature">
             <div className="chart-header">
               <h3>Monthly Pacing & Projection</h3>
-              <span className="chart-subtitle">Where you'll end up this month</span>
+              <span className="chart-subtitle">Daily pace versus budget limit</span>
             </div>
 
             <div className="chart-wrapper">
@@ -1403,12 +1478,23 @@ const Dashboard = () => {
           <div className="chart-container">
             <div className="chart-header">
               <h3>Weekly Expenses</h3>
-              <span className="chart-subtitle">Last 7 days</span>
+              <div className="chart-header-actions">
+                {!hasLiveWeeklyExpenseData && !showDemoData && (
+                  <button
+                    type="button"
+                    className="sample-data-toggle"
+                    onClick={() => setShowDemoData(true)}
+                  >
+                    Show sample data
+                  </button>
+                )}
+                <span className="chart-subtitle">Last 7 days</span>
+              </div>
             </div>
 
             <div className="chart-wrapper">
-              {weeklyExpenses.length > 0 &&
-                weeklyExpenses.some((exp) => exp.amount > 0) ? (
+              {activeWeeklyExpenses.length > 0 &&
+                activeWeeklyExpenses.some((exp) => exp.amount > 0) ? (
                 <Line data={weeklyExpensesChart} options={chartOptions} />
               ) : (
                 <div className="chart-empty-state">
@@ -1428,12 +1514,23 @@ const Dashboard = () => {
           <div className="chart-container">
             <div className="chart-header">
               <h3>Spending by Category</h3>
-              <span className="chart-subtitle">This month</span>
+              <div className="chart-header-actions">
+                {!hasLiveCategorySpendingData && !showDemoData && (
+                  <button
+                    type="button"
+                    className="sample-data-toggle"
+                    onClick={() => setShowDemoData(true)}
+                  >
+                    Show sample data
+                  </button>
+                )}
+                <span className="chart-subtitle">This month</span>
+              </div>
             </div>
 
             <div className="chart-wrapper">
-              {categorySpending.length > 0 &&
-                categorySpending.some((cat) => cat.amount > 0) ? (
+              {activeCategorySpending.length > 0 &&
+                activeCategorySpending.some((cat) => cat.amount > 0) ? (
                 <Pie data={spendingByCategoryChart} options={chartOptions} />
               ) : (
                 <div className="chart-empty-state">
@@ -1458,7 +1555,7 @@ const Dashboard = () => {
               <span className="section-eyebrow">Latest Activity</span>
               <h3>Recent Transactions</h3>
               <p className="section-subtitle">
-                {recentTransactions.length} transactions this month
+                {activeRecentTransactions.length} transactions this month
               </p>
             </div>
 
@@ -1466,13 +1563,13 @@ const Dashboard = () => {
               onClick={() => navigate("/transactions")}
               className="view-all-btn"
             >
-              View All ({recentTransactions.length})
+              View All ({activeRecentTransactions.length})
             </button>
           </div>
 
-          {recentTransactions.length > 0 ? (
+          {activeRecentTransactions.length > 0 ? (
             <div className="transactions-grid">
-              {recentTransactions.slice(0, 6).map((transaction, index) => (
+              {activeRecentTransactions.slice(0, 6).map((transaction, index) => (
                 <div key={index} className="transaction-card">
                   <div className="transaction-icon">
                     <div className={`icon-bg ${transaction.type}`}>
@@ -1536,7 +1633,7 @@ const Dashboard = () => {
         </div>
 
         {/* Savings Goals Summary */}
-        {savingsGoals.length > 0 ? (
+        {activeSavingsGoals.length > 0 ? (
           <div className="savings-summary">
             <div className="section-header">
               <div>
@@ -1547,7 +1644,14 @@ const Dashboard = () => {
             </div>
 
             <div className="goals-grid">
-              {savingsGoals.slice(0, 3).map((goal, index) => (
+              {activeSavingsGoals.slice(0, 3).map((goal, index) => {
+                const progress = Math.min(goal.progress || 0, 100);
+                const targetTime = new Date(goal.targetDate).getTime();
+                const daysRemaining = Number.isNaN(targetTime)
+                  ? null
+                  : Math.max(0, Math.ceil((targetTime - Date.now()) / 86400000));
+
+                return (
                 <div key={index} className="goal-card">
                   <div className="goal-header">
                     <h4>{goal.name}</h4>
@@ -1555,11 +1659,21 @@ const Dashboard = () => {
                   </div>
 
                   <div className="goal-progress">
+                    <div
+                      className="goal-progress-ring"
+                      style={{
+                        "--goal-progress": `${progress * 3.6}deg`,
+                      }}
+                      aria-label={`${Math.round(progress)} percent saved`}
+                    >
+                      <span>{Math.round(progress)}%</span>
+                    </div>
+
                     <div className="progress-bar">
                       <div
                         className="progress-fill green"
                         style={{
-                          width: `${Math.min(goal.progress || 0, 100)}%`,
+                          width: `${progress}%`,
                         }}
                       ></div>
                     </div>
@@ -1574,16 +1688,25 @@ const Dashboard = () => {
                     </div>
 
                     <div className="goal-date">
-                      Target:{" "}
-                      {new Date(goal.targetDate).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      <span>
+                        Target:{" "}
+                        {new Date(goal.targetDate).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                      {daysRemaining !== null && (
+                        <span className="goal-countdown">
+                          <FaClock />
+                          {daysRemaining} days left
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         ) : null}
@@ -1631,3 +1754,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
