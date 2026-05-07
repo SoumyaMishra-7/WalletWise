@@ -5,6 +5,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import './Auth.css';
+import { getApiOrigin } from '../api/client';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -158,7 +159,7 @@ const Login = () => {
             type="button"
             className="demo-btn google-btn"
             onClick={() => {
-              const apiBase = process.env.REACT_APP_API_URL || 'https://walletwise-3.onrender.com';
+              const apiBase = getApiOrigin();
               window.sessionStorage.removeItem('walletwise-show-tour-once');
               window.location.href = `${apiBase}/auth/google`;
             }}

@@ -30,9 +30,16 @@ const FRONTEND_URLS = (process.env.FRONTEND_URLS || '')
     .map((value) => value.trim().replace(/\/+$/, ''))
     .filter(Boolean);
 
+const defaultDevOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173'
+];
+
 const allowedOrigins = Array.from(
     new Set(
-        [FRONTEND_URL, ...FRONTEND_URLS]
+        [FRONTEND_URL, ...FRONTEND_URLS, ...defaultDevOrigins]
             .filter(Boolean)
             .flatMap((origin) => {
                 const normalized = origin.replace(/\/+$/, '');

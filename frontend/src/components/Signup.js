@@ -17,6 +17,7 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import "./Auth.css";
+import { getApiOrigin } from "../api/client";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -164,8 +165,9 @@ const Signup = () => {
         }
       } else if (error.request) {
         console.error("No response from server. Is backend running?");
+        const apiOrigin = getApiOrigin();
         errorMessage =
-          "Cannot connect to server. Please make sure the backend is running on http://localhost:5000";
+          `Cannot connect to server. Please make sure the backend is reachable at ${apiOrigin}`;
       } else {
         console.error("Error:", error.message);
         if (error.message.includes("Network Error")) {
@@ -208,8 +210,7 @@ const Signup = () => {
           type="button"
           className="demo-btn google-btn"
           onClick={() => {
-            const apiBase =
-              process.env.REACT_APP_API_URL || "https://walletwise-3.onrender.com";
+            const apiBase = getApiOrigin();
             window.sessionStorage.setItem("walletwise-show-tour-once", "true");
             window.location.href = `${apiBase}/auth/google`;
           }}
