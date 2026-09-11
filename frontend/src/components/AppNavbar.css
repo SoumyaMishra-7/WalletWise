@@ -334,7 +334,9 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
   z-index: 1001;
   animation: slideDown 0.2s ease;
-  overflow: hidden;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 @keyframes slideDown {
