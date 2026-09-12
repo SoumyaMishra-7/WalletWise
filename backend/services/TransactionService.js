@@ -221,8 +221,11 @@ class TransactionService {
             ];
         }
 
-        const pageNum = parseInt(page) || 1;
-        const limitNum = parseInt(limit) || 10;
+        const parsedPage = parseInt(page, 10);
+        const parsedLimit = parseInt(limit, 10);
+
+        const pageNum = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+        const limitNum = Number.isInteger(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 10;
         const skip = (pageNum - 1) * limitNum;
 
         let sortOption = { date: -1 };
@@ -232,13 +235,14 @@ class TransactionService {
 
         const transactions = await this.txRepo.find(query, { sort: sortOption, skip, limit: limitNum });
         const total = await this.txRepo.countDocuments(query);
+        const pages = limitNum > 0 ? Math.ceil(total / limitNum) : 1;
 
         return {
             transactions,
             pagination: {
                 total,
                 page: pageNum,
-                pages: Math.ceil(total / limitNum),
+                pages,
                 limit: limitNum
             }
         };

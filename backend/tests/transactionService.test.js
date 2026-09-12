@@ -183,5 +183,39 @@ describe('TransactionService (with mocks — no database)', () => {
             expect(result.transactions.length).toBe(1);
             expect(result.transactions[0].type).toBe('expense');
         });
+
+        it('should safely fallback to default page and limit when parameters are non-numeric (#359)', async () => {
+            await service.addTransaction(testUser._id, { type: 'expense', amount: 15, category: 'food', forceDuplicate: true });
+
+            const result = await service.getAllTransactions(testUser._id, {
+                page: 'invalid',
+                limit: 'notanumber'
+            });
+
+            expect(result.pagination.page).toBe(1);
+            expect(result.pagination.limit).toBe(10);
+            expect(result.transactions.length).toBeGreaterThanOrEqual(1);
+        });
+
+        it('should safely fallback to default page and limit when parameters are negative or zero', async () => {
+            await service.addTransaction(testUser._id, { type: 'expense', amount: 25, category: 'food', forceDuplicate: true });
+
+            const result = await service.getAllTransactions(testUser._id, {
+                page: -5,
+                limit: 0
+            });
+
+            expect(result.pagination.page).toBe(1);
+            expect(result.pagination.limit).toBe(10);
+        });
+
+        it('should clamp limit to maximum 100 to prevent DoS', async () => {
+            const result = await service.getAllTransactions(testUser._id, {
+                page: 1,
+                limit: 500
+            });
+
+            expect(result.pagination.limit).toBe(100);
+        });
     });
 });

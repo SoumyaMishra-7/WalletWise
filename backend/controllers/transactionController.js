@@ -264,8 +264,11 @@ const getAllTransactions = catchAsync(async (req, res) => {
     query.$or = [{ description: regex }, { category: regex }];
   }
 
-  const pageNum = parseInt(page);
-  const limitNum = parseInt(limit);
+  const parsedPage = parseInt(page, 10);
+  const parsedLimit = parseInt(limit, 10);
+
+  const pageNum = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const limitNum = Number.isInteger(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 10;
   const skip = (pageNum - 1) * limitNum;
 
   let sortOptions = { date: -1 };
@@ -279,6 +282,7 @@ const getAllTransactions = catchAsync(async (req, res) => {
     .limit(limitNum);
 
   const total = await Transaction.countDocuments(query);
+  const pages = limitNum > 0 ? Math.ceil(total / limitNum) : 1;
 
   res.json({
     success: true,
@@ -286,7 +290,7 @@ const getAllTransactions = catchAsync(async (req, res) => {
     pagination: {
       total,
       page: pageNum,
-      pages: Math.ceil(total / limitNum),
+      pages,
       limit: limitNum
     }
   });
