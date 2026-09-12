@@ -264,8 +264,8 @@ const getAllTransactions = catchAsync(async (req, res) => {
     query.$or = [{ description: regex }, { category: regex }];
   }
 
-  const parsedPage = parseInt(page, 10);
-  const parsedLimit = parseInt(limit, 10);
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
 
   const pageNum = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
   const limitNum = Number.isInteger(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 10;
