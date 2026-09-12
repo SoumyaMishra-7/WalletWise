@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+﻿import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -765,7 +765,7 @@ const Homepage = () => {
         </section>
       </main>
 
-      <footer className="ww-footer">
+            <footer className="ww-footer">
         <div className="ww-container">
           <div className="ww-footer-grid">
 
@@ -774,7 +774,6 @@ const Homepage = () => {
                 <Wallet size={20} />
                 <span>WalletWise</span>
               </div>
-
               <p className="ww-footer-text">
                 Smart finance tracking made simple. Manage expenses, track goals,
                 and grow financially with confidence.
@@ -789,24 +788,38 @@ const Homepage = () => {
               <a href="#contact">Contact</a>
             </div>
 
+            <div className="ww-footer-links">
+              <h4>Product</h4>
+              <a href="#dashboard">Dashboard</a>
+              <a href="#budget">Budgeting</a>
+              <a href="#analytics">Analytics</a>
+              <a href="#vault">Privacy Vault</a>
+            </div>
+
+            <div className="ww-footer-links">
+              <h4>Legal & Support</h4>
+              <a href="#privacy">Privacy Policy</a>
+              <a href="#terms">Terms of Service</a>
+              <a href="#faq">FAQ & Help</a>
+            </div>
+
             <div className="ww-footer-social">
               <h4>Follow Us</h4>
               <div className="social-icons">
-                <a href="https://github.com/SoumyaMishra-7/WalletWise"><i className="fab fa-github"></i></a>
-                <a href="https://www.linkedin.com/in/soumya-mishra-0828a529a/"><i className="fab fa-linkedin"></i></a>
-                <a href="2400031768@kluniversity.in"><i className="fa-solid fa-envelope"></i></a>
+                <a href="https://github.com/SoumyaMishra-7/WalletWise" target="_blank" rel="noopener noreferrer"><i className="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/soumya-mishra-0828a529a/" target="_blank" rel="noopener noreferrer"><i className="fab fa-linkedin"></i></a>
+                <a href="mailto:2400031768@kluniversity.in"><i className="fa-solid fa-envelope"></i></a>
               </div>
             </div>
 
           </div>
 
           <div className="ww-footer-bottom">
-            <p>Made with ❤️ in India</p>
-            <p>© 2026 WalletWise. All rights reserved.</p>
+            <p>Made with passion in India &bull; Empowering Smart Student Finances</p>
+            <p>&copy; 2026 WalletWise. All rights reserved.</p>
           </div>
         </div>
       </footer>
-    </div>
   );
 };
 
