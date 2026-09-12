@@ -252,5 +252,69 @@ describe('Transaction Controller', () => {
             expect(txList.length).toBe(2);
             expect(txList[0].amount).toBe(100);
         });
+
+        it('should safely fall back to default pagination for invalid non-numeric page and limit', async () => {
+            await Transaction.create({
+                userId: user._id,
+                type: 'expense',
+                amount: 30,
+                category: 'food'
+            });
+
+            const req = mockRequest({}, { page: 'abc', limit: 'xyz' }, {}, user._id);
+            const res = mockResponse();
+            await getAllTransactions(req, res);
+
+            const data = res.json.mock.results[0].value;
+            expect(data.success).toBe(true);
+            expect(data.pagination.page).toBe(1);
+            expect(data.pagination.limit).toBe(10);
+            expect(data.pagination.total).toBe(1);
+            expect(data.transactions.length).toBe(1);
+        });
+
+        it('should safely fall back to default pagination for zero or negative page and limit', async () => {
+            await Transaction.create({
+                userId: user._id,
+                type: 'income',
+                amount: 75,
+                category: 'freelance'
+            });
+
+            const req = mockRequest({}, { page: '-1', limit: '0' }, {}, user._id);
+            const res = mockResponse();
+            await getAllTransactions(req, res);
+
+            const data = res.json.mock.results[0].value;
+            expect(data.success).toBe(true);
+            expect(data.pagination.page).toBe(1);
+            expect(data.pagination.limit).toBe(10);
+        });
+
+        it('should preserve valid positive numeric page and limit', async () => {
+            const txDocs = [];
+            for (let i = 1; i <= 5; i++) {
+                txDocs.push({
+                    userId: user._id,
+                    type: 'expense',
+                    amount: i * 10,
+                    category: 'bills',
+                    date: new Date(`2024-01-0${i}`)
+                });
+            }
+            await Transaction.insertMany(txDocs);
+
+            const req = mockRequest({}, { page: '2', limit: '2' }, {}, user._id);
+            const res = mockResponse();
+            await getAllTransactions(req, res);
+
+            const data = res.json.mock.results[0].value;
+            expect(data.success).toBe(true);
+            expect(data.pagination.page).toBe(2);
+            expect(data.pagination.limit).toBe(2);
+            expect(data.pagination.total).toBe(5);
+            expect(data.pagination.pages).toBe(3);
+            expect(data.transactions.length).toBe(2);
+        });
     });
 });
