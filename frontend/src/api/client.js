@@ -1,10 +1,14 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
 const AUTH_TOKEN_KEY = 'walletwise_access_token';
 
-export const getApiOrigin = () =>
-  (process.env.REACT_APP_API_URL || 'https://walletwise-3.onrender.com').replace(/\/+$/, '');
+export const getApiOrigin = () => {
+  const envUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) 
+    || (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL)
+    || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://walletwise-3.onrender.com');
+  return envUrl.replace(/\/+$/, '');
+};
 
 const sanitizedBaseUrl = getApiOrigin();
 const API_BASE_URL = sanitizedBaseUrl.endsWith('/api')
