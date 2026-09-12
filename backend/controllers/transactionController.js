@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Transaction = require('../models/Transactions');
 const User = require('../models/User');
+const Wallet = require('../models/Wallet');
 
 const STRICT_MODE = process.env.STRICT_WALLET_BALANCE === "true";
 const { z } = require('zod');
@@ -71,6 +72,27 @@ const addTransaction = catchAsync(async (req, res, next) => {
     encryptedData
   } = parsed.data;
 
+  if (walletId) {
+    if (!isValidObjectId(walletId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid wallet ID format'
+      });
+    }
+
+    const wallet = await Wallet.findOne({
+      _id: walletId,
+      'members.user': userId
+    });
+
+    if (!wallet) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied to this wallet'
+      });
+    }
+  }
+
   // Duplicate Detection (24 hour window)
   const duplicateWindow = 24 * 60 * 60 * 1000;
   const sinceDate = new Date(Date.now() - duplicateWindow);
@@ -127,7 +149,6 @@ const addTransaction = catchAsync(async (req, res, next) => {
 
     if (walletId) {
       // Update shared wallet balance
-      const Wallet = require('../models/Wallet');
       await Wallet.findByIdAndUpdate(
         walletId,
         { $inc: { balance: balanceChange } },
@@ -190,6 +211,25 @@ const getAllTransactions = catchAsync(async (req, res) => {
 
   const query = {};
   if (walletId) {
+    if (!isValidObjectId(walletId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid wallet ID format'
+      });
+    }
+
+    const wallet = await Wallet.findOne({
+      _id: walletId,
+      'members.user': userId
+    });
+
+    if (!wallet) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied to this wallet'
+      });
+    }
+
     query.walletId = walletId;
   } else {
     query.userId = userId;
@@ -307,6 +347,17 @@ const updateTransaction = catchAsync(async (req, res) => {
     throw new AppError('Transaction not found', 404);
   }
 
+  if (oldTransaction.walletId) {
+    const wallet = await Wallet.findOne({
+      _id: oldTransaction.walletId,
+      'members.user': userId
+    });
+
+    if (!wallet) {
+      throw new AppError('Access denied to this wallet', 403);
+    }
+  }
+
   const parsed = transactionSchema.partial().safeParse(req.body);
 
   if (!parsed.success) {
@@ -314,6 +365,30 @@ const updateTransaction = catchAsync(async (req, res) => {
   }
 
   const updateData = parsed.data;
+
+  if (updateData.walletId !== undefined) {
+    const oldWalletIdStr = oldTransaction.walletId ? oldTransaction.walletId.toString() : null;
+    const newWalletIdStr = updateData.walletId ? updateData.walletId.toString() : null;
+
+    if (newWalletIdStr !== oldWalletIdStr) {
+      if (updateData.walletId) {
+        if (!isValidObjectId(updateData.walletId)) {
+          throw new AppError('Invalid wallet ID format', 400);
+        }
+
+        const targetWallet = await Wallet.findOne({
+          _id: updateData.walletId,
+          'members.user': userId
+        });
+
+        if (!targetWallet) {
+          throw new AppError('Access denied to this wallet', 403);
+        }
+      }
+
+      throw new AppError('Changing wallet assignment of an existing transaction is not allowed', 400);
+    }
+  }
 
   Object.assign(oldTransaction, updateData);
   await oldTransaction.save();
@@ -341,11 +416,24 @@ const deleteTransaction = catchAsync(async (req, res) => {
     throw new AppError('Invalid transaction ID format', 400);
   }
 
-  const transaction = await Transaction.findOneAndDelete({ _id: id, userId });
+  const transaction = await Transaction.findOne({ _id: id, userId });
 
   if (!transaction) {
     throw new AppError('Transaction not found', 404);
   }
+
+  if (transaction.walletId) {
+    const wallet = await Wallet.findOne({
+      _id: transaction.walletId,
+      'members.user': userId
+    });
+
+    if (!wallet) {
+      throw new AppError('Access denied to this wallet', 403);
+    }
+  }
+
+  await transaction.deleteOne();
 
   const balanceChange =
     transaction.type === 'income'
@@ -353,7 +441,6 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
-    const Wallet = require('../models/Wallet');
     await Wallet.findByIdAndUpdate(transaction.walletId, {
       $inc: { balance: balanceChange }
     });
