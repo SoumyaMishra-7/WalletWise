@@ -1184,10 +1184,7 @@ const Dashboard = () => {
               <h1 className="dashboard-title">Dashboard</h1>
               <div className="greeting-section">
                 <h2 className="greeting-text">
-                  Good {timeOfDay},{" "}
-                  <span className="user-name">
-                    {user?.fullName || user?.name}!
-                  </span>
+                  Good {timeOfDay}, <span className="user-name">{user?.fullName || user?.name}</span>!
                 </h2>
 
                 <p className="hero-description">
