@@ -682,3 +682,18 @@ body.theme-dark .form-group input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--text-main) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+/* Issue #376: Visual feedback for invalid form fields */
+.input-error {
+  border-color: #e53e3e !important;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15) !important;
+}
+
+.inline-error-message {
+  display: block;
+  color: #e53e3e;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  margin-left: 2px;
+  font-weight: 500;
+  text-align: left;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
@@ -31,6 +31,8 @@ const Signup = () => {
     year: "1st",
   });
 
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -50,64 +52,103 @@ const Signup = () => {
     year,
   } = formData;
 
+  const validateField = (name, value, allValues = formData) => {
+    let error = "";
+    switch (name) {
+      case "studentId":
+        if (!value.trim()) error = "Student ID is required";
+        break;
+      case "fullName":
+        if (!value.trim()) error = "Full name is required";
+        break;
+      case "email":
+        if (!value.trim()) {
+          error = "Email is required";
+        } else if (!/\S+@\S+\.\S+/.test(value)) {
+          error = "Please enter a valid email address";
+        }
+        break;
+      case "password":
+        if (!value) {
+          error = "Password is required";
+        } else if (value.length < 8) {
+          error = "Password must be at least 8 characters";
+        } else if (!/[A-Z]/.test(value)) {
+          error = "Must contain at least one uppercase letter";
+        } else if (!/[a-z]/.test(value)) {
+          error = "Must contain at least one lowercase letter";
+        } else if (!/[0-9]/.test(value)) {
+          error = "Must contain at least one number";
+        } else if (!/[^a-zA-Z0-9]/.test(value)) {
+          error = "Must contain at least one special character";
+        }
+        break;
+      case "confirmPassword":
+        if (!value) {
+          error = "Please confirm your password";
+        } else if (value !== allValues.password) {
+          error = "Passwords do not match";
+        }
+        break;
+      case "phoneNumber":
+        if (value && value.length < 10) {
+          error = "Phone number must be 10 digits";
+        }
+        break;
+      case "department":
+        if (!value.trim()) error = "Department is required";
+        break;
+      default:
+        break;
+    }
+    return error;
+  };
+
   const handleChange = (e) => {
-    setFormData((prev) => ({
+    const { name, value } = e.target;
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
+
+    if (touched[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateField(name, value, updatedData),
+      }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrors((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: validateField(name, value),
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validations
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const err = validateField(key, formData[key]);
+      if (err) newErrors[key] = err;
+    });
 
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
+    setErrors(newErrors);
+    setTouched({
+      studentId: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+      fullName: true,
+      phoneNumber: true,
+      department: true,
+      year: true,
+    });
 
-    if (!/[A-Z]/.test(password)) {
-      toast.error("Password must contain at least one uppercase letter");
-      return;
-    }
-
-    if (!/[a-z]/.test(password)) {
-      toast.error("Password must contain at least one lowercase letter");
-      return;
-    }
-
-    if (!/[0-9]/.test(password)) {
-      toast.error("Password must contain at least one number");
-      return;
-    }
-
-    if (!/[^a-zA-Z0-9]/.test(password)) {
-      toast.error("Password must contain at least one special character");
-      return;
-    }
-
-    if (!studentId.trim()) {
-      toast.error("Student ID is required");
-      return;
-    }
-
-    if (!fullName.trim()) {
-      toast.error("Full name is required");
-      return;
-    }
-
-    if (!email.trim()) {
-      toast.error("Email is required");
-      return;
-    }
-
-    if (!department.trim()) {
-      toast.error("Department is required");
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Please fix the errors in the form before submitting.");
       return;
     }
 
@@ -140,42 +181,22 @@ const Signup = () => {
       }
     } catch (error) {
       console.error("Registration error:", error);
-
       let errorMessage = "Registration failed. Please try again.";
 
       if (error.response) {
         const { status, data } = error.response;
-        console.error(`Server error ${status}:`, data);
-
         if (status === 400) {
-          // Handle validation errors
-          if (data.errors && data.errors.length > 0) {
-            errorMessage =
-              data.errors[0].msg || "Please check your input fields";
-          } else {
-            errorMessage = data.message || "Please check your input fields";
-          }
+          errorMessage = data.errors?.[0]?.msg || data.message || "Please check your input fields";
         } else if (status === 409 || status === 422) {
-          errorMessage =
-            data.message || "User already exists with this email or student ID";
+          errorMessage = data.message || "User already exists with this email or student ID";
         } else if (status === 500) {
           errorMessage = "Server error. Please try again later.";
         } else if (status === 429) {
           errorMessage = data.message || "Too many attempts. Please try again in 15 minutes.";
         }
       } else if (error.request) {
-        console.error("No response from server. Is backend running?");
-        const apiOrigin = getApiOrigin();
-        errorMessage =
-          `Cannot connect to server. Please make sure the backend is reachable at ${apiOrigin}`;
-      } else {
-        console.error("Error:", error.message);
-        if (error.message.includes("Network Error")) {
-          errorMessage =
-            "Network error. Check your connection and CORS settings.";
-        }
+        errorMessage = `Cannot connect to server.`;
       }
-
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -223,7 +244,7 @@ const Signup = () => {
           <span>OR</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="studentId">
@@ -237,10 +258,14 @@ const Signup = () => {
                 name="studentId"
                 value={studentId}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Your student ID"
-                required
+                className={touched.studentId && errors.studentId ? "input-error" : ""}
                 disabled={loading}
               />
+              {touched.studentId && errors.studentId && (
+                <span className="inline-error-message">{errors.studentId}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -255,10 +280,14 @@ const Signup = () => {
                 name="fullName"
                 value={fullName}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Your full name"
-                required
+                className={touched.fullName && errors.fullName ? "input-error" : ""}
                 disabled={loading}
               />
+              {touched.fullName && errors.fullName && (
+                <span className="inline-error-message">{errors.fullName}</span>
+              )}
             </div>
           </div>
 
@@ -274,10 +303,14 @@ const Signup = () => {
               name="email"
               value={email}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Your email address"
-              required
+              className={touched.email && errors.email ? "input-error" : ""}
               disabled={loading}
             />
+            {touched.email && errors.email && (
+              <span className="inline-error-message">{errors.email}</span>
+            )}
           </div>
 
           <div className="form-row">
@@ -294,8 +327,9 @@ const Signup = () => {
                   name="password"
                   value={password}
                   onChange={handleChange}
-                  placeholder="Min 6 characters"
-                  required
+                  onBlur={handleBlur}
+                  placeholder="Min 8 characters"
+                  className={touched.password && errors.password ? "input-error" : ""}
                   disabled={loading}
                 />
 
@@ -309,6 +343,9 @@ const Signup = () => {
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
+              {touched.password && errors.password && (
+                <span className="inline-error-message">{errors.password}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -324,8 +361,9 @@ const Signup = () => {
                   name="confirmPassword"
                   value={confirmPassword}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Confirm password"
-                  required
+                  className={touched.confirmPassword && errors.confirmPassword ? "input-error" : ""}
                   disabled={loading}
                 />
 
@@ -339,6 +377,9 @@ const Signup = () => {
                   {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
+              {touched.confirmPassword && errors.confirmPassword && (
+                <span className="inline-error-message">{errors.confirmPassword}</span>
+              )}
             </div>
           </div>
 
@@ -355,14 +396,19 @@ const Signup = () => {
                 name="phoneNumber"
                 value={phoneNumber}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 onInput={(e) => {
                   e.target.value = e.target.value.replace(/[^0-9]/g, "");
                 }}
                 placeholder="10-digit phone number"
                 pattern="[0-9]*"
                 maxLength="10"
+                className={touched.phoneNumber && errors.phoneNumber ? "input-error" : ""}
                 disabled={loading}
               />
+              {touched.phoneNumber && errors.phoneNumber && (
+                <span className="inline-error-message">{errors.phoneNumber}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -376,7 +422,6 @@ const Signup = () => {
                 name="year"
                 value={year}
                 onChange={handleChange}
-                required
                 disabled={loading}
               >
                 {years.map((y) => (
@@ -400,10 +445,14 @@ const Signup = () => {
               name="department"
               value={department}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="e.g., Computer Science"
-              required
+              className={touched.department && errors.department ? "input-error" : ""}
               disabled={loading}
             />
+            {touched.department && errors.department && (
+              <span className="inline-error-message">{errors.department}</span>
+            )}
           </div>
 
           <div className="terms-agreement">
