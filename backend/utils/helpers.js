@@ -1,14 +1,20 @@
 /**
- * Escapes all special RegExp characters in a user-provided string,
- * preventing Regex Injection (crash on invalid patterns) and ReDoS attacks.
+ * Adds n months to a date, clamping the day-of-month to the last valid day
+ * of the target month (e.g., Jan 31 + 1 month = Feb 28/29, not Mar 3).
  *
- * Usage:
- *   const safeSearch = escapeRegex(userInput);
- *   const regex = new RegExp(safeSearch, 'i');
+ * Prevents the JavaScript setMonth() overflow bug where a recurring date on
+ * the 29th/30th/31st silently drifts forward and can skip whole months.
  *
- * @param {string} string - The raw user input to escape
- * @returns {string} The escaped string safe for use in new RegExp()
+ * @param {Date} date - The base date
+ * @param {number} [n=1] - Number of months to add
+ * @returns {Date} A new Date; the original is not modified
  */
-const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const addMonthsClamped = (date, n = 1) => {
+  const d = new Date(date);
+  const day = d.getDate();
+  d.setMonth(d.getMonth() + n);
+  if (d.getDate() < day) d.setDate(0); // overflowed, clamp to last day of previous month
+  return d;
+};
 
-module.exports = { escapeRegex };
+module.exports = { escapeRegex, addMonthsClamped };
