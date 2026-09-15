@@ -666,7 +666,7 @@ const googleCallback = asyncHandler(async (req, res) => {
       message: 'Google OAuth callback misconfigured: FRONTEND_URL is required in production.'
     });
   }
-  const redirectUrl = `${frontendBaseUrl}/dashboard?access_token=${encodeURIComponent(accessToken)}`;
+  const redirectUrl = `${frontendBaseUrl}/dashboard`;
   return res.redirect(redirectUrl);
 });
 
