@@ -413,21 +413,34 @@ const skipNextOccurrence = catchAsync(async (req, res) => {
 // ================= UNDO TRANSACTION =================
 const undoTransaction = catchAsync(async (req, res) => {
   const userId = req.userId;
+  const { id } = req.params;
   const { deletedTransaction } = req.body;
+
+  if (!isValidObjectId(id)) {
+    throw new AppError('Invalid transaction ID format', 400);
+  }
 
   if (!deletedTransaction) {
     throw new AppError('No transaction data provided for undo', 400);
   }
 
+  const parsed = transactionSchema.safeParse(deletedTransaction);
+  if (!parsed.success) {
+    throw new AppError(parsed.error.errors[0]?.message || 'Invalid transaction data for undo', 400);
+  }
+
+  const data = parsed.data;
   const restored = new Transaction({
     userId,
-    type: deletedTransaction.type,
-    amount: deletedTransaction.amount,
-    category: deletedTransaction.category,
-    description: deletedTransaction.description,
-    paymentMethod: deletedTransaction.paymentMethod,
-    mood: deletedTransaction.mood,
-    date: deletedTransaction.date || new Date()
+    type: data.type,
+    amount: data.amount,
+    category: data.category,
+    description: data.description,
+    paymentMethod: data.paymentMethod,
+    mood: data.mood,
+    date: data.date || new Date(),
+    isRecurring: false,
+    walletId: data.walletId || undefined
   });
 
   await restored.save();
@@ -437,9 +450,16 @@ const undoTransaction = catchAsync(async (req, res) => {
       ? restored.amount
       : -restored.amount;
 
-  await User.findByIdAndUpdate(userId, {
-    $inc: { walletBalance: balanceChange }
-  });
+  if (restored.walletId) {
+    const Wallet = require('../models/Wallet');
+    await Wallet.findByIdAndUpdate(restored.walletId, {
+      $inc: { balance: balanceChange }
+    });
+  } else {
+    await User.findByIdAndUpdate(userId, {
+      $inc: { walletBalance: balanceChange }
+    });
+  }
 
   await logTransactionActivity({
     userId,
