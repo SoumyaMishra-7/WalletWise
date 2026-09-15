@@ -91,6 +91,7 @@ api.interceptors.response.use(
     // 401: try token refresh once, block other requests during refresh, force logout if fail
     if (status === 401 && !originalRequest?._retry && !isSilentRoute(originalRequest?.url)) {
       if (isRefreshing) {
+        originalRequest._retry = true;
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then(() => {
@@ -105,6 +106,7 @@ api.interceptors.response.use(
 
       try {
         await refreshClient.post('/auth/refresh', {});
+        processQueue(null);
         return api(originalRequest);
       } catch (err) {
         processQueue(err);
