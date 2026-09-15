@@ -52,13 +52,15 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
             <div className="pagination-numbers">
                 {getPageNumbers().map((page, index) => (
-                    <React.Fragment key={index}>
+                    <React.Fragment key={page === '...' ? `ellipsis-${index}` : `page-${page}`}>
                         {page === '...' ? (
-                            <span className="pagination-dots">...</span>
+                            <span className="pagination-dots" aria-hidden="true">...</span>
                         ) : (
                             <button
                                 className={`pagination-number ${currentPage === page ? 'active' : ''}`}
                                 onClick={() => onPageChange(page)}
+                                aria-label={`Go to page ${page}`}
+                                aria-current={currentPage === page ? 'page' : undefined}
                             >
                                 {page}
                             </button>
