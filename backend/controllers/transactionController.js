@@ -315,8 +315,27 @@ const updateTransaction = catchAsync(async (req, res) => {
 
   const updateData = parsed.data;
 
+  const oldEffect = oldTransaction.type === 'income' ? oldTransaction.amount : -oldTransaction.amount;
+  const newType = updateData.type ?? oldTransaction.type;
+  const newAmount = updateData.amount ?? oldTransaction.amount;
+  const newEffect = newType === 'income' ? newAmount : -newAmount;
+  const delta = newEffect - oldEffect;
+
   Object.assign(oldTransaction, updateData);
   await oldTransaction.save();
+
+  if (delta !== 0) {
+    if (oldTransaction.walletId) {
+      const Wallet = require('../models/Wallet');
+      await Wallet.findByIdAndUpdate(oldTransaction.walletId, {
+        $inc: { balance: delta }
+      });
+    } else {
+      await User.findByIdAndUpdate(userId, {
+        $inc: { walletBalance: delta }
+      });
+    }
+  }
 
   await logTransactionActivity({
     userId,
