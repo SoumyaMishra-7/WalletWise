@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { FaLock, FaEye, FaEyeSlash, FaArrowLeft, FaSun, FaMoon } from 'react-icons/fa';
+import { FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import 'react-toastify/dist/ReactToastify.css';
 import './Auth.css';
 
 const AUTH_TOKEN_KEY = 'walletwise_access_token';
 
 const ResetPassword = () => {
-  const { isDark, toggleTheme } = useTheme();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -82,14 +80,6 @@ const ResetPassword = () => {
           <Link to="/login" className="back-to-home">
             <FaArrowLeft /> Back to Login
           </Link>
-          <button
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            type="button"
-          >
-            {isDark ? <FaSun /> : <FaMoon />}
-          </button>
         </div>
         <div className="auth-header">
           <h1>Reset Password</h1>

@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaUser, FaLock, FaKey, FaArrowLeft, FaEye, FaEyeSlash, FaSun, FaMoon } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
+import { FaUser, FaLock, FaKey, FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
 import api from '../api/client';
 import './Auth.css';
 
 const ForgotPassword = () => {
-    const { isDark, toggleTheme } = useTheme();
     const [step, setStep] = useState(1);
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
@@ -98,14 +96,6 @@ const ForgotPassword = () => {
                     <Link to="/login" className="back-to-home">
                         <FaArrowLeft /> Back to Login
                     </Link>
-                    <button
-                        className="theme-toggle"
-                        onClick={toggleTheme}
-                        aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-                        type="button"
-                    >
-                        {isDark ? <FaSun /> : <FaMoon />}
-                    </button>
                 </div>
                 
                 <div className="auth-header">

@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { FaLock, FaArrowLeft, FaSun, FaMoon } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
+import { FaLock, FaArrowLeft } from 'react-icons/fa';
 import api from '../api/client';
 import 'react-toastify/dist/ReactToastify.css';
 import './Auth.css';
 
 const VerifyResetOtp = () => {
-  const { isDark, toggleTheme } = useTheme();
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -61,14 +59,6 @@ const VerifyResetOtp = () => {
           <Link to="/login" className="back-to-home">
             <FaArrowLeft /> Back to Login
           </Link>
-          <button
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            type="button"
-          >
-            {isDark ? <FaSun /> : <FaMoon />}
-          </button>
         </div>
         <div className="auth-header">
           <h1>Verify OTP</h1>

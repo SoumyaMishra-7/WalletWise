@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -15,15 +14,12 @@ import {
   FaEye,
   FaEyeSlash,
   FaArrowLeft,
-  FaGoogle,
-  FaSun,
-  FaMoon
+  FaGoogle
 } from "react-icons/fa";
 import "./Auth.css";
 import { getApiOrigin } from "../api/client";
 
 const Signup = () => {
-  const { isDark, toggleTheme } = useTheme();
   const [formData, setFormData] = useState({
     studentId: "",
     email: "",
@@ -205,14 +201,6 @@ const Signup = () => {
           <Link to="/" className="back-to-home">
             <FaArrowLeft /> Back to Home
           </Link>
-          <button
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            type="button"
-          >
-            {isDark ? <FaSun /> : <FaMoon />}
-          </button>
         </div>
 
         <div className="auth-header">

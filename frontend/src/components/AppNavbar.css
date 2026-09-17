@@ -245,9 +245,41 @@
 .nav-right {
   flex: 1;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   position: relative;
   gap: 0.75rem;
+}
+
+.nav-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  padding: 6px 12px;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: var(--transition-fast);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.nav-level-badge:hover {
+  background: rgba(245, 158, 11, 0.22);
+  transform: translateY(-1px);
+}
+
+.level-trophy-icon {
+  color: #f59e0b;
+  font-size: 1rem;
+}
+
+.level-text {
+  white-space: nowrap;
 }
 
 .theme-toggle {

@@ -13,10 +13,12 @@ import {
   FaChartBar,
   FaSun,
   FaMoon,
-  FaCalendarCheck
+  FaCalendarCheck,
+  FaTrophy
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { calculateLevel } from '../utils/gamificationConstants';
 import './AppNavbar.css';
 
 const navItems = [
@@ -44,6 +46,8 @@ const AppNavbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const mobileMenuRef = useRef(null);
   const userMenuRef = useRef(null);
+
+  const levelInfo = calculateLevel(user?.totalXP || 0);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -115,6 +119,15 @@ const AppNavbar = () => {
       </nav>
 
       <div className="nav-right" ref={userMenuRef}>
+        <Link
+          to="/gamification"
+          className="nav-level-badge"
+          title={`Level ${levelInfo.level}: ${levelInfo.title}`}
+        >
+          <FaTrophy className="level-trophy-icon" />
+          <span className="level-text">Lvl {levelInfo.level}</span>
+        </Link>
+
         <button
           className="theme-toggle"
           onClick={toggleTheme}
@@ -158,22 +171,6 @@ const AppNavbar = () => {
             </div>
 
             <div className="dropdown-divider"></div>
-
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  className="dropdown-item"
-                  role="menuitem"
-                  onClick={() => setShowUserMenu(false)}
-                >
-                  <Icon />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
 
             {profileNavItems.map((item) => {
               const Icon = item.icon;

@@ -2,14 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaArrowLeft, FaSun, FaMoon } from 'react-icons/fa';
+import { FaArrowLeft } from 'react-icons/fa';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import './Auth.css';
 
 const VerifyEmail = () => {
-  const { isDark, toggleTheme } = useTheme();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { reloadUser } = useAuth();
@@ -88,14 +86,6 @@ const VerifyEmail = () => {
           <Link to="/" className="back-to-home">
             <FaArrowLeft /> Back to Home
           </Link>
-          <button
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            type="button"
-          >
-            {isDark ? <FaSun /> : <FaMoon />}
-          </button>
         </div>
         <div className="auth-header">
           <h1>WalletWise</h1>
