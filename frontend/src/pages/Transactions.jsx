@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import useDebounce from '../hooks/useDebounce';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import { FaFilter, FaSearch } from 'react-icons/fa';
 import Pagination from '../components/Pagination';
 import EmptyState from '../components/EmptyState';
@@ -260,6 +261,7 @@ const Transactions = () => {
 
   return (
     <div className="transactions-page">
+      <AppNavbar />
       <header className="transactions-topbar">
         <div>
           <Link to="/dashboard" className="back-link">

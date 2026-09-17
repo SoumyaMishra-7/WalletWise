@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FaDownload } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import AppNavbar from '../components/AppNavbar';
 
 import {
   Chart as ChartJS,
@@ -551,6 +552,7 @@ const Reports = () => {
 
   return (
     <div className="reports-page">
+      <AppNavbar />
       <header className="reports-header">
         <div>
           <Link to="/dashboard" className="back-link">

@@ -11,6 +11,7 @@ import {
     LucideZap
 } from 'lucide-react';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import { useAuth } from '../context/AuthContext';
 import './DecisionHelper.css';
 
@@ -59,6 +60,7 @@ const DecisionHelper = () => {
 
     return (
         <div className="decision-page">
+            <AppNavbar />
             <header className="decision-header">
                 <div className="decision-header-top">
                     <button className="back-link" onClick={() => navigate('/dashboard')}>

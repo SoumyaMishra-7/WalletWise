@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { DashboardSkeleton } from './SkeletonLoader';
 import './dashboard.css';
 import GuidedTour from './GuidedTour';
@@ -20,7 +21,8 @@ import {
   FaBrain, FaArrowUp, FaCalendarAlt, FaClock,
   FaSync, FaHome, FaExchangeAlt,
   FaCog, FaChartPie, FaMagic, FaTrophy,
-  FaLock, FaUnlock, FaFire, FaStar
+  FaLock, FaUnlock, FaFire, FaStar,
+  FaSun, FaMoon
 } from 'react-icons/fa';
 import { Line, Pie } from 'react-chartjs-2';
 import { toast } from 'react-hot-toast';
@@ -56,6 +58,7 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  const { isDark, toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -999,7 +1002,6 @@ const Dashboard = () => {
               <span style={{ fontWeight: 600 }}>Lvl {currentLevelInfo.level}</span>
             </div>
           </div>
-          {/*
           <button
             className="theme-toggle"
             onClick={toggleTheme}
@@ -1010,7 +1012,6 @@ const Dashboard = () => {
           >
             {isDark ? <FaSun /> : <FaMoon />}
           </button>
-          */}
           <button
             className="user-profile-trigger"
             onClick={() => setShowUserMenu(!showUserMenu)}

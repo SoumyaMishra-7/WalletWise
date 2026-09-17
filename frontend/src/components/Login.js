@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowLeft, FaSun, FaMoon } from 'react-icons/fa';
 import './Auth.css';
 import { getApiOrigin } from '../api/client';
 
 const Login = () => {
+  const { isDark, toggleTheme } = useTheme();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -72,9 +74,19 @@ const Login = () => {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <div className="auth-card">
-        <Link to="/" className="back-to-home">
-          <FaArrowLeft /> Back to Home
-        </Link>
+        <div className="auth-top-actions">
+          <Link to="/" className="back-to-home">
+            <FaArrowLeft /> Back to Home
+          </Link>
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            type="button"
+          >
+            {isDark ? <FaSun /> : <FaMoon />}
+          </button>
+        </div>
 
         <div className="auth-header">
           <h1>WalletWise</h1>

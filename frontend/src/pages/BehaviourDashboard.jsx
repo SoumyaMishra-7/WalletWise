@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import Spinner from '../components/Spinner';
 import AddExpense from './AddExpense';
 import AddIncome from './AddIncome';
@@ -245,6 +246,7 @@ const BehaviourDashboard = () => {
 
   return (
     <div className="coach-page">
+      <AppNavbar />
       <div className="coach-shell">
         <header className="coach-header">
           <button className="back-link" onClick={() => navigate('/dashboard')} type="button">

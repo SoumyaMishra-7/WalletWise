@@ -12,6 +12,7 @@ import {
   FaPiggyBank
 } from 'react-icons/fa';
 import confetti from 'canvas-confetti';
+import AppNavbar from '../components/AppNavbar';
 import { useAuth } from '../context/AuthContext';
 import './GamificationDashboard.css';
 
@@ -256,6 +257,7 @@ const GamificationDashboard = () => {
 
   return (
     <div className="gamification-container">
+      <AppNavbar />
       <header className="gami-header">
         <button className="back-btn" onClick={() => navigate(-1)}>
           <FaArrowLeft /> Back

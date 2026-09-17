@@ -12,6 +12,7 @@ import {
     LucideSearch
 } from 'lucide-react';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -145,6 +146,7 @@ const SubscriptionDashboard = () => {
 
     return (
         <div className="sub-page">
+            <AppNavbar />
             <header className="sub-header">
                 <div className="sub-header-top">
                     <Link to="/dashboard" className="back-link">

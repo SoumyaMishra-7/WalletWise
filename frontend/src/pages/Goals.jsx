@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import SavingGoal from './SavingGoal';
 import Spinner from '../components/Spinner';
 
@@ -210,6 +211,7 @@ const Goals = () => {
 
   return (
     <div className="goals-page">
+      <AppNavbar />
       <header className="goals-header">
         <div className="goals-header-content">
           <Link to="/dashboard" className="back-link">

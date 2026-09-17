@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import { useAuth } from '../context/AuthContext';
 import { FaArrowLeft, FaUsers, FaPlus, FaTrash, FaUserPlus, FaUserTie, FaUser } from 'react-icons/fa';
 import './SharedWallets.css';
@@ -96,6 +97,7 @@ const WalletDetails = () => {
 
   return (
     <div className="wallet-details-container">
+      <AppNavbar />
       <button className="back-btn" onClick={() => navigate('/wallets')}>
         <FaArrowLeft /> Back to Wallets
       </button>
