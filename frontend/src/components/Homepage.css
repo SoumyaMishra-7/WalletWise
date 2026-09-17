@@ -607,8 +607,8 @@ body.theme-dark .ww-header.scrolled {
 }
 
 .ww-center-icon {
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   background: #111827;
   border-radius: 50%;
   display: flex;

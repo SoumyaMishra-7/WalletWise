@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import SavingGoal from './SavingGoal';
 import Spinner from '../components/Spinner';
 
@@ -210,15 +211,9 @@ const Goals = () => {
 
   return (
     <div className="goals-page">
+      <AppNavbar />
       <header className="goals-header">
         <div className="goals-header-content">
-          <Link to="/dashboard" className="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </Link>
-
           <span className="eyebrow">Student Goals</span>
           <h1>Make room for tuition, books, and the fun stuff.</h1>
           <p>Track every goal in one place and keep your savings on pace with deadlines.</p>

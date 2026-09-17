@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
 import AppNavbar from '../components/AppNavbar';
 import BadgeGallery from '../components/Gamification/BadgeGallery';
 
 import './Settings.css';
-import { FaUserCircle, FaArrowLeft, FaCamera, FaCheck, FaExclamationTriangle, FaTimes, FaBell } from 'react-icons/fa';
+import { FaUserCircle, FaCamera, FaCheck, FaExclamationTriangle, FaTimes, FaBell } from 'react-icons/fa';
 
 const Profile = () => {
     const { user, loading, updateProfile } = useAuth();
@@ -162,11 +161,6 @@ const Profile = () => {
 
             <div className="settings-container">
                 <header className="settings-header">
-                    <Link to="/dashboard" className="back-link">
-                        <FaArrowLeft />
-                        Back to Dashboard
-                    </Link>
-
                     <div className="header-content">
                         <span className="eyebrow">User Profile</span>
                         <h1>Personal Information</h1>

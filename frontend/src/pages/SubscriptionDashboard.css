@@ -57,7 +57,7 @@
 }
 
 .sub-page {
-  padding: 32px 50px;
+  padding: 0 0 50px;
   background-color: var(--sub-bg);
   min-height: 100vh;
   color: var(--sub-text-primary);

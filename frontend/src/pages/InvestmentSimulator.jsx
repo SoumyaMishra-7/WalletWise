@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../api/client';
-import { FaGraduationCap, FaChartLine, FaArrowLeft, FaDollarSign, FaSearch, FaInfoCircle } from 'react-icons/fa';
+import AppNavbar from '../components/AppNavbar';
+import { FaGraduationCap, FaChartLine, FaDollarSign, FaSearch, FaInfoCircle } from 'react-icons/fa';
 import './InvestmentSimulator.css';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
 import { toast } from 'react-hot-toast';
@@ -84,11 +84,8 @@ const InvestmentSimulator = () => {
 
     return (
         <div className="simulator-page">
+            <AppNavbar />
             <header className="simulator-topbar">
-                <Link to="/dashboard" className="back-link">
-                    <FaArrowLeft /> Back to Dashboard
-                </Link>
-
                 <span className="eyebrow">Virtual Trading</span>
                 <h1>Micro-Investment Simulator 📈</h1>
                 <p>Learn to invest your budget surplus safely. Zero financial risk.</p>

@@ -6,9 +6,8 @@
   --gami-text: var(--text-main, #1e293b);
   --gami-muted: var(--text-muted, #64748b);
   --gami-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 0 0 2rem;
+  width: 100%;
   min-height: 100vh;
   background-color: var(--gami-bg);
   color: var(--gami-text);

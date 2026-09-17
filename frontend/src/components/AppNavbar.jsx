@@ -13,10 +13,12 @@ import {
   FaChartBar,
   FaSun,
   FaMoon,
-  FaCalendarCheck
+  FaCalendarCheck,
+  FaTrophy
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { calculateLevel } from '../utils/gamificationConstants';
 import './AppNavbar.css';
 
 const navItems = [
@@ -28,14 +30,6 @@ const navItems = [
   { id: 'profile-top', label: 'Profile', icon: FaUserCircle, path: '/profile' }
 ];
 
-const profileNavItems = [
-  { id: 'profile', label: 'Profile', icon: FaUserCircle, path: '/profile' },
-  { id: 'goals-profile', label: 'Goals', icon: FaBullseye, path: '/goals' },
-  { id: 'wallets', label: 'Wallets', icon: FaWallet, path: '/wallets' },
-  { id: 'subscriptions', label: 'Subscriptions', icon: FaCalendarCheck, path: '/subscriptions' },
-  { id: 'settings', label: 'Settings', icon: FaCog, path: '/settings' }
-];
-
 const AppNavbar = () => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
@@ -44,6 +38,8 @@ const AppNavbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const mobileMenuRef = useRef(null);
   const userMenuRef = useRef(null);
+
+  const levelInfo = calculateLevel(user?.totalXP || 0);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -115,6 +111,15 @@ const AppNavbar = () => {
       </nav>
 
       <div className="nav-right" ref={userMenuRef}>
+        <Link
+          to="/gamification"
+          className="nav-level-badge"
+          title={`Level ${levelInfo.level}: ${levelInfo.title}`}
+        >
+          <FaTrophy className="level-trophy-icon" />
+          <span className="level-text">Lvl {levelInfo.level}</span>
+        </Link>
+
         <button
           className="theme-toggle"
           onClick={toggleTheme}
@@ -159,37 +164,117 @@ const AppNavbar = () => {
 
             <div className="dropdown-divider"></div>
 
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  className="dropdown-item"
-                  role="menuitem"
-                  onClick={() => setShowUserMenu(false)}
-                >
-                  <Icon />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+            <Link
+              to="/gamification"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="View rewards"
+            >
+              <FaTrophy />
+              <span>Rewards</span>
+            </Link>
 
-            {profileNavItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  className="dropdown-item"
-                  role="menuitem"
-                  onClick={() => setShowUserMenu(false)}
-                >
-                  <Icon />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+            <div className="dropdown-divider"></div>
+
+            <Link
+              to="/dashboard"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open dashboard"
+            >
+              <FaHome />
+              <span>Dashboard</span>
+            </Link>
+
+            <Link
+              to="/transactions"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open transactions"
+            >
+              <FaExchangeAlt />
+              <span>Transactions</span>
+            </Link>
+
+            <Link
+              to="/budget"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open budget"
+            >
+              <FaChartPie />
+              <span>Budget</span>
+            </Link>
+
+            <Link
+              to="/goals"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open goals"
+            >
+              <FaBullseye />
+              <span>Goals</span>
+            </Link>
+
+            <Link
+              to="/reports"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open reports"
+            >
+              <FaChartBar />
+              <span>Reports</span>
+            </Link>
+
+            <Link
+              to="/profile"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open profile"
+            >
+              <FaUserCircle />
+              <span>Profile</span>
+            </Link>
+
+            <Link
+              to="/wallets"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open wallets"
+            >
+              <FaWallet />
+              <span>Wallets</span>
+            </Link>
+
+            <Link
+              to="/subscriptions"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open subscriptions"
+            >
+              <FaCalendarCheck />
+              <span>Subscriptions</span>
+            </Link>
+
+            <Link
+              to="/settings"
+              className="dropdown-item"
+              role="menuitem"
+              onClick={() => setShowUserMenu(false)}
+              title="Open settings"
+            >
+              <FaCog />
+              <span>Settings</span>
+            </Link>
 
             <div className="dropdown-divider"></div>
 

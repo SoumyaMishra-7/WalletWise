@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import 'react-toastify/dist/ReactToastify.css';
@@ -76,6 +76,11 @@ const ResetPassword = () => {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <div className="auth-card">
+        <div className="auth-top-actions">
+          <Link to="/login" className="back-to-home">
+            <FaArrowLeft /> Back to Login
+          </Link>
+        </div>
         <div className="auth-header">
           <h1>Reset Password</h1>
           <p className="subtitle">Choose a new password for your account from the email link.</p>

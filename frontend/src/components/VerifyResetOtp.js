@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { FaLock } from 'react-icons/fa';
+import { FaLock, FaArrowLeft } from 'react-icons/fa';
 import api from '../api/client';
 import 'react-toastify/dist/ReactToastify.css';
 import './Auth.css';
@@ -55,6 +55,11 @@ const VerifyResetOtp = () => {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <div className="auth-card">
+        <div className="auth-top-actions">
+          <Link to="/login" className="back-to-home">
+            <FaArrowLeft /> Back to Login
+          </Link>
+        </div>
         <div className="auth-header">
           <h1>Verify OTP</h1>
           <p className="subtitle">Enter the 6-digit code sent to your email.</p>

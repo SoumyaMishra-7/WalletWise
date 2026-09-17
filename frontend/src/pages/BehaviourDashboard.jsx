@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import Spinner from '../components/Spinner';
 import AddExpense from './AddExpense';
 import AddIncome from './AddIncome';
@@ -245,15 +246,9 @@ const BehaviourDashboard = () => {
 
   return (
     <div className="coach-page">
+      <AppNavbar />
       <div className="coach-shell">
         <header className="coach-header">
-          <button className="back-link" onClick={() => navigate('/dashboard')} type="button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </button>
-
           <div className="coach-header-row">
             <div>
               <span className="coach-kicker">AI Money Coach</span>

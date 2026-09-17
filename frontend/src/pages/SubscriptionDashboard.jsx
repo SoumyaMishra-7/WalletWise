@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     LucideCalendarDays,
@@ -12,6 +11,7 @@ import {
     LucideSearch
 } from 'lucide-react';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -145,15 +145,9 @@ const SubscriptionDashboard = () => {
 
     return (
         <div className="sub-page">
+            <AppNavbar />
             <header className="sub-header">
                 <div className="sub-header-top">
-                    <Link to="/dashboard" className="back-link">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        Back to Dashboard
-                    </Link>
-
                     <div className="sub-badge">
                         <LucideCalendarDays size={16} />
                         Smart Tracker

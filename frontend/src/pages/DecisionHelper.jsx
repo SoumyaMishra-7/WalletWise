@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LucideBrain,
@@ -7,10 +6,10 @@ import {
     LucideShieldAlert,
     LucideXCircle,
     LucideInfo,
-    LucideArrowLeft,
     LucideZap
 } from 'lucide-react';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import { useAuth } from '../context/AuthContext';
 import './DecisionHelper.css';
 
@@ -24,7 +23,6 @@ const moodOptions = [
 ];
 
 const DecisionHelper = () => {
-    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         itemName: '',
         category: 'shopping',
@@ -59,12 +57,9 @@ const DecisionHelper = () => {
 
     return (
         <div className="decision-page">
+            <AppNavbar />
             <header className="decision-header">
                 <div className="decision-header-top">
-                    <button className="back-link" onClick={() => navigate('/dashboard')}>
-                        <LucideArrowLeft size={18} />
-                        Back to Dashboard
-                    </button>
                     <div className="decision-badge">
                         <LucideBrain size={16} />
                         AI Advisor

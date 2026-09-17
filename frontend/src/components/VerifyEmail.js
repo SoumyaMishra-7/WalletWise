@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaArrowLeft } from 'react-icons/fa';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
@@ -81,6 +82,11 @@ const VerifyEmail = () => {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <div className="auth-card">
+        <div className="auth-top-actions">
+          <Link to="/" className="back-to-home">
+            <FaArrowLeft /> Back to Home
+          </Link>
+        </div>
         <div className="auth-header">
           <h1>WalletWise</h1>
           <p className="subtitle">Verify your email to continue.</p>

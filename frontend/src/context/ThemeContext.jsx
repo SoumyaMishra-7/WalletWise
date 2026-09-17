@@ -48,19 +48,26 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [loading, authUser, theme]);
 
-  const toggleTheme = useCallback(async () => {
+  const toggleTheme = useCallback(() => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
-    // Optimistic UI update
+    
+    // Apply DOM changes synchronously for zero-latency UI flip
+    const root = document.documentElement;
+    const body = document.body;
+    root.classList.toggle('dark', newTheme === 'dark');
+    root.style.colorScheme = newTheme;
+    body.classList.remove('theme-light', 'theme-dark');
+    body.classList.add(`theme-${newTheme}`);
+    body.setAttribute('data-theme', newTheme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+
     setTheme(newTheme);
 
-    // Sync to DB in background if user is logged in
+    // Sync to backend non-blockingly in background
     if (authUser && updateProfile) {
-      try {
-        await api.put('/auth/profile', { theme: newTheme });
-        await updateProfile({ theme: newTheme });
-      } catch (err) {
-        console.error('Failed to sync theme preference to backend:', err);
-      }
+      api.put('/auth/profile', { theme: newTheme })
+        .then(() => updateProfile({ theme: newTheme }))
+        .catch((err) => console.error('Failed to sync theme preference to backend:', err));
     }
   }, [theme, authUser, updateProfile]);
 

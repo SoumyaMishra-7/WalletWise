@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
+import AppNavbar from '../components/AppNavbar';
 import { FaPlus, FaUserPlus, FaUsers, FaWallet } from 'react-icons/fa';
 import './SharedWallets.css';
 
@@ -90,6 +91,7 @@ const SharedWallets = () => {
 
   return (
     <div className="shared-wallets-container">
+      <AppNavbar />
       <div className="wallets-hero">
         <div>
           <h1><FaWallet className="icon-mr" /> Shared Wallets</h1>

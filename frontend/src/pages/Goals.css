@@ -1,6 +1,6 @@
 .goals-page {
   min-height: 100vh;
-  padding: 2.5rem 0 4rem;
+  padding: 0 0 4rem;
   background: var(--bg-app, radial-gradient(circle at top, #f8fafc 0%, #f2f6ff 45%, #edf2f7 100%));
   color: var(--text-main, #0f172a);
   font-family: 'Plus Jakarta Sans', sans-serif;

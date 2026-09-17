@@ -606,6 +606,39 @@ html {
   z-index: 10;
 }
 
+.auth-top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.auth-top-actions .back-to-home {
+  position: static;
+}
+
+.auth-top-actions .theme-toggle {
+  background: rgba(148, 163, 184, 0.15);
+  border: none;
+  color: var(--text-main);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.auth-top-actions .theme-toggle:hover {
+  background: var(--brand-primary);
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
 /* =========================================
    Dark Mode Overrides
    ========================================= */

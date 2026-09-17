@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import AppNavbar from '../components/AppNavbar';
 import Spinner from '../components/Spinner';
 import AddExpense from './AddExpense';
@@ -221,12 +220,6 @@ const Budget = () => {
         <div className="budget-shell">
           <header className="walletwise-budget-header">
             <div>
-              <Link to="/dashboard" className="back-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-                Back to Dashboard
-              </Link>
               <span className="budget-kicker">WalletWise Budget</span>
               <h1>Simple budget check-in for student life</h1>
               <p>Your numbers update as you add income, log expenses, or adjust your monthly budget.</p>

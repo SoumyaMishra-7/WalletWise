@@ -13,8 +13,8 @@ import {
   FaPhone,
   FaEye,
   FaEyeSlash,
-  FaGoogle,
   FaArrowLeft,
+  FaGoogle
 } from "react-icons/fa";
 import "./Auth.css";
 import { getApiOrigin } from "../api/client";
@@ -197,9 +197,11 @@ const Signup = () => {
       />
 
       <div className="auth-card">
-        <Link to="/" className="back-to-home">
-          <FaArrowLeft /> Back to Home
-        </Link>
+        <div className="auth-top-actions">
+          <Link to="/" className="back-to-home">
+            <FaArrowLeft /> Back to Home
+          </Link>
+        </div>
 
         <div className="auth-header">
           <h1>WalletWise</h1>
