@@ -449,9 +449,9 @@ const Homepage = () => {
 
             <div className="ww-content-right">
               <div className="ww-visual-connected">
-                <svg className="ww-connect-lines" viewBox="0 0 500 400">
+                <svg className="ww-connect-lines" viewBox="0 0 500 400" preserveAspectRatio="none">
                   <motion.path
-                    d="M 250 200 C 250 150, 120 180, 100 100"
+                    d="M 250 200 C 200 160, 160 120, 140 90"
                     fill="none"
                     stroke="#CBD5E1"
                     strokeWidth="2"
@@ -462,7 +462,7 @@ const Homepage = () => {
                     viewport={{ once: true }}
                   />
                   <motion.path
-                    d="M 250 200 C 300 200, 350 220, 400 150"
+                    d="M 250 200 C 300 190, 340 170, 370 145"
                     fill="none"
                     stroke="#CBD5E1"
                     strokeWidth="2"
@@ -473,7 +473,7 @@ const Homepage = () => {
                     viewport={{ once: true }}
                   />
                   <motion.path
-                    d="M 250 200 C 250 250, 220 300, 200 340"
+                    d="M 250 200 C 245 240, 225 270, 210 295"
                     fill="none"
                     stroke="#CBD5E1"
                     strokeWidth="2"
@@ -493,11 +493,10 @@ const Homepage = () => {
                   viewport={{ once: true }}
                 >
                   <div className="ww-center-icon">
-                    <User size={24} color="white" />
+                    <User size={18} color="white" />
                   </div>
                   <div className="ww-center-pulse"></div>
                 </motion.div>
-
                 <motion.div
                   className="ww-conn-card card-tuition"
                   animate={{ y: [-5, 5, -5] }}
