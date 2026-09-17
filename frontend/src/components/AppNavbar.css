@@ -30,7 +30,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 72px;
+  padding: 0.85rem 2rem;
   background: var(--bg-card);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -126,7 +129,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 0.5rem;
+  gap: 1rem;
   align-items: center;
 }
 
@@ -153,6 +156,7 @@
   transition: var(--transition-elegant);
   text-decoration: none;
   position: relative;
+  white-space: nowrap;
 }
 
 .nav-link:hover {

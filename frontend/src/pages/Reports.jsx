@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { Pie, Bar, Line } from 'react-chartjs-2';
-import { Link } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FaDownload } from 'react-icons/fa';
@@ -555,13 +554,6 @@ const Reports = () => {
       <AppNavbar />
       <header className="reports-header">
         <div>
-          <Link to="/dashboard" className="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </Link>
-
           <span className="eyebrow">Campus Spending</span>
           <h1>This Month at a Glance</h1>
           <p>{headerNote}</p>

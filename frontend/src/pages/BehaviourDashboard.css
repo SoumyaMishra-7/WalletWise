@@ -5,7 +5,7 @@
     radial-gradient(circle at 90% 0%, rgba(37, 99, 235, 0.14), transparent 28%),
     linear-gradient(180deg, #f8fbff 0%, #f4fbf7 100%);
   color: #10213a;
-  padding: 2rem 0 4rem;
+  padding: 0 0 4rem;
 }
 
 .coach-loading {

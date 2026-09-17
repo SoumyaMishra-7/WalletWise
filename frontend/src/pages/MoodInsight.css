@@ -2,7 +2,7 @@
 .mood-insight-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%);
-  padding: 2rem 1.5rem 4rem;
+  padding: 0 0 4rem;
   color: #e0e0e0;
   font-family: "Inter", "Segoe UI", sans-serif;
 }

@@ -1,6 +1,6 @@
-﻿.transactions-page {
+.transactions-page {
   min-height: 100vh;
-  padding: 2rem 0 4rem;
+  padding: 0 0 4rem;
   background: var(--bg-app, #f8fafc);
   color: var(--text-main, #0f172a);
   font-family: 'Plus Jakarta Sans', sans-serif;

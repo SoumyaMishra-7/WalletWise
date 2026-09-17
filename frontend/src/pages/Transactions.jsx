@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import useDebounce from '../hooks/useDebounce';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import AppNavbar from '../components/AppNavbar';
 import { FaFilter, FaSearch } from 'react-icons/fa';
@@ -264,13 +264,6 @@ const Transactions = () => {
       <AppNavbar />
       <header className="transactions-topbar">
         <div>
-          <Link to="/dashboard" className="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </Link>
-
           <span className="eyebrow">Transactions</span>
           <h1>Stay on top of your spending</h1>
           <p>A calm snapshot of your money moments this semester.</p>
