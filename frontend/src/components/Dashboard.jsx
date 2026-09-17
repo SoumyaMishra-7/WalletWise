@@ -1,10 +1,9 @@
-// src/components/Dashboard.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { DashboardSkeleton } from './SkeletonLoader';
+import AppNavbar from './AppNavbar';
 import './dashboard.css';
 import GuidedTour from './GuidedTour';
 import AddExpense from '../pages/AddExpense';
@@ -15,14 +14,13 @@ import { useVault } from '../context/VaultContext';
 import { decryptNote } from '../services/encryption';
 import VaultUnlock from './Vault/VaultUnlock';
 import {
-  FaWallet, FaSignOutAlt, FaUserCircle, FaChevronDown,
+  FaWallet,
   FaMoneyBillWave, FaChartLine, FaPiggyBank,
   FaHandHoldingUsd, FaBullseye, FaChartBar,
   FaBrain, FaArrowUp, FaCalendarAlt, FaClock,
-  FaSync, FaHome, FaExchangeAlt,
-  FaCog, FaChartPie, FaMagic, FaTrophy,
-  FaLock, FaUnlock, FaFire, FaStar,
-  FaSun, FaMoon
+  FaSync,
+  FaChartPie, FaMagic,
+  FaLock, FaUnlock, FaStar
 } from 'react-icons/fa';
 import { Line, Pie } from 'react-chartjs-2';
 import { toast } from 'react-hot-toast';
@@ -58,7 +56,6 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-  const { isDark, toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -74,49 +71,13 @@ const Dashboard = () => {
   const [timeOfDay, setTimeOfDay] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const hasPromptedTourRef = useRef(false);
   const refreshingRef = useRef(false);
-  // const { isDark, toggleTheme } = useTheme(); // CACHE BUST TEMPORARY COMMENT
 
-  const userMenuRef = useRef(null);
-  const mobileMenuRef = useRef(null);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user: authUser, loading: authLoading, logout, reloadUser } = useAuth();
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        setShowUserMenu(false);
-      }
-      if (
-        mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(event.target)
-      ) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Scroll Lock for Mobile Menu
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMobileMenuOpen]);
+  const { user: authUser, loading: authLoading, reloadUser } = useAuth();
 
   // Modal states
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
@@ -164,35 +125,6 @@ const Dashboard = () => {
   const [weeklyExpenses, setWeeklyExpenses] = useState([]);
   const [savingsGoals, setSavingsGoals] = useState([]);
   const [showDemoData, setShowDemoData] = useState(false);
-
-  // Navigation items with proper routes
-  const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: FaHome, path: "/dashboard" },
-    {
-      id: "transactions",
-      label: "Transactions",
-      icon: FaExchangeAlt,
-      path: "/transactions",
-    },
-    { id: "budget", label: "Budget", icon: FaChartPie, path: "/budget" },
-    { id: "goals", label: "Goals", icon: FaBullseye, path: "/goals" },
-    { id: "reports", label: "Reports", icon: FaChartBar, path: "/reports" },
-    { id: "profile-top", label: "Profile", icon: FaUserCircle, path: "/profile" },
-  ];
-
-  const profileNavItems = [
-    { id: "goals-profile", label: "Goals", icon: FaBullseye, path: "/goals" },
-    { id: "wallets", label: "Wallets", icon: FaWallet, path: "/wallets" },
-    { id: "subscriptions", label: "Subscriptions", icon: FaCog, path: "/subscriptions" },
-    { id: "settings", label: "Settings", icon: FaCog, path: "/settings" },
-  ];
-
-  const mobileNavItems = [
-    ...navItems,
-    ...profileNavItems,
-    { id: "profile", label: "Profile", icon: FaUserCircle, path: "/profile" },
-    { id: "rewards", label: "Rewards", icon: FaTrophy, path: "/gamification" },
-  ];
 
   // Fetch dashboard data
   const fetchDashboardData = useCallback(async (isForced = false) => {
@@ -293,16 +225,6 @@ const Dashboard = () => {
   }, [authLoading, authUser, fetchDashboardData]);
 
   // ============ HANDLERS ============
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
-
-  const handleNavigation = (path) => {
-    navigate(path);
-    setIsMobileMenuOpen(false);
-    setShowUserMenu(false);
-  };
 
   const handleSuccess = async () => {
     setShowAddExpenseModal(false);
@@ -310,17 +232,6 @@ const Dashboard = () => {
     setShowSetBudgetModal(false);
     setShowSavingsGoalModal(false);
     await fetchDashboardData(true);
-  };
-
-  const isActive = (path) => {
-    // Handle dashboard path
-    if (path === "/dashboard" && location.pathname === "/") return true;
-    if (path === "/dashboard" && location.pathname === "/dashboard")
-      return true;
-    // Handle other paths
-    if (path !== "/dashboard" && location.pathname.startsWith(path))
-      return true;
-    return false;
   };
 
   const handleAddExpense = async (expenseData) => {
@@ -824,353 +735,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="mobile-overlay"
-          onClick={() => setIsMobileMenuOpen(false)}
-          aria-hidden="true"
-        >
-        </div>
-      )}
-      {/* Clean, Focused Navbar */}
-      <header className="dashboard-header">
-        {/* Left: Logo */}
-        <div className="nav-left">
-          <Link to="/dashboard" className="logo-container">
-            <FaWallet className="logo-icon" />
-            <h1 className="logo-text">WalletWise</h1>
-          </Link>
-        </div>
-
-        {/* Center: Navigation Links */}
-        <nav className="nav-center" ref={mobileMenuRef}>
-          <button
-            className="mobile-menu-toggle"
-            onClick={() => {
-              setShowUserMenu(false);
-              setIsMobileMenuOpen(!isMobileMenuOpen);
-            }}
-            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-nav-menu"
-          >
-            <span className={`hamburger ${isMobileMenuOpen ? "open" : ""}`}></span>
-            <span className={`hamburger ${isMobileMenuOpen ? "open" : ""}`}></span>
-            <span className={`hamburger ${isMobileMenuOpen ? "open" : ""}`}></span>
-          </button>
-
-          <ul
-            id="mobile-nav-menu"
-            className={`nav-menu ${isMobileMenuOpen ? 'active' : ''}`}
-          >
-            <li className="mobile-drawer-only mobile-menu-header">
-              <div className="mobile-menu-profile">
-                <div className="mobile-menu-avatar" aria-hidden="true">
-                  {user?.fullName?.charAt(0) || user?.name?.charAt(0) || "U"}
-                </div>
-                <div className="mobile-menu-user-meta">
-                  <p className="mobile-menu-name">{user?.fullName || user?.name || "User"}</p>
-                  <p className="mobile-menu-email">{user?.email || ""}</p>
-                </div>
-              </div>
-              <div className="mobile-menu-gamification">
-                <div className="mobile-gamification-pill" title="Transaction Streak">
-                  <FaFire />
-                  <span>{user?.currentStreak || 0} streak</span>
-                </div>
-                <div
-                  className="mobile-gamification-pill"
-                  title={`Level ${currentLevelInfo.level}: ${currentLevelInfo.title}`}
-                >
-                  <FaStar />
-                  <span>Lvl {currentLevelInfo.level}</span>
-                </div>
-              </div>
-            </li>
-
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.path);
-              return (
-                <li key={item.id}>
-                  <button
-                    onClick={() => handleNavigation(item.path)}
-                    className={`nav-link ${active ? "active" : ""}`}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    <Icon className="nav-icon" />
-                    <span>{item.label}</span>
-                  </button>
-                </li>
-              );
-            })}
-
-            {mobileNavItems
-              .filter((item) => !navItems.some((navItem) => navItem.id === item.id))
-              .map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.path);
-                return (
-                  <li key={item.id} className="mobile-drawer-only">
-                    <button
-                      onClick={() => handleNavigation(item.path)}
-                      className={`nav-link ${active ? "active" : ""}`}
-                      aria-current={active ? "page" : undefined}
-                    >
-                      <Icon className="nav-icon" />
-                      <span>{item.label}</span>
-                    </button>
-                  </li>
-                );
-              })}
-
-            <li className="mobile-drawer-only mobile-actions-panel">
-              <button
-                type="button"
-                className="mobile-action-btn"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  fetchDashboardData(true);
-                }}
-                disabled={refreshing}
-              >
-                <FaSync className={refreshing ? "spin" : ""} />
-                <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
-              </button>
-
-              <button
-                type="button"
-                className="mobile-action-btn"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleAIInsights();
-                }}
-              >
-                <FaBrain />
-                <span>AI Insights</span>
-              </button>
-
-              <button
-                type="button"
-                className="mobile-action-btn"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  navigate('/decision-helper');
-                }}
-              >
-                <FaMagic />
-                <span>Decision Helper</span>
-              </button>
-
-              <button
-                type="button"
-                className="mobile-action-btn"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setIsTourOpen(true);
-                }}
-              >
-                <FaStar />
-                <span>Start Tour</span>
-              </button>
-            </li>
-
-            <li className="mobile-drawer-only">
-              <button
-                onClick={handleLogout}
-                className="nav-link mobile-logout"
-                type="button"
-              >
-                <FaSignOutAlt className="nav-icon" />
-                <span>Logout</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-
-        {/* Right: User Profile & Gamification */}
-        <div className="nav-right" ref={userMenuRef}>
-          <div className="gamification-stats" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginRight: '15px', color: 'var(--text-secondary)' }}>
-            <div className="gamification-streak" title="Transaction Streak" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <FaFire color="#f97316" />
-              <span style={{ fontWeight: 600 }}>{user?.currentStreak || 0}</span>
-            </div>
-
-            <div className="gamification-level" title={`Level ${currentLevelInfo.level}: ${currentLevelInfo.title}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <FaStar color="#eab308" />
-              <span style={{ fontWeight: 600 }}>Lvl {currentLevelInfo.level}</span>
-            </div>
-          </div>
-          <button
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={
-              isDark ? "Switch to light theme" : "Switch to dark theme"
-            }
-            type="button"
-          >
-            {isDark ? <FaSun /> : <FaMoon />}
-          </button>
-          <button
-            className="user-profile-trigger"
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            aria-expanded={showUserMenu}
-            aria-label="User menu"
-            aria-haspopup="true"
-          >
-            <div className="user-avatar" aria-hidden="true">
-              {user?.fullName?.charAt(0) || user?.name?.charAt(0) || "U"}
-            </div>
-            <FaChevronDown
-              className={`dropdown-arrow ${showUserMenu ? "open" : ""}`}
-            />
-          </button>
-
-          {/* User Dropdown Menu */}
-          {showUserMenu && (
-            <div className="user-dropdown-menu" role="menu">
-              <div className="user-dropdown-header">
-                <div className="dropdown-avatar">
-                  {user?.fullName?.charAt(0) || user?.name?.charAt(0) || "U"}
-                </div>
-                <div className="dropdown-user-info">
-                  <span className="dropdown-user-name">
-                    {user?.fullName || user?.name}
-                  </span>
-                  <span className="dropdown-user-email">{user?.email}</span>
-                </div>
-              </div>
-
-              <div className="dropdown-divider"></div>
-
-              <Link
-                to="/gamification"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="View rewards"
-              >
-                <FaTrophy />
-                <span>Rewards</span>
-              </Link>
-
-              <div className="dropdown-divider"></div>
-
-              <Link
-                to="/dashboard"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open dashboard"
-              >
-                <FaHome />
-                <span>Dashboard</span>
-              </Link>
-
-              <Link
-                to="/transactions"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open transactions"
-              >
-                <FaExchangeAlt />
-                <span>Transactions</span>
-              </Link>
-
-              <Link
-                to="/budget"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open budget"
-              >
-                <FaChartPie />
-                <span>Budget</span>
-              </Link>
-
-              <Link
-                to="/goals"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open goals"
-              >
-                <FaBullseye />
-                <span>Goals</span>
-              </Link>
-
-              <Link
-                to="/reports"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open reports"
-              >
-                <FaChartBar />
-                <span>Reports</span>
-              </Link>
-
-              <Link
-                to="/profile"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open profile"
-              >
-                <FaUserCircle />
-                <span>Profile</span>
-              </Link>
-
-              <Link
-                to="/wallets"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open wallets"
-              >
-                <FaWallet />
-                <span>Wallets</span>
-              </Link>
-
-              <Link
-                to="/subscriptions"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open subscriptions"
-              >
-                <FaCog />
-                <span>Subscriptions</span>
-              </Link>
-
-              <Link
-                to="/settings"
-                className="dropdown-item"
-                role="menuitem"
-                onClick={() => setShowUserMenu(false)}
-                title="Open settings"
-              >
-                <FaCog />
-                <span>Settings</span>
-              </Link>
-
-              <div className="dropdown-divider"></div>
-
-              <button
-                onClick={handleLogout}
-                className="dropdown-item logout"
-                role="menuitem"
-                title="Logout"
-              >
-                <FaSignOutAlt />
-                <span>Logout</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
+      <AppNavbar />
 
       {/* Main Content Area */}
       <div className="dashboard-content" data-tour="dashboard-header">
