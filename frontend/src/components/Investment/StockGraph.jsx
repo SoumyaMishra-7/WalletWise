@@ -21,8 +21,24 @@ ChartJS.register(
     Legend
 );
 
-const StockGraph = ({ stockData }) => {
-    if (!stockData || !stockData.history) return null;
+const StockGraph = ({ stockData, error }) => {
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center py-10 text-center text-gray-500 dark:text-gray-400">
+                <p className="text-lg font-medium">Failed to load stock data</p>
+                <p className="text-sm mt-1">{error}</p>
+            </div>
+        );
+    }
+
+    if (!stockData || !stockData.history || stockData.history.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-10 text-center text-gray-500 dark:text-gray-400">
+                <p className="text-lg font-medium">No data available</p>
+                <p className="text-sm mt-1">Price history could not be loaded for this stock.</p>
+            </div>
+        );
+    }
 
     const labels = stockData.history.map(point => {
         // Convert 'YYYY-MM-DD' down to 'MMM DD'
