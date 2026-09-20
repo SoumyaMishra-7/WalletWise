@@ -19,6 +19,13 @@ const addSubscription = async (req, res) => {
     try {
         const { name, amount, billingCycle, nextDueDate, category, provider } = req.body;
 
+        if (!name || amount == null || !billingCycle || !nextDueDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'name, amount, billingCycle, and nextDueDate are required'
+            });
+        }
+
         const subscription = new Subscription({
             userId: req.userId,
             name,
@@ -33,6 +40,13 @@ const addSubscription = async (req, res) => {
         res.status(201).json({ success: true, subscription });
     } catch (error) {
         console.error('Error adding subscription:', error);
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(e => e.message);
+            return res.status(400).json({ success: false, message: messages.join(', ') });
+        }
+        if (error.name === 'CastError') {
+            return res.status(400).json({ success: false, message: `Invalid value for field: ${error.path}` });
+        }
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
