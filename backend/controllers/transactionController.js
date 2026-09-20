@@ -315,8 +315,29 @@ const updateTransaction = catchAsync(async (req, res) => {
 
   const updateData = parsed.data;
 
+  // Compute old contribution to wallet balance before mutating the document
+  const oldBalanceEffect = oldTransaction.type === 'income'
+    ? oldTransaction.amount
+    : -oldTransaction.amount;
+
   Object.assign(oldTransaction, updateData);
   await oldTransaction.save();
+
+  // Recompute new balance effect and apply the difference
+  const newBalanceEffect = oldTransaction.type === 'income'
+    ? oldTransaction.amount
+    : -oldTransaction.amount;
+
+  const balanceDelta = newBalanceEffect - oldBalanceEffect;
+
+  if (balanceDelta !== 0) {
+    if (oldTransaction.walletId) {
+      const Wallet = require('../models/Wallet');
+      await Wallet.findByIdAndUpdate(oldTransaction.walletId, { $inc: { balance: balanceDelta } });
+    } else {
+      await User.findByIdAndUpdate(userId, { $inc: { walletBalance: balanceDelta } });
+    }
+  }
 
   await logTransactionActivity({
     userId,
