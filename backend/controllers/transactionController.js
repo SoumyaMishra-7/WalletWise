@@ -411,6 +411,8 @@ const skipNextOccurrence = catchAsync(async (req, res) => {
 });
 
 // ================= UNDO TRANSACTION =================
+const VALID_TRANSACTION_TYPES = ['income', 'expense'];
+
 const undoTransaction = catchAsync(async (req, res) => {
   const userId = req.userId;
   const { deletedTransaction } = req.body;
@@ -419,15 +421,27 @@ const undoTransaction = catchAsync(async (req, res) => {
     throw new AppError('No transaction data provided for undo', 400);
   }
 
+  // Validate server-side that the client-supplied type and amount are safe
+  const { type, amount, category, description, paymentMethod, mood, date } = deletedTransaction;
+
+  if (!VALID_TRANSACTION_TYPES.includes(type)) {
+    throw new AppError(`Invalid transaction type. Must be one of: ${VALID_TRANSACTION_TYPES.join(', ')}`, 400);
+  }
+
+  const parsedAmount = Number(amount);
+  if (!isFinite(parsedAmount) || parsedAmount <= 0) {
+    throw new AppError('Transaction amount must be a positive number', 400);
+  }
+
   const restored = new Transaction({
     userId,
-    type: deletedTransaction.type,
-    amount: deletedTransaction.amount,
-    category: deletedTransaction.category,
-    description: deletedTransaction.description,
-    paymentMethod: deletedTransaction.paymentMethod,
-    mood: deletedTransaction.mood,
-    date: deletedTransaction.date || new Date()
+    type,
+    amount: parsedAmount,
+    category,
+    description,
+    paymentMethod,
+    mood,
+    date: date || new Date()
   });
 
   await restored.save();
