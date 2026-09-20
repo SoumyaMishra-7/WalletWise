@@ -419,27 +419,39 @@ const undoTransaction = catchAsync(async (req, res) => {
     throw new AppError('No transaction data provided for undo', 400);
   }
 
+  const {
+    type, amount, category, description, paymentMethod, mood, date,
+    isRecurring, recurringInterval, nextExecutionDate, walletId,
+    encryptedNote
+  } = deletedTransaction;
+
   const restored = new Transaction({
     userId,
-    type: deletedTransaction.type,
-    amount: deletedTransaction.amount,
-    category: deletedTransaction.category,
-    description: deletedTransaction.description,
-    paymentMethod: deletedTransaction.paymentMethod,
-    mood: deletedTransaction.mood,
-    date: deletedTransaction.date || new Date()
+    type,
+    amount,
+    category,
+    description,
+    paymentMethod,
+    mood,
+    date: date || new Date(),
+    isRecurring: isRecurring || false,
+    recurringInterval: recurringInterval || null,
+    nextExecutionDate: nextExecutionDate || null,
+    walletId: walletId || null,
+    encryptedNote: encryptedNote || null,
   });
 
   await restored.save();
 
-  const balanceChange =
-    restored.type === 'income'
-      ? restored.amount
-      : -restored.amount;
+  const balanceChange = restored.type === 'income' ? restored.amount : -restored.amount;
 
-  await User.findByIdAndUpdate(userId, {
-    $inc: { walletBalance: balanceChange }
-  });
+  // Restore balance to the correct wallet (shared or personal)
+  if (walletId) {
+    const Wallet = require('../models/Wallet');
+    await Wallet.findByIdAndUpdate(walletId, { $inc: { balance: balanceChange } });
+  } else {
+    await User.findByIdAndUpdate(userId, { $inc: { walletBalance: balanceChange } });
+  }
 
   await logTransactionActivity({
     userId,
