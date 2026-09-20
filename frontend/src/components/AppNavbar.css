@@ -452,20 +452,26 @@
     display: none;
     position: absolute;
     top: 100%;
+    left: 0;
+    right: 0;
     width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
     background: var(--bg-card);
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     flex-direction: column;
     gap: 0.5rem;
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     border-top: 1px solid var(--border-subtle);
+    overflow-y: auto;
+    max-height: calc(100vh - 64px);
   }
 
   .nav-menu.active {
     display: flex;
-    align-items: start;
+    align-items: stretch;
   }
 
   .nav-profile-item {
