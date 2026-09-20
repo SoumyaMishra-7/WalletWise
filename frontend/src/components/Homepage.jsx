@@ -642,9 +642,13 @@ const Homepage = () => {
                     <h3>{item.title}</h3>
                     <p>{item.text}</p>
                     {item.className === "span-2" && (
-                      <div className="ww-bento-link">
+                      <a
+                        href="#features"
+                        className="ww-bento-link"
+                        style={{ cursor: 'pointer', textDecoration: 'none' }}
+                      >
                         Learn more <ArrowUpRight size={16} />
-                      </div>
+                      </a>
                     )}
                   </div>
                   {/* Render Visual for large cards */}
