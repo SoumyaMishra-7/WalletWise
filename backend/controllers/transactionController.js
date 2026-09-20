@@ -196,17 +196,21 @@ const getAllTransactions = catchAsync(async (req, res) => {
     query.walletId = null; // Only personal transactions
   }
 
-  // Process recurring transactions
-  // For simplicity, recurring transactions are currently bound to personal userId.
-  // If we want recurring inside shared wallets, we'll need to expand this query.
-  const recurringTransactions = await Transaction.find({
-    userId,
-    isRecurring: true,
-    nextExecutionDate: { $lte: new Date() },
-    walletId: null // Process only personal recurring transactions for now
-  });
-
-  for (const rt of recurringTransactions) {
+  // Process recurring transactions using atomic findOneAndUpdate to prevent
+  // duplicate creation under concurrent requests (optimistic locking via
+  // nextExecutionDate guard).
+  const now = new Date();
+  let rt;
+  while ((rt = await Transaction.findOneAndUpdate(
+    {
+      userId,
+      isRecurring: true,
+      nextExecutionDate: { $lte: now },
+      walletId: null,
+    },
+    { $set: { nextExecutionDate: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000) } },
+    { new: false }
+  )) !== null) {
     await withTransaction(async (session) => {
 
       const newTransaction = new Transaction({
@@ -236,14 +240,14 @@ const getAllTransactions = catchAsync(async (req, res) => {
         action: "CREATED"
       });
 
+      // rt.nextExecutionDate is the *original* due date (before the atomic claim).
+      // Compute the real next date from it.
       let nextDate = new Date(rt.nextExecutionDate);
-
       if (rt.recurringInterval === "daily") nextDate.setDate(nextDate.getDate() + 1);
       else if (rt.recurringInterval === "weekly") nextDate.setDate(nextDate.getDate() + 7);
       else if (rt.recurringInterval === "monthly") nextDate.setMonth(nextDate.getMonth() + 1);
 
-      rt.nextExecutionDate = nextDate;
-      await rt.save({ session });
+      await Transaction.findByIdAndUpdate(rt._id, { nextExecutionDate: nextDate }, { session });
     });
   }
 
