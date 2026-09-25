@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Transaction = require('../models/Transactions');
 const User = require('../models/User');
+const Wallet = require('../models/Wallet');
 
 const STRICT_MODE = process.env.STRICT_WALLET_BALANCE === "true";
 const { z } = require('zod');
@@ -70,6 +71,27 @@ const addTransaction = catchAsync(async (req, res, next) => {
     isEncrypted,
     encryptedData
   } = parsed.data;
+
+  if (walletId) {
+    if (!isValidObjectId(walletId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid wallet ID format'
+      });
+    }
+
+    const wallet = await Wallet.findOne({
+      _id: walletId,
+      'members.user': userId
+    });
+
+    if (!wallet) {
+      return res.status(403).json({
+        success: false,
+        message: 'Wallet not found or access denied'
+      });
+    }
+  }
 
   // Duplicate Detection (24 hour window)
   const duplicateWindow = 24 * 60 * 60 * 1000;
@@ -155,16 +177,6 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
-    try {
-      await transaction.save({ session });
-    } catch (error) {
-      // Revert balance on failure
-      if (walletId) {
-        await require('../models/Wallet').findByIdAndUpdate(walletId, { $inc: { balance: -balanceChange } }, { session });
-      } else {
-        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } }, { session });
-      }
-      throw error;
     }
 
     // Log Activity
@@ -397,12 +409,6 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
-    const query = { _id: transaction.walletId };
-    if (STRICT_MODE && balanceChange < 0) {
-      query.balance = { $gte: Math.abs(balanceChange) };
-    }
-    const Wallet = require('../models/Wallet');
-    const updatedWallet = await Wallet.findOneAndUpdate(query, {
       $inc: { balance: balanceChange }
     });
     if (!updatedWallet) {

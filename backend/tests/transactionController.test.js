@@ -2,6 +2,7 @@ const { MongoMemoryReplSet } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Transaction = require('../models/Transactions');
+const Wallet = require('../models/Wallet');
 const mockdate = require('mockdate');
 const {
     addTransaction,
@@ -20,6 +21,7 @@ beforeAll(async () => {
     await mongoose.connect(mongoUri);
     await User.createCollection();
     await Transaction.createCollection();
+    await Wallet.createCollection();
 });
 
 afterAll(async () => {
@@ -31,6 +33,7 @@ afterAll(async () => {
 beforeEach(async () => {
     await User.deleteMany({});
     await Transaction.deleteMany({});
+    await Wallet.deleteMany({});
     mockdate.reset();
 });
 
@@ -142,6 +145,36 @@ describe('Transaction Controller', () => {
             expect(tx.recurringInterval).toBe('monthly');
             // Next execution should be exactly 1 month later
             expect(tx.nextExecutionDate.toISOString()).toBe(new Date('2024-02-01T10:00:00.000Z').toISOString());
+        });
+
+        it('should reject transactions for wallets the user cannot access', async () => {
+            const owner = new User({
+                studentId: 'OWNER001',
+                email: 'owner@example.com',
+                walletBalance: 1000
+            });
+            await owner.save();
+
+            const wallet = await Wallet.create({
+                name: 'Private wallet',
+                owner: owner._id,
+                members: [{ user: owner._id, role: 'admin' }],
+                balance: 500
+            });
+
+            const req = mockRequest({
+                type: 'expense',
+                amount: 200,
+                category: 'food',
+                walletId: wallet._id.toString()
+            }, {}, {}, user._id);
+            const res = mockResponse();
+
+            await addTransaction(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(403);
+            expect(await Transaction.countDocuments({ userId: user._id })).toBe(0);
+            expect((await Wallet.findById(wallet._id)).balance).toBe(500);
         });
     });
 
