@@ -1,20 +1,18 @@
 const rateLimit = require('express-rate-limit');
 const slowDown = require('express-slow-down');
 
-// 1. Total Traffic Limiter (Global Fuse)
-// This applies to the entire server regardless of IP.
-// It acts as a circuit breaker to prevent total resource exhaustion during a DDoS attack.
+// 1. Total Traffic Limiter (Per-IP Fuse)
+// Applies per IP (default key generator) to avoid a single client
+// exhausting a shared global bucket and denying service to everyone.
 const totalTrafficLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute window
-    max: 1000, // Limit the entire server to 1000 requests per minute
+    max: 1000, // Limit each IP to 1000 requests per minute
     standardHeaders: false, // Don't leak this aggregate info in headers
     legacyHeaders: false,
     message: {
         success: false,
         message: 'The server is currently experiencing high traffic. Please try again later.',
     },
-    // Custom key generator to apply globally
-    keyGenerator: (req, res) => 'global',
 });
 
 // 2. Speed Limiter (Throttler)
