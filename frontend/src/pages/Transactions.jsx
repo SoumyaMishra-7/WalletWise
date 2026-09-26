@@ -232,7 +232,7 @@ const Transactions = () => {
   const handleSkip = async (id) => {
     if (!window.confirm('Are you sure you want to skip the next occurrence of this recurring transaction?')) return;
     try {
-      const response = await api.post(`/api/transactions/${id}/skip`);
+      const response = await api.patch(`/api/transactions/recurring/${id}/skip`);
       if (response.data?.success) {
         alert('Next occurrence skipped successfully!');
         fetchTransactions();
