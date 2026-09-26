@@ -3,8 +3,14 @@ import { toast } from 'react-hot-toast';
 
 const AUTH_TOKEN_KEY = 'walletwise_access_token';
 
-export const getApiOrigin = () =>
-  (process.env.REACT_APP_API_URL || 'https://walletwise-3.onrender.com').replace(/\/+$/, '');
+export const getApiOrigin = () => {
+  const configured = (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '');
+  if (configured) return configured;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('REACT_APP_API_URL must be set in production');
+  }
+  return '';
+};
 
 const sanitizedBaseUrl = getApiOrigin();
 const API_BASE_URL = sanitizedBaseUrl.endsWith('/api')
