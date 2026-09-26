@@ -708,9 +708,25 @@ const forgotPassword = async (req, res) => {
 
 const verifyPasswordResetOtp = async (req, res) => {
   try {
-    res.status(200).json({ message: "OTP verified" });
+    const { email, otp } = req.body || {};
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+    if (!normalizedEmail || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user || !user.passwordResetOtpHash || !user.passwordResetOtpExpires) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+    }
+    if (user.passwordResetOtpExpires < new Date()) {
+      return res.status(400).json({ success: false, message: 'OTP expired' });
+    }
+    const matches = user.passwordResetOtpHash === hashOtp(String(otp).trim());
+    if (!matches) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+    return res.status(200).json({ success: true, message: 'OTP verified' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ success: false, message: 'Failed to verify OTP' });
   }
 };
 
