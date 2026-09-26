@@ -298,6 +298,15 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const logout = asyncHandler(async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.refresh_token;
+    if (refreshToken) {
+      const decoded = verifyRefreshToken(refreshToken);
+      await User.findByIdAndUpdate(decoded.sub, { $unset: { refreshTokenHash: 1 } });
+    }
+  } catch {
+    // Token already invalid/expired — still clear cookies below.
+  }
   clearAuthCookies(res);
   return res.json({
     success: true,
