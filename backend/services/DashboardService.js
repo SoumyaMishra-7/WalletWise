@@ -38,6 +38,9 @@ class DashboardService {
             this.Subscription.find({ userId, isActive: true })
         ]);
 
+        // Helper to get base converted amount for calculations
+        const getBase = (t) => (t.baseAmount !== undefined && t.baseAmount !== null ? t.baseAmount : (t.amount || 0));
+
         const monthlyTransactions = transactions.filter(t => t.date >= startOfMonth);
         const prevMonthTransactions = transactions.filter(
             t => t.date >= startOfPrevMonth && t.date <= endOfPrevMonth
@@ -45,13 +48,13 @@ class DashboardService {
 
         const monthlyExpenses = monthlyTransactions
             .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, t) => sum + getBase(t), 0);
         const monthlyIncome = monthlyTransactions
             .filter(t => t.type === 'income')
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, t) => sum + getBase(t), 0);
         const prevMonthExpenses = prevMonthTransactions
             .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, t) => sum + getBase(t), 0);
 
         const totalSavings = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
 
@@ -62,6 +65,11 @@ class DashboardService {
                 id: t._id,
                 type: t.type,
                 amount: t.amount,
+                currency: t.currency || 'USD',
+                originalAmount: t.originalAmount !== undefined ? t.originalAmount : t.amount,
+                originalCurrency: t.originalCurrency || t.currency || 'USD',
+                exchangeRate: t.exchangeRate !== undefined ? t.exchangeRate : 1,
+                baseAmount: t.baseAmount !== undefined ? t.baseAmount : t.amount,
                 category: t.category,
                 description: t.description,
                 date: t.date,
@@ -73,12 +81,12 @@ class DashboardService {
         const budgetUsedPercentage = monthlyBudget > 0 ?
             Math.min((monthlyExpenses / monthlyBudget) * 100, 100) : 0;
         const budgetLeft = Math.max(0, monthlyBudget - monthlyExpenses);
-        const totalBalance = user.walletBalance;
+        const totalBalance = user ? user.walletBalance : 0;
 
         const categoryMap = new Map();
         monthlyTransactions.filter(t => t.type === 'expense').forEach(t => {
             const key = t.category || 'Other';
-            categoryMap.set(key, (categoryMap.get(key) || 0) + t.amount);
+            categoryMap.set(key, (categoryMap.get(key) || 0) + getBase(t));
         });
         const categorySpending = Array.from(categoryMap.entries())
             .map(([name, amount]) => ({ name, amount }))
@@ -93,7 +101,7 @@ class DashboardService {
             nextDay.setDate(day.getDate() + 1);
             const amount = transactions
                 .filter(t => t.type === 'expense' && t.date >= day && t.date < nextDay)
-                .reduce((sum, t) => sum + t.amount, 0);
+                .reduce((sum, t) => sum + getBase(t), 0);
             dayBuckets.push({ day: day.toLocaleDateString('en-US', { weekday: 'short' }), amount });
         }
 

@@ -15,6 +15,9 @@ let mongoServer;
 jest.setTimeout(60000);
 
 beforeAll(async () => {
+    if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+    }
     mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
     const mongoUri = mongoServer.getUri();
     await mongoose.connect(mongoUri);
@@ -24,7 +27,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await mongoose.disconnect();
-    await mongoServer.stop();
+    if (mongoServer) {
+        await mongoServer.stop();
+    }
     mockdate.reset();
 });
 

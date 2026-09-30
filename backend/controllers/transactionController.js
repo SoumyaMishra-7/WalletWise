@@ -12,6 +12,7 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const gamification = require('../utils/gamification');
 const { escapeRegex } = require('../utils/helpers');
+const { getHistoricalRate, roundCurrency, BASE_CURRENCY } = require('../utils/currencyConverter');
 
 // Local development fallback (no MongoDB replica set)
 const withTransaction = async (operation) => {
@@ -23,6 +24,20 @@ const transactionSchema = z.object({
   amount: z.preprocess(
     (val) => (typeof val === 'string' ? Number(val) : val),
     z.number().finite().positive("Amount must be greater than 0")
+  ),
+  currency: z.string().trim().min(3).max(3).optional(),
+  originalAmount: z.preprocess(
+    (val) => (val !== undefined && val !== null && val !== '' ? Number(val) : undefined),
+    z.number().finite().positive().optional()
+  ),
+  originalCurrency: z.string().trim().min(3).max(3).optional(),
+  exchangeRate: z.preprocess(
+    (val) => (val !== undefined && val !== null && val !== '' ? Number(val) : undefined),
+    z.number().finite().positive().optional()
+  ),
+  baseAmount: z.preprocess(
+    (val) => (val !== undefined && val !== null && val !== '' ? Number(val) : undefined),
+    z.number().finite().positive().optional()
   ),
   category: z.string().trim().min(1, "Category is required").toLowerCase(),
   description: z.string().trim().optional().default(''),
@@ -59,6 +74,7 @@ const addTransaction = catchAsync(async (req, res, next) => {
   const {
     type,
     amount,
+    currency,
     category,
     description,
     paymentMethod,
@@ -91,6 +107,35 @@ const addTransaction = catchAsync(async (req, res, next) => {
     });
   }
 
+  // Determine base currency: from wallet (if wallet transaction) or user's preference or system default
+  let baseCurrency = BASE_CURRENCY;
+  if (walletId) {
+    const Wallet = require('../models/Wallet');
+    const wallet = await Wallet.findById(walletId).select('currency');
+    if (wallet && wallet.currency) {
+      baseCurrency = wallet.currency.toUpperCase();
+    }
+  } else if (userId) {
+    const user = await User.findById(userId).select('currency');
+    if (user && user.currency) {
+      baseCurrency = user.currency.toUpperCase();
+    }
+  }
+
+  const txCurrency = (currency || baseCurrency).toUpperCase();
+  const txDate = date || new Date();
+
+  let exchangeRate = 1;
+  let baseAmount = amount;
+
+  if (txCurrency === baseCurrency) {
+    exchangeRate = 1;
+    baseAmount = roundCurrency(amount);
+  } else {
+    exchangeRate = await getHistoricalRate(txCurrency, baseCurrency, txDate);
+    baseAmount = roundCurrency(amount * exchangeRate);
+  }
+
   const result = await withTransaction(async (session) => {
     let nextExecutionDate = null;
 
@@ -102,7 +147,7 @@ const addTransaction = catchAsync(async (req, res, next) => {
       nextExecutionDate = now;
     }
 
-    const balanceChange = type === 'income' ? amount : -amount;
+    const balanceChange = type === 'income' ? baseAmount : -baseAmount;
 
     if (walletId) {
       // Conditional atomic update
@@ -141,6 +186,11 @@ const addTransaction = catchAsync(async (req, res, next) => {
       userId,
       type,
       amount,
+      currency: txCurrency,
+      originalAmount: amount,
+      originalCurrency: txCurrency,
+      exchangeRate,
+      baseAmount,
       category,
       description,
       paymentMethod,
@@ -233,8 +283,8 @@ const getAllTransactions = catchAsync(async (req, res) => {
 
   for (const rt of recurringTransactions) {
     await withTransaction(async (session) => {
-
-      const balanceChange = rt.type === 'income' ? rt.amount : -rt.amount;
+      const rtBaseAmount = rt.baseAmount !== undefined ? rt.baseAmount : rt.amount;
+      const balanceChange = rt.type === 'income' ? rtBaseAmount : -rtBaseAmount;
       
       const query = { _id: rt.userId };
       if (STRICT_MODE && balanceChange < 0) {
@@ -256,6 +306,11 @@ const getAllTransactions = catchAsync(async (req, res) => {
         userId: rt.userId,
         type: rt.type,
         amount: rt.amount,
+        currency: rt.currency || 'USD',
+        originalAmount: rt.originalAmount !== undefined ? rt.originalAmount : rt.amount,
+        originalCurrency: rt.originalCurrency || rt.currency || 'USD',
+        exchangeRate: rt.exchangeRate !== undefined ? rt.exchangeRate : 1,
+        baseAmount: rtBaseAmount,
         category: rt.category,
         description: rt.description,
         paymentMethod: rt.paymentMethod,
@@ -359,6 +414,82 @@ const updateTransaction = catchAsync(async (req, res) => {
 
   const updateData = parsed.data;
 
+  // Determine base currency
+  let baseCurrency = BASE_CURRENCY;
+  if (oldTransaction.walletId) {
+    const Wallet = require('../models/Wallet');
+    const wallet = await Wallet.findById(oldTransaction.walletId).select('currency');
+    if (wallet && wallet.currency) baseCurrency = wallet.currency.toUpperCase();
+  } else {
+    const user = await User.findById(userId).select('currency');
+    if (user && user.currency) baseCurrency = user.currency.toUpperCase();
+  }
+
+  const newAmount = updateData.amount !== undefined ? updateData.amount : oldTransaction.amount;
+  const newCurrency = (updateData.currency || oldTransaction.currency || baseCurrency).toUpperCase();
+  const newDate = updateData.date !== undefined ? updateData.date : oldTransaction.date;
+  const newType = updateData.type || oldTransaction.type;
+
+  let newExchangeRate = oldTransaction.exchangeRate !== undefined ? oldTransaction.exchangeRate : 1;
+  let newBaseAmount = oldTransaction.baseAmount !== undefined ? oldTransaction.baseAmount : oldTransaction.amount;
+
+  const oldDateStr = oldTransaction.date ? new Date(oldTransaction.date).toISOString().split('T')[0] : '';
+  const newDateStr = newDate ? new Date(newDate).toISOString().split('T')[0] : '';
+  const currencyChanged = updateData.currency && updateData.currency.toUpperCase() !== (oldTransaction.currency || '').toUpperCase();
+  const dateChanged = updateData.date && newDateStr !== oldDateStr;
+  const amountChanged = updateData.amount !== undefined && updateData.amount !== oldTransaction.amount;
+
+  if (currencyChanged || dateChanged) {
+    if (newCurrency === baseCurrency) {
+      newExchangeRate = 1;
+      newBaseAmount = roundCurrency(newAmount);
+    } else {
+      newExchangeRate = await getHistoricalRate(newCurrency, baseCurrency, newDate);
+      newBaseAmount = roundCurrency(newAmount * newExchangeRate);
+    }
+  } else if (amountChanged) {
+    // Retain snapshot exchange rate if amount changed without currency or date changes
+    newBaseAmount = roundCurrency(newAmount * newExchangeRate);
+  }
+
+  updateData.currency = newCurrency;
+  updateData.originalCurrency = newCurrency;
+  updateData.originalAmount = newAmount;
+  updateData.exchangeRate = newExchangeRate;
+  updateData.baseAmount = newBaseAmount;
+
+  // Adjust balance by net difference
+  const oldBase = oldTransaction.baseAmount !== undefined ? oldTransaction.baseAmount : oldTransaction.amount;
+  const oldBalanceEffect = oldTransaction.type === 'income' ? oldBase : -oldBase;
+  const newBalanceEffect = newType === 'income' ? newBaseAmount : -newBaseAmount;
+  const balanceDelta = newBalanceEffect - oldBalanceEffect;
+
+  if (balanceDelta !== 0) {
+    if (oldTransaction.walletId) {
+      const query = { _id: oldTransaction.walletId };
+      if (STRICT_MODE && balanceDelta < 0) {
+        query.balance = { $gte: Math.abs(balanceDelta) };
+      }
+      const updatedWallet = await require('../models/Wallet').findOneAndUpdate(query, {
+        $inc: { balance: balanceDelta }
+      });
+      if (!updatedWallet) {
+        throw new AppError('Insufficient funds in shared wallet to apply update', 400);
+      }
+    } else {
+      const query = { _id: userId };
+      if (STRICT_MODE && balanceDelta < 0) {
+        query.walletBalance = { $gte: Math.abs(balanceDelta) };
+      }
+      const updatedUser = await User.findOneAndUpdate(query, {
+        $inc: { walletBalance: balanceDelta }
+      });
+      if (!updatedUser) {
+        throw new AppError('Insufficient personal funds to apply update', 400);
+      }
+    }
+  }
+
   Object.assign(oldTransaction, updateData);
   await oldTransaction.save();
 
@@ -391,10 +522,15 @@ const deleteTransaction = catchAsync(async (req, res) => {
     throw new AppError('Transaction not found', 404);
   }
 
+  const baseAmount =
+    transaction.baseAmount !== undefined
+      ? transaction.baseAmount
+      : transaction.amount;
+
   const balanceChange =
     transaction.type === 'income'
-      ? -transaction.amount
-      : transaction.amount;
+      ? -baseAmount
+      : baseAmount;
 
   if (transaction.walletId) {
     const query = { _id: transaction.walletId };
@@ -489,10 +625,15 @@ const undoTransaction = catchAsync(async (req, res) => {
     throw new AppError('No transaction data provided for undo', 400);
   }
 
+  const baseAmount =
+    deletedTransaction.baseAmount !== undefined
+      ? deletedTransaction.baseAmount
+      : deletedTransaction.amount;
+
   const balanceChange =
     deletedTransaction.type === 'income'
-      ? deletedTransaction.amount
-      : -deletedTransaction.amount;
+      ? baseAmount
+      : -baseAmount;
 
   const query = { _id: userId };
   if (STRICT_MODE && balanceChange < 0) {
@@ -511,6 +652,11 @@ const undoTransaction = catchAsync(async (req, res) => {
     userId,
     type: deletedTransaction.type,
     amount: deletedTransaction.amount,
+    currency: deletedTransaction.currency || 'USD',
+    originalAmount: deletedTransaction.originalAmount !== undefined ? deletedTransaction.originalAmount : deletedTransaction.amount,
+    originalCurrency: deletedTransaction.originalCurrency || deletedTransaction.currency || 'USD',
+    exchangeRate: deletedTransaction.exchangeRate !== undefined ? deletedTransaction.exchangeRate : 1,
+    baseAmount: baseAmount,
     category: deletedTransaction.category,
     description: deletedTransaction.description,
     paymentMethod: deletedTransaction.paymentMethod,

@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -186,9 +186,8 @@ app.use('/api/v1/auth', authLimiter);
 app.use('/api/auth', authLimiter);
 
 // ==================== DATABASE CONNECTION ====================
-console.log(`🔗 Connecting to MongoDB: ${MONGODB_URI}`);
-
 if (process.env.NODE_ENV !== 'test') {
+    console.log(`🔗 Connecting to MongoDB: ${MONGODB_URI}`);
     mongoose.connect(MONGODB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,

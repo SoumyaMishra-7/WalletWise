@@ -519,9 +519,11 @@ const getBudgetSummary = async (req, res) => {
                 $gte: startOfMonth,
                 $lte: endOfMonth
             }
-        }).select("category amount");
+        }).select("category amount baseAmount");
 
-        const totalSpent = expenses.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+        const getTxSpend = (tx) => (tx.baseAmount !== undefined && tx.baseAmount !== null ? tx.baseAmount : (tx.amount || 0));
+
+        const totalSpent = expenses.reduce((sum, tx) => sum + getTxSpend(tx), 0);
 
         if (!budget) {
             return res.json({
@@ -540,7 +542,7 @@ const getBudgetSummary = async (req, res) => {
         const spentByCategory = new Map();
         expenses.forEach((tx) => {
             const key = String(tx.category || "").toLowerCase();
-            spentByCategory.set(key, (spentByCategory.get(key) || 0) + (tx.amount || 0));
+            spentByCategory.set(key, (spentByCategory.get(key) || 0) + getTxSpend(tx));
         });
 
         const categoriesWithSpend = budget.categories.map((category) => {

@@ -1,6 +1,7 @@
 const { z } = require('zod');
 const AppError = require('../utils/appError');
 const { isValidObjectId } = require('../utils/validation');
+const { getHistoricalRate, roundCurrency, BASE_CURRENCY } = require('../utils/currencyConverter');
 
 const transactionSchema = z.object({
     type: z.enum(['income', 'expense']),
@@ -8,6 +9,21 @@ const transactionSchema = z.object({
     amount: z.preprocess(
         (val) => (typeof val === 'string' ? Number(val) : val),
         z.number().finite().positive("Amount must be greater than 0")
+    ),
+
+    currency: z.string().trim().min(3).max(3).optional(),
+    originalAmount: z.preprocess(
+        (val) => (val !== undefined && val !== null && val !== '' ? Number(val) : undefined),
+        z.number().finite().positive().optional()
+    ),
+    originalCurrency: z.string().trim().min(3).max(3).optional(),
+    exchangeRate: z.preprocess(
+        (val) => (val !== undefined && val !== null && val !== '' ? Number(val) : undefined),
+        z.number().finite().positive().optional()
+    ),
+    baseAmount: z.preprocess(
+        (val) => (val !== undefined && val !== null && val !== '' ? Number(val) : undefined),
+        z.number().finite().positive().optional()
     ),
 
     category: z.string().min(1, "Category is required"),
@@ -61,7 +77,7 @@ class TransactionService {
         }
 
         const {
-            type, amount, category, description, paymentMethod,
+            type, amount, currency, category, description, paymentMethod,
             mood, date, isRecurring, recurringInterval,
             forceDuplicate, walletId, isEncrypted, encryptedData
         } = parsed.data;
@@ -91,11 +107,32 @@ class TransactionService {
             nextExecutionDate = now;
         }
 
+        const user = await this.userRepo.findById(userId);
+        const baseCurrency = (user?.currency || BASE_CURRENCY || 'USD').toUpperCase();
+        const txCurrency = (currency || baseCurrency).toUpperCase();
+        const txDate = date || new Date();
+
+        let exchangeRate = 1;
+        let baseAmount = amount;
+
+        if (txCurrency === baseCurrency) {
+            exchangeRate = 1;
+            baseAmount = roundCurrency(amount);
+        } else {
+            exchangeRate = await getHistoricalRate(txCurrency, baseCurrency, txDate);
+            baseAmount = roundCurrency(amount * exchangeRate);
+        }
+
         // Create the transaction
         const transaction = await this.txRepo.create({
             userId,
             type,
             amount,
+            currency: txCurrency,
+            originalAmount: amount,
+            originalCurrency: txCurrency,
+            exchangeRate,
+            baseAmount,
             category,
             description,
             paymentMethod,
@@ -109,12 +146,11 @@ class TransactionService {
             encryptedData
         });
 
-        // Update user balance
-        const balanceDelta = type === 'income' ? amount : -amount;
+        // Update user balance using baseAmount
+        const balanceDelta = type === 'income' ? baseAmount : -baseAmount;
 
-        const user = await this.userRepo.findById(userId);
         if (user) {
-            if (this.STRICT_MODE && type === 'expense' && user.walletBalance < amount) {
+            if (this.STRICT_MODE && type === 'expense' && user.walletBalance < baseAmount) {
                 throw new AppError('Insufficient balance', 400);
             }
             user.walletBalance = (user.walletBalance || 0) + balanceDelta;
@@ -167,10 +203,16 @@ class TransactionService {
         });
 
         for (const rt of recurringTransactions) {
+            const rtBaseAmount = rt.baseAmount !== undefined ? rt.baseAmount : rt.amount;
             const newTransaction = await this.txRepo.create({
                 userId: rt.userId,
                 type: rt.type,
                 amount: rt.amount,
+                currency: rt.currency || 'USD',
+                originalAmount: rt.originalAmount !== undefined ? rt.originalAmount : rt.amount,
+                originalCurrency: rt.originalCurrency || rt.currency || 'USD',
+                exchangeRate: rt.exchangeRate !== undefined ? rt.exchangeRate : 1,
+                baseAmount: rtBaseAmount,
                 category: rt.category,
                 description: rt.description,
                 paymentMethod: rt.paymentMethod,
@@ -182,7 +224,7 @@ class TransactionService {
             // Update user balance
             const user = await this.userRepo.findById(userId);
             if (user) {
-                const delta = rt.type === 'income' ? rt.amount : -rt.amount;
+                const delta = rt.type === 'income' ? rtBaseAmount : -rtBaseAmount;
                 user.walletBalance = (user.walletBalance || 0) + delta;
                 await user.save();
             }
@@ -261,17 +303,47 @@ class TransactionService {
             throw new AppError('Transaction not found', 404);
         }
 
-        // Revert old balance effect
         const user = await this.userRepo.findById(userId);
-        if (user) {
-            const revert = oldTransaction.type === 'income' ? -oldTransaction.amount : oldTransaction.amount;
-            user.walletBalance = (user.walletBalance || 0) + revert;
+        const baseCurrency = (user?.currency || BASE_CURRENCY || 'USD').toUpperCase();
 
-            // Apply new balance effect
-            const newType = updateData.type || oldTransaction.type;
-            const newAmount = updateData.amount !== undefined ? updateData.amount : oldTransaction.amount;
-            const apply = newType === 'income' ? newAmount : -newAmount;
-            user.walletBalance += apply;
+        const newAmount = updateData.amount !== undefined ? updateData.amount : oldTransaction.amount;
+        const newCurrency = (updateData.currency || oldTransaction.currency || baseCurrency).toUpperCase();
+        const newDate = updateData.date !== undefined ? updateData.date : oldTransaction.date;
+        const newType = updateData.type || oldTransaction.type;
+
+        let newExchangeRate = oldTransaction.exchangeRate !== undefined ? oldTransaction.exchangeRate : 1;
+        let newBaseAmount = oldTransaction.baseAmount !== undefined ? oldTransaction.baseAmount : oldTransaction.amount;
+
+        const oldDateStr = oldTransaction.date ? new Date(oldTransaction.date).toISOString().split('T')[0] : '';
+        const newDateStr = newDate ? new Date(newDate).toISOString().split('T')[0] : '';
+        const currencyChanged = updateData.currency && updateData.currency.toUpperCase() !== (oldTransaction.currency || '').toUpperCase();
+        const dateChanged = updateData.date && newDateStr !== oldDateStr;
+        const amountChanged = updateData.amount !== undefined && updateData.amount !== oldTransaction.amount;
+
+        if (currencyChanged || dateChanged) {
+            if (newCurrency === baseCurrency) {
+                newExchangeRate = 1;
+                newBaseAmount = roundCurrency(newAmount);
+            } else {
+                newExchangeRate = await getHistoricalRate(newCurrency, baseCurrency, newDate);
+                newBaseAmount = roundCurrency(newAmount * newExchangeRate);
+            }
+        } else if (amountChanged) {
+            newBaseAmount = roundCurrency(newAmount * newExchangeRate);
+        }
+
+        updateData.currency = newCurrency;
+        updateData.originalCurrency = newCurrency;
+        updateData.originalAmount = newAmount;
+        updateData.exchangeRate = newExchangeRate;
+        updateData.baseAmount = newBaseAmount;
+
+        // Revert old balance effect and apply new one
+        if (user) {
+            const oldBase = oldTransaction.baseAmount !== undefined ? oldTransaction.baseAmount : oldTransaction.amount;
+            const revert = oldTransaction.type === 'income' ? -oldBase : oldBase;
+            const apply = newType === 'income' ? newBaseAmount : -newBaseAmount;
+            user.walletBalance = (user.walletBalance || 0) + revert + apply;
             await user.save();
         }
 
@@ -301,7 +373,8 @@ class TransactionService {
         // Revert balance
         const user = await this.userRepo.findById(userId);
         if (user) {
-            const revert = transaction.type === 'income' ? -transaction.amount : transaction.amount;
+            const baseAmount = transaction.baseAmount !== undefined ? transaction.baseAmount : transaction.amount;
+            const revert = transaction.type === 'income' ? -baseAmount : baseAmount;
             user.walletBalance = (user.walletBalance || 0) + revert;
             await user.save();
         }

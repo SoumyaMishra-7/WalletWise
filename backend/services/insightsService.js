@@ -49,7 +49,8 @@ const getInsightsSummary = async (userId) => {
         },
         {
             $project: {
-                amount: 1,
+                amount: { $ifNull: ["$baseAmount", "$amount"] },
+                baseAmount: 1,
                 category: 1,
                 date: 1,
                 description: 1,

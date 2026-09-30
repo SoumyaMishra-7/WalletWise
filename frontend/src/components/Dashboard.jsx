@@ -698,14 +698,18 @@ const Dashboard = () => {
   };
 
   // ============ UTILITIES ============
-  const formatCurrency = (amount) => {
-    const currency = user?.currency || 'USD';
+  const formatCurrency = (amount, currencyCode = null) => {
+    const currency = currencyCode || user?.currency || 'USD';
     const locale = currency === 'INR' ? 'en-IN' : 'en-US';
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0
-    }).format(amount);
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 0
+      }).format(amount || 0);
+    } catch {
+      return `${currency} ${Number(amount || 0).toFixed(0)}`;
+    }
   };
 
   const formatTransactionDate = (dateString) => {
@@ -1606,7 +1610,16 @@ const Dashboard = () => {
                   </div>
                   <div className={`transaction-amount ${transaction.type}`}>
                     {transaction.type === "expense" ? "-" : "+"}
-                    {formatCurrency(transaction.amount)}
+                    {transaction.currency && transaction.currency !== (user?.currency || 'USD') ? (
+                      <span>
+                        {formatCurrency(transaction.amount, transaction.currency)}
+                        <span style={{ display: 'block', fontSize: '0.72rem', opacity: 0.75, fontWeight: 'normal' }}>
+                          ≈ {formatCurrency(transaction.baseAmount !== undefined ? transaction.baseAmount : transaction.amount)}
+                        </span>
+                      </span>
+                    ) : (
+                      formatCurrency(transaction.amount)
+                    )}
                   </div>
                 </div>
               ))}
