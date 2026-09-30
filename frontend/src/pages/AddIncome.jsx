@@ -7,9 +7,26 @@ import VaultUnlock from '../components/Vault/VaultUnlock';
 import { Lock, Unlock } from 'lucide-react';
 import './AddExpense.css'; // Reusing the clean CSS
 
+const SUPPORTED_CURRENCIES = [
+  { code: 'USD', symbol: '$', name: 'US Dollar (USD)' },
+  { code: 'EUR', symbol: '€', name: 'Euro (EUR)' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee (INR)' },
+  { code: 'GBP', symbol: '£', name: 'British Pound (GBP)' },
+  { code: 'CAD', symbol: 'CA$', name: 'Canadian Dollar (CAD)' },
+  { code: 'AUD', symbol: 'AU$', name: 'Australian Dollar (AUD)' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen (JPY)' },
+  { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc (CHF)' },
+  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan (CNY)' },
+  { code: 'SGD', symbol: 'SG$', name: 'Singapore Dollar (SGD)' }
+];
+
 const AddIncome = ({ isOpen, onClose, onSuccess }) => {
+  const { user } = useAuth();
+  const defaultCurrency = user?.currency || 'USD';
+
   const [formData, setFormData] = useState({
     amount: '',
+    currency: defaultCurrency,
     category: 'pocket_money',
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -23,8 +40,8 @@ const AddIncome = ({ isOpen, onClose, onSuccess }) => {
   const [showVaultSetup, setShowVaultSetup] = useState(false);
   const [showVaultUnlock, setShowVaultUnlock] = useState(false);
 
-  const { user } = useAuth();
-  const currencySymbol = user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$'));
+  const selectedCurrencyObj = SUPPORTED_CURRENCIES.find(c => c.code === formData.currency);
+  const activeCurrencySymbol = selectedCurrencyObj ? selectedCurrencyObj.symbol : (user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$')));
 
   const incomeCategories = [
     { value: 'pocket_money', label: 'Pocket Money' },
@@ -54,6 +71,7 @@ const AddIncome = ({ isOpen, onClose, onSuccess }) => {
     const transactionData = {
       type: 'income',
       amount: Number(formData.amount),
+      currency: formData.currency,
       category: formData.category,
       date: formData.date,
       sourceNature: formData.sourceNature // Behavioral context
@@ -126,9 +144,32 @@ const AddIncome = ({ isOpen, onClose, onSuccess }) => {
         <form onSubmit={handleSubmit}>
           {/* Amount Field */}
           <div className="expense-form-group">
-            <label htmlFor="amount">Income Amount</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label htmlFor="amount" style={{ margin: 0, color: '#166534' }}>Income Amount (Required)</label>
+              <select
+                id="currency"
+                name="currency"
+                value={formData.currency}
+                onChange={handleChange}
+                disabled={loading}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #86efac',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  background: '#f0fdf4',
+                  color: '#166534',
+                  cursor: 'pointer'
+                }}
+              >
+                {SUPPORTED_CURRENCIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.code} ({c.symbol})</option>
+                ))}
+              </select>
+            </div>
             <div className="expense-amount-input">
-              <span className="currency-label" style={{ color: '#16a34a' }}>{currencySymbol}</span>
+              <span className="currency-label" style={{ color: '#16a34a' }}>{activeCurrencySymbol}</span>
               <input
                 type="number"
                 id="amount"
@@ -136,12 +177,18 @@ const AddIncome = ({ isOpen, onClose, onSuccess }) => {
                 value={formData.amount}
                 onChange={handleChange}
                 placeholder="0.00"
+                step="any"
                 style={{ borderColor: '#86efac', color: '#16a34a' }}
                 required
                 autoFocus
                 disabled={loading}
               />
             </div>
+            {formData.currency && (user?.currency || 'USD') !== formData.currency && (
+              <small style={{ color: '#166534', marginTop: '4px', display: 'block', fontSize: '0.78rem' }}>
+                ℹ️ Converts to your base currency (<strong>{user?.currency || 'USD'}</strong>) using historical rate on transaction date.
+              </small>
+            )}
           </div>
 
           {/* Behavioral Component: Source Nature */}

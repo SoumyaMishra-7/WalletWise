@@ -19,7 +19,7 @@ exports.getAnalyticsSummary = async (req, res) => {
       {
         $group: {
           _id: "$category",
-          total: { $sum: "$amount" }
+          total: { $sum: { $ifNull: ["$baseAmount", "$amount"] } }
         }
       }
     ]);
@@ -47,7 +47,7 @@ exports.getAnalyticsSummary = async (req, res) => {
             year: { $year: "$date" },
             month: { $month: "$date" }
           },
-          total: { $sum: "$amount" }
+          total: { $sum: { $ifNull: ["$baseAmount", "$amount"] } }
         }
       },
       {
@@ -130,7 +130,7 @@ exports.getAnalyticsSummary = async (req, res) => {
       {
         $group: {
           _id: "$category",
-          average: { $avg: "$amount" }
+          average: { $avg: { $ifNull: ["$baseAmount", "$amount"] } }
         }
       }
     ]);
@@ -198,7 +198,7 @@ exports.getForecast = async (req, res) => {
             year: { $year: "$date" },
             month: { $month: "$date" }
           },
-          monthlyTotal: { $sum: "$amount" }
+          monthlyTotal: { $sum: { $ifNull: ["$baseAmount", "$amount"] } }
         }
       },
       {
@@ -228,7 +228,7 @@ exports.getForecast = async (req, res) => {
       {
         $group: {
           _id: "$category",
-          total: { $sum: "$amount" }
+          total: { $sum: { $ifNull: ["$baseAmount", "$amount"] } }
         }
       }
     ]);

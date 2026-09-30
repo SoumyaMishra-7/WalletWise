@@ -22,6 +22,9 @@ const getDashboardSummary = async (req, res) => {
             Subscription.find({ userId, isActive: true })
         ]);
 
+        // Helper to get base converted amount for calculations
+        const getBase = (t) => (t.baseAmount !== undefined && t.baseAmount !== null ? t.baseAmount : (t.amount || 0));
+
         // Calculate monthly expenses and income
         const monthlyTransactions = transactions.filter(t => t.date >= startOfMonth);
         const prevMonthTransactions = transactions.filter(
@@ -30,15 +33,15 @@ const getDashboardSummary = async (req, res) => {
 
         const monthlyExpenses = monthlyTransactions
             .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, t) => sum + getBase(t), 0);
 
         const monthlyIncome = monthlyTransactions
             .filter(t => t.type === 'income')
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, t) => sum + getBase(t), 0);
 
         const prevMonthExpenses = prevMonthTransactions
             .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, t) => sum + getBase(t), 0);
 
         // Calculate total savings
         const totalSavings = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
@@ -51,6 +54,11 @@ const getDashboardSummary = async (req, res) => {
                 id: t._id,
                 type: t.type,
                 amount: t.amount,
+                currency: t.currency || 'USD',
+                originalAmount: t.originalAmount !== undefined ? t.originalAmount : t.amount,
+                originalCurrency: t.originalCurrency || t.currency || 'USD',
+                exchangeRate: t.exchangeRate !== undefined ? t.exchangeRate : 1,
+                baseAmount: t.baseAmount !== undefined ? t.baseAmount : t.amount,
                 category: t.category,
                 description: t.description,
                 date: t.date,
@@ -74,7 +82,7 @@ const getDashboardSummary = async (req, res) => {
             .forEach((t) => {
                 const key = t.category || 'Other';
                 const current = categoryMap.get(key) || 0;
-                categoryMap.set(key, current + t.amount);
+                categoryMap.set(key, current + getBase(t));
             });
 
         const categorySpending = Array.from(categoryMap.entries())
@@ -92,7 +100,7 @@ const getDashboardSummary = async (req, res) => {
 
             const amount = transactions
                 .filter(t => t.type === 'expense' && t.date >= day && t.date < nextDay)
-                .reduce((sum, t) => sum + t.amount, 0);
+                .reduce((sum, t) => sum + getBase(t), 0);
 
             dayBuckets.push({
                 day: day.toLocaleDateString('en-US', { weekday: 'short' }),

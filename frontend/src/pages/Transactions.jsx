@@ -164,10 +164,14 @@ const Transactions = () => {
   }, [debouncedSearch, activeQuickFilter, sortMode, startDate, endDate]);
 
 
-  const formatCurrency = (amount) => {
-    const currency = user?.currency || 'USD';
+  const formatCurrency = (amount, currencyCode = null) => {
+    const currency = currencyCode || user?.currency || 'USD';
     const locale = currency === 'INR' ? 'en-IN' : 'en-US';
-    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
+    try {
+      return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount || 0);
+    } catch {
+      return `${currency} ${Number(amount || 0).toFixed(2)}`;
+    }
   };
 
   const formatDate = (dateString) =>
@@ -185,11 +189,18 @@ const Transactions = () => {
         exportNote = decryptedNotes[tx.id || tx._id] || '[LOCKED NOTE]';
       }
 
+      const txCurr = tx.currency || tx.originalCurrency || user?.currency || 'USD';
+      const baseCurr = user?.currency || 'USD';
+      let amountStr = formatCurrency(tx.amount, txCurr);
+      if (txCurr !== baseCurr && tx.baseAmount !== undefined) {
+        amountStr += ` (≈ ${formatCurrency(tx.baseAmount, baseCurr)})`;
+      }
+
       return {
         date: formatDate(tx.date),
         category: tx.category || 'others',
         description: exportNote,
-        amount: tx.amount,
+        amount: amountStr,
         mood: moodMeta[normalizeMood(tx.mood)]?.label || 'Neutral'
       };
     });
@@ -413,7 +424,18 @@ const Transactions = () => {
                       <td>{formatDate(tx.date)}</td>
                       <td>{categoryLabel}</td>
                       <td className="note">{displayNote}</td>
-                      <td className={`amount ${tx.type}`}>{formatCurrency(tx.amount)}</td>
+                      <td className={`amount ${tx.type}`}>
+                        {tx.currency && tx.currency !== (user?.currency || 'USD') ? (
+                          <div>
+                            <div>{formatCurrency(tx.amount, tx.currency)}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'normal' }}>
+                              ≈ {formatCurrency(tx.baseAmount !== undefined ? tx.baseAmount : tx.amount, user?.currency || 'USD')}
+                            </div>
+                          </div>
+                        ) : (
+                          formatCurrency(tx.amount, tx.currency || user?.currency || 'USD')
+                        )}
+                      </td>
                       <td>
                         <span className="mood-pill" style={{ '--mood-color': mood.color }}>
                           <span className="mood-emoji" aria-hidden="true">

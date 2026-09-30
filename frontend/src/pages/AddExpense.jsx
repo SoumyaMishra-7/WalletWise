@@ -8,10 +8,27 @@ import VaultSetup from '../components/Vault/VaultSetup';
 import VaultUnlock from '../components/Vault/VaultUnlock';
 import './AddExpense.css';
 
+const SUPPORTED_CURRENCIES = [
+  { code: 'USD', symbol: '$', name: 'US Dollar (USD)' },
+  { code: 'EUR', symbol: '€', name: 'Euro (EUR)' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee (INR)' },
+  { code: 'GBP', symbol: '£', name: 'British Pound (GBP)' },
+  { code: 'CAD', symbol: 'CA$', name: 'Canadian Dollar (CAD)' },
+  { code: 'AUD', symbol: 'AU$', name: 'Australian Dollar (AUD)' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen (JPY)' },
+  { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc (CHF)' },
+  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan (CNY)' },
+  { code: 'SGD', symbol: 'SG$', name: 'Singapore Dollar (SGD)' }
+];
+
 // 1. Added 'transactionToEdit' to props
 const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
+  const { user } = useAuth();
+  const defaultCurrency = user?.currency || 'USD';
+
   const [formData, setFormData] = useState({
     amount: '',
+    currency: defaultCurrency,
     category: 'food',
     date: new Date().toISOString().split('T')[0],
     paymentMethod: 'cash',
@@ -30,14 +47,15 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
   const [showVaultSetup, setShowVaultSetup] = useState(false);
   const [showVaultUnlock, setShowVaultUnlock] = useState(false);
 
-  const { user } = useAuth();
-  const currencySymbol = user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$'));
+  const selectedCurrencyObj = SUPPORTED_CURRENCIES.find(c => c.code === formData.currency);
+  const activeCurrencySymbol = selectedCurrencyObj ? selectedCurrencyObj.symbol : (user?.currency === 'INR' ? '₹' : (user?.currency === 'EUR' ? '€' : (user?.currency === 'GBP' ? '£' : '$')));
 
-  // 2. Added useEffect to pre-fill the form when editiSmart Receipt Scanning (OCR)Smart Receipt Scanning (OCR)ng
+  // 2. Added useEffect to pre-fill the form when editing
   useEffect(() => {
     if (transactionToEdit) {
       setFormData({
-        amount: transactionToEdit.amount,
+        amount: transactionToEdit.originalAmount !== undefined ? transactionToEdit.originalAmount : transactionToEdit.amount,
+        currency: transactionToEdit.currency || transactionToEdit.originalCurrency || defaultCurrency,
         category: transactionToEdit.category || 'food',
         date: transactionToEdit.date ? new Date(transactionToEdit.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         paymentMethod: transactionToEdit.paymentMethod || 'cash',
@@ -48,6 +66,7 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
       // Reset form if adding new
       setFormData({
         amount: '',
+        currency: defaultCurrency,
         category: 'food',
         date: new Date().toISOString().split('T')[0],
         paymentMethod: 'cash',
@@ -55,7 +74,7 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
         mood: 'neutral'
       });
     }
-  }, [transactionToEdit, isOpen]);
+  }, [transactionToEdit, isOpen, defaultCurrency]);
 
   const expenseCategories = [
     { value: 'food', label: 'Food & Dining' },
@@ -125,6 +144,7 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
     const transactionData = {
       type: 'expense',
       amount: Number(formData.amount),
+      currency: formData.currency,
       category: formData.category,
       paymentMethod: formData.paymentMethod,
       date: formData.date,
@@ -369,9 +389,31 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
         <form onSubmit={handleSubmit}>
           {/* Amount Field */}
           <div className="expense-form-group">
-            <label htmlFor="amount">Amount (Required)</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label htmlFor="amount" style={{ margin: 0 }}>Amount (Required)</label>
+              <select
+                id="currency"
+                name="currency"
+                value={formData.currency}
+                onChange={handleChange}
+                disabled={loading}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  background: '#f9fafb',
+                  cursor: 'pointer'
+                }}
+              >
+                {SUPPORTED_CURRENCIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.code} ({c.symbol})</option>
+                ))}
+              </select>
+            </div>
             <div className="expense-amount-input">
-              <span className="currency-label">{currencySymbol}</span>
+              <span className="currency-label">{activeCurrencySymbol}</span>
               <input
                 type="number"
                 id="amount"
@@ -379,11 +421,17 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
                 value={formData.amount}
                 onChange={handleChange}
                 placeholder="0.00"
+                step="any"
                 required
                 autoFocus
                 disabled={loading}
               />
             </div>
+            {formData.currency && (user?.currency || 'USD') !== formData.currency && (
+              <small style={{ color: '#6b7280', marginTop: '4px', display: 'block', fontSize: '0.78rem' }}>
+                ℹ️ Converts to your base currency (<strong>{user?.currency || 'USD'}</strong>) using historical rate on transaction date.
+              </small>
+            )}
           </div>
 
           {/* Mood Tracking */}

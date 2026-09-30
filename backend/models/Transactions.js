@@ -21,6 +21,36 @@ const transactionSchema = new mongoose.Schema({
     min: 0
   },
 
+  // Multi-Currency Metadata (Issue #416)
+  currency: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    default: 'USD'
+  },
+
+  originalAmount: {
+    type: Number,
+    min: 0
+  },
+
+  originalCurrency: {
+    type: String,
+    trim: true,
+    uppercase: true
+  },
+
+  exchangeRate: {
+    type: Number,
+    min: 0,
+    default: 1
+  },
+
+  baseAmount: {
+    type: Number,
+    min: 0
+  },
+
   category: {
     type: String,
     enum: CATEGORIES,
