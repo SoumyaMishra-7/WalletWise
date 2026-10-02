@@ -82,13 +82,24 @@ const Budget = () => {
     const remainingBudget = monthlyBudget > 0
       ? Number(dashboardStats?.budgetLeft ?? Math.max(monthlyBudget - spent, 0))
       : 0;
-    const budgetUsed = monthlyBudget > 0 ? Math.min((spent / monthlyBudget) * 100, 100) : 0;
+    // Rollover can push the available amount to zero or below, which is still "a budget"
+    const hasBudget = Boolean(budgetSummary?.hasBudget) || monthlyBudget > 0;
+    const rolloverEnabled = Boolean(budgetSummary?.rolloverEnabled);
+    const rolloverAmount = rolloverEnabled ? Number(budgetSummary?.rolloverAmount || 0) : 0;
+    const budgetUsed = !hasBudget || spent <= 0
+      ? 0
+      : monthlyBudget > 0
+        ? Math.min((spent / monthlyBudget) * 100, 100)
+        : 100;
     const safeDailySpend = daysLeft > 0 ? remainingBudget / daysLeft : remainingBudget;
     const expectedSpendByToday = monthlyBudget > 0 ? (monthlyBudget / daysInMonth) * dayOfMonth : 0;
     const paceDelta = spent - expectedSpendByToday;
 
     return {
       monthlyBudget,
+      hasBudget,
+      rolloverEnabled,
+      rolloverAmount,
       spent,
       income,
       walletBalance,
@@ -127,7 +138,7 @@ const Budget = () => {
   const insights = useMemo(() => {
     const next = [];
 
-    if (!totals.monthlyBudget) {
+    if (!totals.hasBudget) {
       next.push({
         emoji: '🪴',
         title: 'Start with a simple budget',
@@ -242,10 +253,18 @@ const Budget = () => {
               <span className="hero-emoji">💸</span>
               <h2>{formatCurrency(totals.remainingBudget)} left to spend</h2>
               <p>
-                {totals.monthlyBudget > 0
+                {totals.hasBudget
                   ? `You have used ${Math.round(totals.budgetUsed)}% of your ${formatCurrency(totals.monthlyBudget)} budget this month.`
                   : 'Set a monthly budget to start getting clearer pace feedback.'}
               </p>
+
+              {totals.rolloverEnabled && totals.rolloverAmount !== 0 && (
+                <p className="rollover-note">
+                  {totals.rolloverAmount > 0
+                    ? `+${formatCurrency(totals.rolloverAmount)} carried over from last month`
+                    : `−${formatCurrency(Math.abs(totals.rolloverAmount))} overspend carried over from last month`}
+                </p>
+              )}
 
               <div className="hero-metrics">
                 <div className="metric-pill">
