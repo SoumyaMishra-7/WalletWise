@@ -211,13 +211,28 @@ const Transactions = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleServerExport = async (format) => {
+    try {
+      const res = await api.get(`/api/transactions/export/${format}`, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: format === 'pdf' ? 'application/pdf' : 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `transactions.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Server export failed. Try the current-page export instead.');
+    }
+  };
+
   const handleExport = (format) => {
     if (transactions.length === 0) {
       alert('No transactions to export.');
       return;
-    }
-
-    const rows = buildExportRows();
+    }    const rows = buildExportRows();
     const delimiter = format === 'csv' ? ',' : '	';
     const header = exportColumns.map((col) => escapeCsv(col.label)).join(delimiter);
     const body = rows
@@ -351,6 +366,18 @@ const Transactions = () => {
 
                 <button onClick={() => handleExport('excel')} className="ghost-button">
                   Export Excel
+                </button>
+              </div>
+            </div>
+            <div className="advanced-block">
+              <label>Export (Full History)</label>
+              <div className="export-actions">
+                <button onClick={() => handleServerExport('csv')} className="primary-button">
+                  Server CSV
+                </button>
+
+                <button onClick={() => handleServerExport('pdf')} className="ghost-button">
+                  Server PDF
                 </button>
               </div>
             </div>
