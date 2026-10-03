@@ -188,6 +188,16 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
+    try {
+      await transaction.save({ session });
+    } catch (error) {
+      // Revert the balance change applied above if the write fails
+      if (walletId) {
+        await Wallet.findByIdAndUpdate(walletId, { $inc: { balance: -balanceChange } }, { session });
+      } else {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } }, { session });
+      }
+      throw error;
     }
 
     // Log Activity
@@ -361,8 +371,14 @@ const getAllTransactions = catchAsync(async (req, res) => {
     query.$or = [{ description: regex }, { category: regex }];
   }
 
-  const pageNum = parseInt(page);
-  const limitNum = parseInt(limit);
+  // Query params are strings, so parseInt("abc") yields NaN. Before this
+  // guard, a NaN page/limit was passed into skip()/limit() and Math.ceil,
+  // which took the whole request down with a 500. Anything that is not a
+  // positive integer now falls back to the default paging values.
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+  const pageNum = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const limitNum = Number.isInteger(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
   const skip = (pageNum - 1) * limitNum;
 
   let sortOptions = { date: -1 };
@@ -471,6 +487,11 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
+    const query = { _id: transaction.walletId };
+    if (STRICT_MODE && balanceChange < 0) {
+      query.balance = { $gte: Math.abs(balanceChange) };
+    }
+    const updatedWallet = await Wallet.findOneAndUpdate(query, {
       $inc: { balance: balanceChange }
     });
     if (!updatedWallet) {

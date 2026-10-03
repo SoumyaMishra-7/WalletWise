@@ -372,5 +372,30 @@ describe('Transaction Controller', () => {
             expect(txList.length).toBe(2);
             expect(txList[0].amount).toBe(100);
         });
+
+        it('should not crash when page and limit are not numeric', async () => {
+            await Transaction.insertMany([
+                { userId: user._id, type: 'expense', amount: 10, category: 'other', date: new Date('2024-01-01') },
+                { userId: user._id, type: 'expense', amount: 20, category: 'other', date: new Date('2024-01-02') }
+            ]);
+
+            for (const params of [
+                { page: 'abc', limit: 'xyz' },
+                { page: '-3', limit: '0' },
+                { page: '2.5', limit: 'none' }
+            ]) {
+                const req = mockRequest({}, params, {}, user._id);
+                const res = mockResponse();
+
+                await getAllTransactions(req, res);
+
+                expect(res.json).toHaveBeenCalled();
+                const payload = res.json.mock.results[0].value;
+                expect(payload.success).toBe(true);
+                expect(payload.pagination.page).toBe(1);
+                expect(payload.pagination.limit).toBe(10);
+                expect(payload.transactions.length).toBe(2);
+            }
+        });
     });
 });
