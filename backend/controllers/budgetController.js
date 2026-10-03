@@ -3,6 +3,66 @@ const Transaction = require('../models/Transactions');
 const { isValidObjectId } = require('../utils/validation');
 const gamification = require('../utils/gamification');
 
+// Coerce a value to a finite number. Returns null when it is missing, blank or
+// not numeric, so callers can tell "absent" apart from a legitimate 0.
+const toFiniteNumber = (value) => {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : null;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+};
+
+// Validate the category list before any arithmetic is done on it. The old code
+// summed the raw values first, so a missing or non-numeric amount/percentage
+// produced NaN. Every comparison against NaN is false, so the
+// `Math.abs(total - expected) > 0.01` checks below silently passed and an
+// invalid budget was saved.
+const validateCategories = (categories) => {
+    if (!Array.isArray(categories) || categories.length === 0) {
+        return { error: 'At least one category is required' };
+    }
+
+    const normalized = [];
+
+    for (const category of categories) {
+        if (!category || typeof category !== 'object' || Array.isArray(category)) {
+            return { error: 'Each category must be an object' };
+        }
+
+        if (typeof category.name !== 'string' || category.name.trim() === '') {
+            return { error: 'Each category must have a name' };
+        }
+
+        const name = category.name.trim();
+        const amount = toFiniteNumber(category.amount);
+        const percentage = toFiniteNumber(category.percentage);
+
+        if (percentage === null) {
+            return { error: `Percentage for ${name} must be a number` };
+        }
+
+        if (amount === null) {
+            return { error: `Amount for ${name} must be a number` };
+        }
+
+        if (percentage < 0 || percentage > 100) {
+            return { error: `Percentage for ${name} must be between 0 and 100` };
+        }
+
+        if (amount < 0) {
+            return { error: `Amount for ${name} cannot be negative` };
+        }
+
+        normalized.push({ ...category, name, amount, percentage });
+    }
+
+    return { categories: normalized };
+};
+
 // Set/Update Budget
 const setBudget = async (req, res) => {
     try {
@@ -23,35 +83,20 @@ const setBudget = async (req, res) => {
             });
         }
 
-        // Validate categories
-        let totalPercentage = 0;
-        let totalAmount = 0;
-
-        for (const category of categories) {
-            if (!category.name || category.amount === undefined || category.percentage === undefined) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Each category must have name, amount, and percentage'
-                });
-            }
-
-            if (category.percentage < 0 || category.percentage > 100) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Percentage for ${category.name} must be between 0 and 100`
-                });
-            }
-
-            if (category.amount < 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Amount for ${category.name} cannot be negative`
-                });
-            }
-
-            totalPercentage += category.percentage;
-            totalAmount += category.amount;
+        // Validate the categories before summing them, so a missing or
+        // non-numeric value cannot turn the totals into NaN and skip the
+        // checks below.
+        const validated = validateCategories(categories);
+        if (validated.error) {
+            return res.status(400).json({
+                success: false,
+                message: validated.error
+            });
         }
+
+        const safeCategories = validated.categories;
+        const totalPercentage = safeCategories.reduce((sum, cat) => sum + cat.percentage, 0);
+        const totalAmount = safeCategories.reduce((sum, cat) => sum + cat.amount, 0);
 
         // Check if percentages sum to 100
         if (Math.abs(totalPercentage - 100) > 0.01) {
@@ -91,7 +136,7 @@ const setBudget = async (req, res) => {
         if (budget) {
             // Update existing budget
             budget.totalBudget = totalBudget;
-            budget.categories = categories;
+            budget.categories = safeCategories;
             budget.updatedAt = new Date();
             await budget.save();
 
@@ -100,7 +145,7 @@ const setBudget = async (req, res) => {
             budget = new Budget({
                 userId: req.userId,
                 totalBudget,
-                categories,
+                categories: safeCategories,
                 month: budgetMonth,
                 isActive: true
             });
@@ -433,8 +478,21 @@ const updateBudget = async (req, res) => {
             });
         }
 
-        if (updates.categories) {
-            const totalPercentage = updates.categories.reduce((sum, cat) => sum + cat.percentage, 0);
+        if (updates.categories !== undefined) {
+            // Validate first: the old code summed the raw values, so a missing
+            // or non-numeric amount/percentage made the total NaN and the
+            // Math.abs(...) > 0.01 check below always returned false.
+            const validated = validateCategories(updates.categories);
+            if (validated.error) {
+                return res.status(400).json({
+                    success: false,
+                    message: validated.error
+                });
+            }
+
+            const safeCategories = validated.categories;
+            const totalPercentage = safeCategories.reduce((sum, cat) => sum + cat.percentage, 0);
+
             if (Math.abs(totalPercentage - 100) > 0.01) {
                 return res.status(400).json({
                     success: false,
@@ -444,17 +502,7 @@ const updateBudget = async (req, res) => {
 
             // Ensure we use the right totalBudget to compare against (either the new one or existing)
             const expectedTotal = updates.totalBudget !== undefined ? updates.totalBudget : budget.totalBudget;
-            let totalAmount = 0;
-
-            for (const category of updates.categories) {
-                if (category.amount < 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Amount for ${category.name} cannot be negative`
-                    });
-                }
-                totalAmount += category.amount;
-            }
+            const totalAmount = safeCategories.reduce((sum, cat) => sum + cat.amount, 0);
 
             if (Math.abs(totalAmount - expectedTotal) > 0.01) {
                 return res.status(400).json({
@@ -462,6 +510,8 @@ const updateBudget = async (req, res) => {
                     message: `Sum of category amounts (${totalAmount}) must equal total budget (${expectedTotal})`
                 });
             }
+
+            updates.categories = safeCategories;
         }
 
         // Update fields with a secure whitelist
