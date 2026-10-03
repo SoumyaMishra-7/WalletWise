@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -573,6 +573,7 @@ const Homepage = () => {
                   className: "span-2",
                   icon: <Compass size={24} />,
                   title: "Flexible Budgeting",
+                  to: "/budget",
                   text: "Plan tuition, rent, and daily spending with flexible lanes designed for student life.",
                   visual: (
                     <div className="ww-bento-visual">
@@ -594,18 +595,21 @@ const Homepage = () => {
                   className: "",
                   icon: <CreditCard size={24} />,
                   title: "Expense Tracking",
+                  to: "/transactions",
                   text: "Log every swipe in seconds with auto-categories.",
                 },
                 {
                   className: "",
                   icon: <Target size={24} />,
                   title: "Smart Goals",
+                  to: "/goals",
                   text: "Set savings goals and track progress visually.",
                 },
                 {
                   className: "span-2",
                   icon: <BarChart3 size={24} />,
                   title: "Visual Reports",
+                  to: "/reports",
                   text: "Generate weekly insights that explain exactly where your money goes.",
                   visual: (
                     <div className="ww-bento-visual">
@@ -622,12 +626,14 @@ const Homepage = () => {
                   className: "",
                   icon: <LineChart size={24} />,
                   title: "Predictive Planning",
+                  to: "/decision-helper",
                   text: "Forecast upcoming expenses and prepare for bills.",
                 },
                 {
                   className: "",
                   icon: <Brain size={24} />,
                   title: "Behavior Analysis",
+                  to: "/behaviour-analysis",
                   text: "Detect overspending patterns and build habits.",
                 },
               ].map((item, i) => (
@@ -641,10 +647,10 @@ const Homepage = () => {
                     <div className="ww-card-icon">{item.icon}</div>
                     <h3>{item.title}</h3>
                     <p>{item.text}</p>
-                    {item.className === "span-2" && (
-                      <div className="ww-bento-link">
+                    {item.to && (
+                      <Link className="ww-bento-link" to={item.to}>
                         Learn more <ArrowUpRight size={16} />
-                      </div>
+                      </Link>
                     )}
                   </div>
                   {/* Render Visual for large cards */}
