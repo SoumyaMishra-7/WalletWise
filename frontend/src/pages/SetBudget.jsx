@@ -21,7 +21,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
     totalBudget: '',
-    categories: DEFAULT_CATEGORIES
+    categories: DEFAULT_CATEGORIES,
+    rolloverEnabled: false,
+    rolloverMode: 'positive'
   });
 
   const [activeCategory, setActiveCategory] = useState(0);
@@ -35,7 +37,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     if (isOpen) {
       setFormData({
         totalBudget: '',
-        categories: DEFAULT_CATEGORIES
+        categories: DEFAULT_CATEGORIES,
+        rolloverEnabled: false,
+        rolloverMode: 'positive'
       });
       setActiveCategory(0);
       setError('');
@@ -196,7 +200,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     const budgetData = {
       totalBudget,
       categories: normalizedCategories,
-      month: new Date().toISOString().slice(0, 7)
+      month: new Date().toISOString().slice(0, 7),
+      rolloverEnabled: !!formData.rolloverEnabled,
+      rolloverMode: formData.rolloverMode === 'both' ? 'both' : 'positive'
     };
 
     try {
@@ -337,6 +343,28 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                 disabled={loading}
               />
             </div>
+          </div>
+
+          <div className="budget-form-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={!!formData.rolloverEnabled}
+                onChange={(e) => setFormData((prev) => ({ ...prev, rolloverEnabled: e.target.checked }))}
+                disabled={loading}
+              />
+              {' '}Carry unused budget into next month
+            </label>
+            {formData.rolloverEnabled && (
+              <select
+                value={formData.rolloverMode}
+                onChange={(e) => setFormData((prev) => ({ ...prev, rolloverMode: e.target.value }))}
+                disabled={loading}
+              >
+                <option value="positive">Leftovers only</option>
+                <option value="both">Leftovers and overspending</option>
+              </select>
+            )}
           </div>
 
           {/* Quick Allocation Buttons */}

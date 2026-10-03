@@ -266,6 +266,13 @@ const Budget = () => {
                   <span>Wallet balance</span>
                   <strong>{formatCurrency(totals.walletBalance)}</strong>
                 </div>
+
+                {(budgetSummary?.rolloverAmount || 0) !== 0 && (
+                  <div className="metric-pill">
+                    <span>Carried over</span>
+                    <strong>{formatCurrency(budgetSummary.rolloverAmount)}</strong>
+                  </div>
+                )}
               </div>
             </div>
 
