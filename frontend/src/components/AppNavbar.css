@@ -335,6 +335,10 @@
   z-index: 1001;
   animation: slideDown 0.2s ease;
   overflow: hidden;
+  /* The menu has more items than the viewport can show at full size, so cap
+     it and scroll rather than cutting the last items off. */
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
 }
 
 @keyframes slideDown {
@@ -403,7 +407,7 @@
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  padding: 1.3rem 1.5rem;
+  padding: 0.6rem 1rem;
   background: transparent;
   border: none;
   color: var(--text-main);
