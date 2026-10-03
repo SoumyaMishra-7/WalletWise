@@ -1,9 +1,7 @@
 const cron = require('node-cron');
-const mongoose = require('mongoose');
-const Transaction = require('./models/Transactions');
 const Subscription = require('./models/Subscription');
-const User = require('./models/User');
 const { sendEmail } = require('./utils/mailer');
+const { processDueRecurringTransactions } = require('./services/RecurringTransactionService');
 
 // Helper to log structured info
 const log = (level, task, message, data = {}) => {
@@ -28,79 +26,15 @@ const processRecurringTransactions = async () => {
     log('info', 'RecurringTransactions', 'Starting recurring transactions processing');
 
     try {
-        const recurringTransactions = await Transaction.find({
-            isRecurring: true,
-            nextExecutionDate: { $lte: new Date() }
+        // Shared with the API's explicit trigger so there is a single
+        // implementation of this logic instead of two that can race.
+        const { processed, failed } = await processDueRecurringTransactions();
+
+        log('info', 'RecurringTransactions', 'Completed recurring transactions processing', {
+            processedCount: processed,
+            failedCount: failed,
+            durationMs: Date.now() - startTime
         });
-
-        log('info', 'RecurringTransactions', `Found ${recurringTransactions.length} pending recurring transactions`);
-
-        let processedCount = 0;
-        let failedCount = 0;
-
-        for (const rt of recurringTransactions) {
-            const session = await mongoose.startSession();
-            try {
-                session.startTransaction();
-
-                // Idempotency: Double-check if execution is still needed within transaction to prevent race conditions
-                const lockedRt = await Transaction.findById(rt._id).session(session);
-                if (!lockedRt || !lockedRt.nextExecutionDate || lockedRt.nextExecutionDate > new Date()) {
-                    await session.abortTransaction();
-                    session.endSession();
-                    continue;
-                }
-
-                const newTransaction = new Transaction({
-                    userId: lockedRt.userId,
-                    type: lockedRt.type,
-                    amount: lockedRt.amount,
-                    category: lockedRt.category,
-                    description: lockedRt.description,
-                    paymentMethod: lockedRt.paymentMethod,
-                    mood: lockedRt.mood,
-                    date: new Date(),
-                    isRecurring: false, // The *new* transaction is a single discrete event
-                    recurringInterval: null,
-                    nextExecutionDate: null
-                });
-
-                await newTransaction.save({ session });
-
-                // Update user wallet balance safely
-                const balanceChange = lockedRt.type === 'income' ? lockedRt.amount : -lockedRt.amount;
-                await User.findByIdAndUpdate(
-                    lockedRt.userId,
-                    { $inc: { walletBalance: balanceChange } },
-                    { session }
-                );
-
-                // Update next execution date of the parent recurring config
-                let nextDate = new Date(lockedRt.nextExecutionDate);
-                if (lockedRt.recurringInterval === "daily") {
-                    nextDate.setDate(nextDate.getDate() + 1);
-                } else if (lockedRt.recurringInterval === "weekly") {
-                    nextDate.setDate(nextDate.getDate() + 7);
-                } else if (lockedRt.recurringInterval === "monthly") {
-                    nextDate.setMonth(nextDate.getMonth() + 1);
-                }
-
-                lockedRt.nextExecutionDate = nextDate;
-                await lockedRt.save({ session });
-
-                await session.commitTransaction();
-                processedCount++;
-            } catch (err) {
-                await session.abortTransaction();
-                failedCount++;
-                log('error', 'RecurringTransactions', `Failed to process transaction ID ${rt._id}`, { error: err.message });
-            } finally {
-                session.endSession();
-            }
-        }
-
-        const duration = Date.now() - startTime;
-        log('info', 'RecurringTransactions', 'Completed recurring transactions processing', { processedCount, failedCount, durationMs: duration });
     } catch (error) {
         log('error', 'RecurringTransactions', 'Critical error in recurring transactions processing', { error: error.stack });
     }
@@ -206,12 +140,19 @@ const runAllTasks = async () => {
 };
 
 const initWorker = () => {
-    // Run at 09:00 AM every day
-    cron.schedule('0 9 * * *', async () => {
-        await runAllTasks();
+    // Recurring transactions come due at arbitrary times. They used to be
+    // executed inside GET /transactions, so poll frequently to keep the delay
+    // short without putting writes inside a read request.
+    cron.schedule('* * * * *', async () => {
+        await processRecurringTransactions();
     });
 
-    log('info', 'Worker', 'Background worker initialized, tasks scheduled for 9:00 AM daily.');
+    // Bill reminders are a daily digest, so 09:00 is still right for them.
+    cron.schedule('0 9 * * *', async () => {
+        await processBillReminders();
+    });
+
+    log('info', 'Worker', 'Background worker initialized: recurring transactions every minute, bill reminders at 09:00 daily.');
 };
 
 module.exports = {

@@ -9,6 +9,11 @@ router.get(
     transactionController.getTransactionActivity
 );
 
+// Process due recurring transactions on demand. GET /transactions used to do
+// this inline; it now stays read-only and the worker handles it in the
+// background, with this route available for an explicit flush.
+router.post('/process-recurring', protect, transactionController.processRecurringNow);
+
 // Add transaction
 router.post('/', protect, transactionController.addTransaction);
 
