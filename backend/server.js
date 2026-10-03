@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -329,8 +329,8 @@ app.use(errHandler);
 // ==================== START SERVER ====================
 // Initialize Scheduler
 if (process.env.NODE_ENV !== 'test') {
-    // const { initScheduler } = require('./utils/scheduler');
-    // initScheduler();
+    const { initWorker } = require('./worker');
+    initWorker();
 }
 
 const PORT = process.env.PORT || 5000;

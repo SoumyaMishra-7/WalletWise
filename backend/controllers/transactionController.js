@@ -244,102 +244,8 @@ const getAllTransactions = catchAsync(async (req, res) => {
     query.walletId = null; // Only personal transactions
   }
 
-  // Process due recurring transactions.
-  //
-  // Each occurrence is claimed with a compare-and-set on nextExecutionDate:
-  // the schedule is advanced to its real next date *before* the occurrence is
-  // executed, so two concurrent requests can never execute the same occurrence.
-  // If executing fails (e.g. insufficient funds in STRICT mode, validation
-  // error), the claim is rolled back so the occurrence stays due, the item is
-  // skipped for the rest of this request, and the listing still succeeds.
-  const now = new Date();
-  const failedRecurringIds = [];
-
-  while (true) {
-    const candidate = await Transaction.findOne({
-      _id: { $nin: failedRecurringIds },
-      userId,
-      isRecurring: true,
-      nextExecutionDate: { $lte: now },
-      walletId: null,
-    }).sort({ nextExecutionDate: 1 });
-
-    if (!candidate) break;
-
-    const dueDate = candidate.nextExecutionDate;
-    const nextDate = getNextExecutionDate(dueDate, candidate.recurringInterval);
-
-    if (!nextDate) {
-      // Misconfigured recurrence (unknown interval) - never loop on it.
-      failedRecurringIds.push(candidate._id);
-      continue;
-    }
-
-    // Atomic claim: only succeeds if nobody else advanced this occurrence.
-    const rt = await Transaction.findOneAndUpdate(
-      { _id: candidate._id, nextExecutionDate: dueDate },
-      { $set: { nextExecutionDate: nextDate } },
-      { new: false }
-    );
-
-    if (!rt) continue; // lost the race to a concurrent request
-
-    try {
-      await withTransaction(async (session) => {
-        const balanceChange = rt.type === 'income' ? rt.amount : -rt.amount;
-
-        const userQuery = { _id: rt.userId };
-        if (STRICT_MODE && balanceChange < 0) {
-          userQuery.walletBalance = { $gte: Math.abs(balanceChange) };
-        }
-
-        const updatedUser = await User.findOneAndUpdate(
-          userQuery,
-          { $inc: { walletBalance: balanceChange } },
-          { session, new: true }
-        );
-
-        if (!updatedUser) {
-          throw new AppError('Insufficient personal funds to process recurring transaction', 400);
-        }
-
-        const newTransaction = new Transaction({
-          userId: rt.userId,
-          type: rt.type,
-          amount: rt.amount,
-          category: rt.category,
-          description: rt.description,
-          paymentMethod: rt.paymentMethod,
-          mood: rt.mood,
-          date: new Date()
-        });
-
-        try {
-          await newTransaction.save({ session });
-        } catch (error) {
-          // Revert balance change
-          await User.findByIdAndUpdate(rt.userId, { $inc: { walletBalance: -balanceChange } }, { session });
-          throw error;
-        }
-
-        await logTransactionActivity({
-          userId: rt.userId,
-          transactionId: newTransaction._id,
-          action: "CREATED"
-        });
-      });
-    } catch (error) {
-      // Roll the claim back (only if nobody changed the schedule since) so the
-      // occurrence is retried on a later request instead of being lost, and do
-      // not let one failing recurring item break the whole transactions list.
-      await Transaction.updateOne(
-        { _id: rt._id, nextExecutionDate: nextDate },
-        { $set: { nextExecutionDate: dueDate } }
-      );
-      failedRecurringIds.push(rt._id);
-      console.error(`Recurring transaction ${rt._id} skipped: ${error.message}`);
-    }
-  }
+  // Due recurring transactions are now handled independently by the cron worker
+  // via RecurringTransactionService, decoupling them from GET read operations.
 
   if (type && type !== 'all') query.type = type;
 
@@ -633,5 +539,10 @@ module.exports = {
   deleteTransaction,
   undoTransaction,
   skipNextOccurrence,
-  getTransactionActivity
+  getTransactionActivity,
+  processRecurringTransactionsManual: catchAsync(async (req, res) => {
+    const recurringService = require('../services/RecurringTransactionService');
+    await recurringService.processRecurringTransactions();
+    res.status(200).json({ status: 'success', message: 'Recurring transactions processed successfully' });
+  })
 };
