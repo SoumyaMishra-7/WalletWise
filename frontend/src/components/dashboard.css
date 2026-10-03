@@ -338,6 +338,10 @@
   gap: 0.75rem;
 }
 
+.gamification-level {
+  white-space: nowrap;
+}
+
 .user-profile-trigger {
   display: flex;
   align-items: center;
@@ -1864,6 +1868,7 @@
     font-weight: 700;
     color: var(--text-main);
     background: rgba(99, 102, 241, 0.08);
+    white-space: nowrap;
   }
 
   .mobile-gamification-pill svg {
