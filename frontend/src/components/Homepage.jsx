@@ -451,7 +451,7 @@ const Homepage = () => {
               <div className="ww-visual-connected">
                 <svg className="ww-connect-lines" viewBox="0 0 500 400">
                   <motion.path
-                    d="M 250 200 C 250 150, 120 180, 100 100"
+                    d="M 225 183 C 238 155, 125 178, 100 100"
                     fill="none"
                     stroke="#CBD5E1"
                     strokeWidth="2"
@@ -462,7 +462,7 @@ const Homepage = () => {
                     viewport={{ once: true }}
                   />
                   <motion.path
-                    d="M 250 200 C 300 200, 350 220, 400 150"
+                    d="M 278 191 C 305 200, 350 220, 400 150"
                     fill="none"
                     stroke="#CBD5E1"
                     strokeWidth="2"
@@ -473,7 +473,7 @@ const Homepage = () => {
                     viewport={{ once: true }}
                   />
                   <motion.path
-                    d="M 250 200 C 250 250, 220 300, 200 340"
+                    d="M 240 228 C 246 252, 224 276, 210 295"
                     fill="none"
                     stroke="#CBD5E1"
                     strokeWidth="2"
