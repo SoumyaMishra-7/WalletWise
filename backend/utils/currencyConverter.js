@@ -30,8 +30,10 @@ const fetchExchangeRates = async () => {
 // Initialize rates (lazy loading is also implemented)
 fetchExchangeRates();
 
-// Set interval to update rates every 12 hours
-setInterval(fetchExchangeRates, 12 * 60 * 60 * 1000);
+// Set interval to update rates every 12 hours. unref() so this background
+// poller never on its own keeps the process alive; in production the HTTP
+// server holds the event loop open, and in tests it lets jest exit cleanly.
+setInterval(fetchExchangeRates, 12 * 60 * 60 * 1000).unref();
 
 const getRate = async (targetCurrency) => {
     // Check if rates need refresh
