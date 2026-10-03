@@ -161,6 +161,7 @@ const Dashboard = () => {
   const [categorySpending, setCategorySpending] = useState([]);
   const [weeklyExpenses, setWeeklyExpenses] = useState([]);
   const [savingsGoals, setSavingsGoals] = useState([]);
+  const [financialHealth, setFinancialHealth] = useState(null);
   const [showDemoData, setShowDemoData] = useState(false);
 
   // Navigation items with proper routes
@@ -201,6 +202,7 @@ const Dashboard = () => {
       console.log('???? Fetching dashboard data...');
 
       const dashboardRes = await api.get('/api/dashboard/summary');
+      const financialHealthRes = await api.get('/financial-health');
       const dashboardData = dashboardRes.data;
 
       console.log("📋 Dashboard API Response:", dashboardData);
@@ -230,6 +232,11 @@ const Dashboard = () => {
 
         // Savings goals
         setSavingsGoals(dashboardData.savingsGoals || []);
+
+        // Financial health
+if (financialHealthRes.data.success) {
+  setFinancialHealth(financialHealthRes.data);
+}
 
         // Update timestamp
         setLastUpdated(
@@ -1414,7 +1421,30 @@ const Dashboard = () => {
               )}
             </div>
           </div>
+
+          {/* Financial Health */}
+          <div className="stat-card">
+            <div className="stat-icon purple">
+              <FaChartLine />
+            </div>
+
+            <div className="stat-content">
+              <h3>Financial Health</h3>
+
+              <p className="stat-value">
+                {financialHealth?.score ?? "--"}/100
+              </p>
+
+              <div className="stat-trend">
+                <span>
+                  {financialHealth?.category || "No data available"}
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
+        
 
         {/* Quick Actions */}
         <div className="quick-actions-section" data-tour="quick-actions">
