@@ -1232,6 +1232,22 @@ body.theme-dark .ww-header.scrolled {
   }
 
   .ww-hero-ref-title {
+    font-size: 2.1rem;
+    line-height: 1.25;
+  }
+
+  .ww-hero-ref-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .ww-hero-ref-actions .ww-btn-link,
+  .ww-hero-ref-actions .ww-btn-link-ref {
+    text-align: center;
+  }
+
+  .ww-hero-ref-title {
     font-size: 2.8rem;
     line-height: 1.20;
   }
