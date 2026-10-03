@@ -12,6 +12,7 @@ const analyticsRoutes = require('../analyticsRoutes');
 const investmentRoutes = require('../investmentRoutes');
 const walletRoutes = require('../walletRoutes');
 const vaultRoutes = require('../vaultRoutes');
+const categoryRoutes = require('../categoryRoutes');
 
 const gamificationRoutes = require('../gamificationRoutes');
 
@@ -32,5 +33,6 @@ router.use('/investments', investmentRoutes);
 router.use('/gamification', gamificationRoutes);
 router.use('/wallets', walletRoutes);
 router.use('/vault', vaultRoutes);
+router.use('/categories', categoryRoutes);
 
 module.exports = router;

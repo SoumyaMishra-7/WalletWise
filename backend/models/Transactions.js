@@ -23,8 +23,8 @@ const transactionSchema = new mongoose.Schema({
 
   category: {
     type: String,
-    enum: CATEGORIES,
-    required: true
+    required: true,
+    trim: true
   },
 
   description: {
