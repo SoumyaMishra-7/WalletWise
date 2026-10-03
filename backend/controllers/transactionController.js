@@ -188,6 +188,16 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
+    try {
+      await transaction.save({ session });
+    } catch (error) {
+      // Revert the balance change applied above if the write fails
+      if (walletId) {
+        await Wallet.findByIdAndUpdate(walletId, { $inc: { balance: -balanceChange } }, { session });
+      } else {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } }, { session });
+      }
+      throw error;
     }
 
     // Log Activity
@@ -238,6 +248,22 @@ const getAllTransactions = catchAsync(async (req, res) => {
 
   const query = {};
   if (walletId) {
+    // A wallet can be shared, so anyone in members may read its transactions.
+    // Without this check any authenticated user could pass another wallet's
+    // id and read its transaction history.
+    if (!isValidObjectId(walletId)) {
+      throw new AppError('Invalid wallet ID format', 400);
+    }
+
+    const wallet = await Wallet.findOne({
+      _id: walletId,
+      'members.user': userId
+    });
+
+    if (!wallet) {
+      throw new AppError('Access denied to this wallet', 403);
+    }
+
     query.walletId = walletId;
   } else {
     query.userId = userId;
@@ -471,6 +497,11 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
+    const query = { _id: transaction.walletId };
+    if (STRICT_MODE && balanceChange < 0) {
+      query.balance = { $gte: Math.abs(balanceChange) };
+    }
+    const updatedWallet = await Wallet.findOneAndUpdate(query, {
       $inc: { balance: balanceChange }
     });
     if (!updatedWallet) {
