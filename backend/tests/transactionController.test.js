@@ -8,7 +8,8 @@ const {
     addTransaction,
     getAllTransactions,
     updateTransaction,
-    deleteTransaction
+    deleteTransaction,
+    undoTransaction
 } = require('../controllers/transactionController');
 
 let mongoServer;
@@ -254,6 +255,101 @@ describe('Transaction Controller', () => {
             expect(res.json.mock.results[0].value.success).toBe(true);
             const updatedUser = await User.findById(user._id);
             expect(updatedUser.walletBalance).toBe(1150);
+        });
+    });
+
+    describe('undoTransaction', () => {
+        it('rebuilds the original transaction from the server side snapshot', async () => {
+            await User.findByIdAndUpdate(user._id, { $inc: { walletBalance: -250 } });
+
+            const original = await new Transaction({
+                userId: user._id,
+                type: 'expense',
+                amount: 250,
+                category: 'food',
+                description: 'Dinner with friends',
+                paymentMethod: 'card',
+                mood: 'happy',
+                isRecurring: true,
+                recurringInterval: 'monthly',
+                nextExecutionDate: new Date('2024-02-01T00:00:00.000Z')
+            }).save();
+
+            await deleteTransaction(
+                mockRequest({}, {}, { id: original._id.toString() }, user._id),
+                mockResponse()
+            );
+
+            expect((await User.findById(user._id)).walletBalance).toBe(1000);
+
+            const res = mockResponse();
+            await undoTransaction(
+                mockRequest({ deletedTransaction: { _id: original._id.toString() } }, {}, {}, user._id),
+                res,
+                (err) => { throw err; }
+            );
+
+            const restored = res.json.mock.results[0].value.transaction;
+            expect(restored.category).toBe('food');
+            expect(restored.description).toBe('Dinner with friends');
+            expect(restored.paymentMethod).toBe('card');
+            expect(restored.mood).toBe('happy');
+            expect(restored.isRecurring).toBe(true);
+            expect(restored.recurringInterval).toBe('monthly');
+            expect((await User.findById(user._id)).walletBalance).toBe(750);
+        });
+
+        it('refuses a client supplied transaction that was never deleted', async () => {
+            const fakeId = new mongoose.Types.ObjectId();
+            const res = mockResponse();
+            let error = null;
+
+            await undoTransaction(
+                mockRequest({ transactionId: fakeId.toString(), deletedTransaction: { type: 'income', amount: 100000 } }, {}, {}, user._id),
+                res,
+                (err) => { error = err; }
+            );
+
+            expect(error).not.toBeNull();
+            expect(error.statusCode).toBe(404);
+            expect(res.json).not.toHaveBeenCalled();
+            expect((await User.findById(user._id)).walletBalance).toBe(1000);
+        });
+
+        it('restores a shared wallet transaction to that wallet, not the personal balance', async () => {
+            const wallet = await Wallet.create({
+                name: 'Trip fund',
+                owner: user._id,
+                members: [{ user: user._id, role: 'admin' }],
+                balance: 4500
+            });
+
+            const original = await new Transaction({
+                userId: user._id,
+                type: 'expense',
+                amount: 500,
+                category: 'shopping',
+                walletId: wallet._id
+            }).save();
+
+            await deleteTransaction(
+                mockRequest({}, {}, { id: original._id.toString() }, user._id),
+                mockResponse()
+            );
+
+            expect((await Wallet.findById(wallet._id)).balance).toBe(5000);
+            expect((await User.findById(user._id)).walletBalance).toBe(1000);
+
+            const res = mockResponse();
+            await undoTransaction(
+                mockRequest({ transactionId: original._id.toString() }, {}, {}, user._id),
+                res,
+                (err) => { throw err; }
+            );
+
+            expect((await Wallet.findById(wallet._id)).balance).toBe(4500);
+            expect((await User.findById(user._id)).walletBalance).toBe(1000);
+            expect(res.json.mock.results[0].value.transaction.walletId.toString()).toBe(wallet._id.toString());
         });
     });
 
