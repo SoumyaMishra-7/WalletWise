@@ -91,6 +91,17 @@ const addTransaction = catchAsync(async (req, res, next) => {
     });
   }
 
+  // Strict mode: prevent expense transactions that would make the wallet negative
+  if (STRICT_MODE && type === 'expense' && !walletId) {
+    const user = await User.findById(userId).lean();
+    if (user && (user.walletBalance || 0) < amount) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient wallet balance. Available: ${user.walletBalance || 0}, Required: ${amount}`
+      });
+    }
+  }
+
   const result = await withTransaction(async (session) => {
     let nextExecutionDate = null;
 
