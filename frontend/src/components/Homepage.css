@@ -228,10 +228,10 @@ body.theme-dark .ww-header.scrolled {
 }
 
 .ww-hero-ref {
-  padding: 50px 0 120px;
+  padding: 50px 0 60px;
   position: relative;
   overflow: visible;
-  margin-top: 10vh;
+  margin-top: 6vh;
 }
 
 .ww-hero-ref-grid {
