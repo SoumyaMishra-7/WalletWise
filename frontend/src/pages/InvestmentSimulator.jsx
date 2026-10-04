@@ -12,6 +12,7 @@ const InvestmentSimulator = () => {
     const [totalValue, setTotalValue] = useState(0);
     const [availableToInvest, setAvailableToInvest] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTooltip, setActiveTooltip] = useState(null);
 
@@ -34,6 +35,7 @@ const InvestmentSimulator = () => {
         } catch (error) {
             console.error('Simulation error:', error);
             toast.error('Failed to load simulation data');
+            setFetchError(true);
         } finally {
             setLoading(false);
         }
@@ -76,6 +78,22 @@ const InvestmentSimulator = () => {
     };
 
     if (loading) return <DashboardSkeleton />;
+
+    if (fetchError) {
+        return (
+            <div className="investment-simulator" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', gap: '1rem' }}>
+                <FaChartLine size={48} style={{ color: 'var(--color-danger, #ef4444)' }} />
+                <h2 style={{ color: 'var(--text-main)' }}>Unable to load investment data</h2>
+                <p style={{ color: 'var(--text-muted)' }}>There was an error fetching market or portfolio data. Please try again.</p>
+                <button
+                    onClick={() => { setFetchError(false); fetchSimulationData(); }}
+                    style={{ padding: '0.6rem 1.5rem', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
 
     const filteredMarket = marketData.filter(stock =>
         stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
