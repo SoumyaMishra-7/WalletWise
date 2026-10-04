@@ -419,7 +419,7 @@ const undoTransaction = catchAsync(async (req, res) => {
     throw new AppError('No transaction data provided for undo', 400);
   }
 
-  const restored = new Transaction({
+  const restoredData = {
     userId,
     type: deletedTransaction.type,
     amount: deletedTransaction.amount,
@@ -428,8 +428,14 @@ const undoTransaction = catchAsync(async (req, res) => {
     paymentMethod: deletedTransaction.paymentMethod,
     mood: deletedTransaction.mood,
     date: deletedTransaction.date || new Date()
-  });
+  };
 
+  // Preserve walletId so shared-wallet transactions restore to the correct wallet
+  if (deletedTransaction.walletId) {
+    restoredData.walletId = deletedTransaction.walletId;
+  }
+
+  const restored = new Transaction(restoredData);
   await restored.save();
 
   const balanceChange =
@@ -437,9 +443,17 @@ const undoTransaction = catchAsync(async (req, res) => {
       ? restored.amount
       : -restored.amount;
 
-  await User.findByIdAndUpdate(userId, {
-    $inc: { walletBalance: balanceChange }
-  });
+  if (restored.walletId) {
+    // Restore balance to the shared wallet, not the personal wallet
+    const Wallet = require('../models/Wallet');
+    await Wallet.findByIdAndUpdate(restored.walletId, {
+      $inc: { balance: balanceChange }
+    });
+  } else {
+    await User.findByIdAndUpdate(userId, {
+      $inc: { walletBalance: balanceChange }
+    });
+  }
 
   await logTransactionActivity({
     userId,
