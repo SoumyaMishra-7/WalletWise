@@ -762,7 +762,7 @@ body.theme-dark .ww-header.scrolled {
 
 /* Link style for larger cards */
 .ww-bento-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   margin-top: 20px;
@@ -770,6 +770,11 @@ body.theme-dark .ww-header.scrolled {
   color: var(--color-primary);
   font-size: 0.9rem;
   cursor: pointer;
+  text-decoration: none;
+}
+
+.ww-bento-link:hover {
+  text-decoration: underline;
 }
 
 /* Visuals Area (Right side of span-2 cards) */
