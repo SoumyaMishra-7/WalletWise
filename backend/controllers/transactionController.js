@@ -419,6 +419,16 @@ const undoTransaction = catchAsync(async (req, res) => {
     throw new AppError('No transaction data provided for undo', 400);
   }
 
+  // Validate client-supplied fields to prevent balance manipulation
+  const { type, amount } = deletedTransaction;
+  if (!['income', 'expense'].includes(type)) {
+    throw new AppError('Invalid transaction type for undo', 400);
+  }
+  const numericAmount = Number(amount);
+  if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+    throw new AppError('Invalid transaction amount for undo', 400);
+  }
+
   const restored = new Transaction({
     userId,
     type: deletedTransaction.type,
