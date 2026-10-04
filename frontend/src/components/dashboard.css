@@ -1864,6 +1864,7 @@
     font-weight: 700;
     color: var(--text-main);
     background: rgba(99, 102, 241, 0.08);
+    white-space: nowrap;
   }
 
   .mobile-gamification-pill svg {

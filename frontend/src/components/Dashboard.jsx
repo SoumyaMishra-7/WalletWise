@@ -996,7 +996,7 @@ const Dashboard = () => {
 
             <div className="gamification-level" title={`Level ${currentLevelInfo.level}: ${currentLevelInfo.title}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <FaStar color="#eab308" />
-              <span style={{ fontWeight: 600 }}>Lvl {currentLevelInfo.level}</span>
+              <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Lvl {currentLevelInfo.level}</span>
             </div>
           </div>
           {/*
