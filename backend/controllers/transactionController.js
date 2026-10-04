@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Transaction = require('../models/Transactions');
 const User = require('../models/User');
+const { escapeRegex } = require('../utils/helpers');
 
 const STRICT_MODE = process.env.STRICT_WALLET_BALANCE === "true";
 const { z } = require('zod');
@@ -260,7 +261,7 @@ const getAllTransactions = catchAsync(async (req, res) => {
   }
 
   if (search) {
-    const regex = new RegExp(search, 'i');
+    const regex = new RegExp(escapeRegex(search), 'i');
     query.$or = [{ description: regex }, { category: regex }];
   }
 
