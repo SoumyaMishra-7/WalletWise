@@ -434,6 +434,21 @@ const updateBudget = async (req, res) => {
         }
 
         if (updates.categories) {
+            // Validate each category has numeric amount and percentage before summing
+            for (const cat of updates.categories) {
+                if (typeof cat.percentage !== 'number' || isNaN(cat.percentage) || cat.percentage < 0 || cat.percentage > 100) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Each category must have a valid percentage between 0 and 100'
+                    });
+                }
+                if (typeof cat.amount !== 'number' || isNaN(cat.amount) || cat.amount < 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Each category must have a valid non-negative amount'
+                    });
+                }
+            }
             const totalPercentage = updates.categories.reduce((sum, cat) => sum + cat.percentage, 0);
             if (Math.abs(totalPercentage - 100) > 0.01) {
                 return res.status(400).json({
