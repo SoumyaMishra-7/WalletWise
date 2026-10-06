@@ -58,6 +58,8 @@
   cursor: pointer;
   transition: var(--transition-fast);
   box-shadow: var(--shadow-soft);
+  margin-top: 10px;
+  align-self: flex-start;
 }
 
 .advanced-toggle.active,
