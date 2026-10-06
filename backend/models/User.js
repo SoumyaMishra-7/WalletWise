@@ -194,6 +194,20 @@ const userSchema = new mongoose.Schema({
     type: String
   }],
 
+  // Notification preferences for bill reminders and other alerts
+  notificationPrefs: {
+    billRemindersEnabled: {
+      type: Boolean,
+      default: true
+    },
+    reminderDaysBefore: {
+      type: Number,
+      default: 3,
+      min: 1,
+      max: 30
+    }
+  },
+
   // Privacy Vault Fields
   vaultEnabled: {
     type: Boolean,
