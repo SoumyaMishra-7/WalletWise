@@ -188,7 +188,7 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
-    }
+    await transaction.save({ session });
 
     // Log Activity
     await logTransactionActivity({
@@ -471,8 +471,15 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
-      $inc: { balance: balanceChange }
-    });
+    const walletQuery = { _id: transaction.walletId };
+    if (STRICT_MODE && balanceChange < 0) {
+      walletQuery.balance = { $gte: Math.abs(balanceChange) };
+    }
+    const updatedWallet = await require('../models/Wallet').findOneAndUpdate(
+      walletQuery,
+      { $inc: { balance: balanceChange } },
+      { new: true }
+    );
     if (!updatedWallet) {
       throw new AppError('Cannot delete income transaction: Insufficient funds in shared wallet to cover deduction', 400);
     }
