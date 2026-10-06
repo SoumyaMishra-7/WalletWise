@@ -583,7 +583,14 @@ const undoTransaction = catchAsync(async (req, res) => {
     description: deletedTransaction.description,
     paymentMethod: deletedTransaction.paymentMethod,
     mood: deletedTransaction.mood,
-    date: deletedTransaction.date || new Date()
+    date: deletedTransaction.date || new Date(),
+    // Preserve optional metadata to fully restore the original transaction
+    ...(deletedTransaction.walletId && { walletId: deletedTransaction.walletId }),
+    ...(deletedTransaction.paidBy && { paidBy: deletedTransaction.paidBy }),
+    ...(deletedTransaction.isRecurring !== undefined && { isRecurring: deletedTransaction.isRecurring }),
+    ...(deletedTransaction.recurringInterval && { recurringInterval: deletedTransaction.recurringInterval }),
+    ...(deletedTransaction.isEncrypted && { isEncrypted: deletedTransaction.isEncrypted }),
+    ...(deletedTransaction.encryptedData && { encryptedData: deletedTransaction.encryptedData })
   });
 
   try {
