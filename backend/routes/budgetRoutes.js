@@ -38,6 +38,9 @@ router.put('/:id', protect, sanitizeInput, budgetController.updateBudget);
 // Get Budget Summary with Transaction Matching
 router.get('/stats/summary', protect, budgetController.getBudgetSummary);
 
+// Get daily and weekly spending status vs limits
+router.get('/daily-status', protect, budgetController.getDailyStatus);
+
 // Get Budget by Month
 router.get('/:month', protect, budgetController.getBudgetByMonth);
 

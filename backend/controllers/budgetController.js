@@ -465,7 +465,7 @@ const updateBudget = async (req, res) => {
         }
 
         // Update fields with a secure whitelist
-        const allowedUpdates = ['totalBudget', 'categories', 'isActive'];
+        const allowedUpdates = ['totalBudget', 'categories', 'isActive', 'dailyLimit', 'weeklyLimit'];
 
         allowedUpdates.forEach(key => {
             if (updates[key] !== undefined) {
@@ -584,6 +584,62 @@ const getBudgetSummary = async (req, res) => {
     }
 };
 
+// GET /api/budget/daily-status — returns today's and this week's spending vs the active limits
+const getDailyStatus = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const currentMonth = new Date().toISOString().slice(0, 7);
+
+        const budget = await Budget.findOne({ userId, month: currentMonth, isActive: true });
+
+        const now = new Date();
+
+        // Today: midnight to now
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+        // This week: Monday to now (ISO week)
+        const dayOfWeek = now.getDay(); // 0=Sun
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() + mondayOffset);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const [dailyExpenses, weeklyExpenses] = await Promise.all([
+            Transaction.find({ userId, type: 'expense', date: { $gte: startOfToday, $lte: endOfToday } }).select('amount'),
+            Transaction.find({ userId, type: 'expense', date: { $gte: startOfWeek, $lte: now } }).select('amount')
+        ]);
+
+        const todaySpent = Math.round(dailyExpenses.reduce((sum, tx) => sum + (tx.amount || 0), 0) * 100) / 100;
+        const weekSpent = Math.round(weeklyExpenses.reduce((sum, tx) => sum + (tx.amount || 0), 0) * 100) / 100;
+
+        const dailyLimit = budget?.dailyLimit ?? null;
+        const weeklyLimit = budget?.weeklyLimit ?? null;
+
+        res.json({
+            success: true,
+            daily: {
+                spent: todaySpent,
+                limit: dailyLimit,
+                remaining: dailyLimit !== null ? Math.max(0, dailyLimit - todaySpent) : null,
+                exceeded: dailyLimit !== null && todaySpent > dailyLimit,
+                utilization: dailyLimit ? Math.min((todaySpent / dailyLimit) * 100, 100) : null
+            },
+            weekly: {
+                spent: weekSpent,
+                limit: weeklyLimit,
+                remaining: weeklyLimit !== null ? Math.max(0, weeklyLimit - weekSpent) : null,
+                exceeded: weeklyLimit !== null && weekSpent > weeklyLimit,
+                utilization: weeklyLimit ? Math.min((weekSpent / weeklyLimit) * 100, 100) : null
+            }
+        });
+
+    } catch (error) {
+        console.error('Daily status error:', error);
+        res.status(500).json({ success: false, message: 'Failed to get daily status' });
+    }
+};
+
 module.exports = {
     setBudget,
     getCurrentBudget,
@@ -592,5 +648,6 @@ module.exports = {
     copyPreviousBudget,
     deleteBudget,
     updateBudget,
-    getBudgetSummary
+    getBudgetSummary,
+    getDailyStatus
 };
