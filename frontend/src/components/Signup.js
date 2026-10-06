@@ -34,6 +34,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
   const { signup } = useAuth();
 
@@ -57,57 +58,31 @@ const Signup = () => {
     }));
   };
 
+  const validateFields = () => {
+    const errors = {};
+    if (!studentId.trim()) errors.studentId = "Student ID is required";
+    if (!fullName.trim()) errors.fullName = "Full name is required";
+    if (!email.trim()) errors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Invalid email format";
+    if (!department.trim()) errors.department = "Department is required";
+    if (password.length < 8) errors.password = "Password must be at least 8 characters";
+    else if (!/[A-Z]/.test(password)) errors.password = "Must contain an uppercase letter";
+    else if (!/[a-z]/.test(password)) errors.password = "Must contain a lowercase letter";
+    else if (!/[0-9]/.test(password)) errors.password = "Must contain a number";
+    else if (!/[^a-zA-Z0-9]/.test(password)) errors.password = "Must contain a special character";
+    if (password !== confirmPassword) errors.confirmPassword = "Passwords do not match";
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validations
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
+    const errors = validateFields();
+    setFieldErrors(errors);
 
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      toast.error("Password must contain at least one uppercase letter");
-      return;
-    }
-
-    if (!/[a-z]/.test(password)) {
-      toast.error("Password must contain at least one lowercase letter");
-      return;
-    }
-
-    if (!/[0-9]/.test(password)) {
-      toast.error("Password must contain at least one number");
-      return;
-    }
-
-    if (!/[^a-zA-Z0-9]/.test(password)) {
-      toast.error("Password must contain at least one special character");
-      return;
-    }
-
-    if (!studentId.trim()) {
-      toast.error("Student ID is required");
-      return;
-    }
-
-    if (!fullName.trim()) {
-      toast.error("Full name is required");
-      return;
-    }
-
-    if (!email.trim()) {
-      toast.error("Email is required");
-      return;
-    }
-
-    if (!department.trim()) {
-      toast.error("Department is required");
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError);
       return;
     }
 
@@ -258,7 +233,9 @@ const Signup = () => {
                 placeholder="Your full name"
                 required
                 disabled={loading}
+                className={fieldErrors.fullName ? 'field-error' : ''}
               />
+              {fieldErrors.fullName && <span className="field-error-msg">{fieldErrors.fullName}</span>}
             </div>
           </div>
 
@@ -277,7 +254,9 @@ const Signup = () => {
               placeholder="Your email address"
               required
               disabled={loading}
+              className={fieldErrors.email ? 'field-error' : ''}
             />
+            {fieldErrors.email && <span className="field-error-msg">{fieldErrors.email}</span>}
           </div>
 
           <div className="form-row">
