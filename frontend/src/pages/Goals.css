@@ -385,6 +385,67 @@
   font-size: 0.85rem;
 }
 
+.btn-danger {
+  padding: 0.55rem 1.1rem;
+  border-radius: 10px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-danger-outline {
+  padding: 0.55rem 1.1rem;
+  border-radius: 10px;
+  border: 1.5px solid #ef4444;
+  background: transparent;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.btn-danger-outline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+}
+
+.delete-confirm span {
+  font-size: 0.9rem;
+  color: #ef4444;
+  font-weight: 600;
+  flex: 1;
+}
+
 @media (max-width: 960px) {
   
   .goals-header {

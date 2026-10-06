@@ -13,4 +13,7 @@ router.get('/', protect, savingGoalController.getAllGoals);
 router.post('/:id/add', protect, savingGoalController.addAmount);
 router.patch('/:id/add', protect, savingGoalController.addAmount);
 
+// Delete a savings goal
+router.delete('/:id', protect, savingGoalController.deleteGoal);
+
 module.exports = router;

@@ -66,6 +66,8 @@ const Goals = () => {
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [addAmount, setAddAmount] = useState(0);
   const [addingAmount, setAddingAmount] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deletingGoal, setDeletingGoal] = useState(false);
   const location = useLocation();
 
   const { user } = useAuth();
@@ -155,6 +157,24 @@ const Goals = () => {
     if (!selectedGoal) return;
     setAddAmount(suggestedAmountForGoal(selectedGoal));
   }, [selectedGoal]);
+
+  const handleDeleteGoal = async () => {
+    if (!selectedGoal) return;
+    setDeletingGoal(true);
+    try {
+      const response = await api.delete(`/api/savings-goals/${selectedGoal.id}`);
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Failed to delete goal');
+      }
+      setGoals((prev) => prev.filter((g) => g.id !== selectedGoal.id));
+      setSelectedGoal(null);
+      setConfirmDelete(false);
+    } catch (error) {
+      // Interceptor handles the toast
+    } finally {
+      setDeletingGoal(false);
+    }
+  };
 
   const handleAddCustomAmount = async () => {
     if (!selectedGoal) return;
@@ -336,7 +356,7 @@ const Goals = () => {
       </button>
 
       {selectedGoal && (
-        <div className="goal-modal-backdrop" onClick={() => setSelectedGoal(null)}>
+        <div className="goal-modal-backdrop" onClick={() => { setSelectedGoal(null); setConfirmDelete(false); }}>
           <div className="goal-modal" onClick={(event) => event.stopPropagation()}>
             <div className="goal-modal-header">
               <div className="goal-modal-icon">
@@ -349,7 +369,7 @@ const Goals = () => {
                 <span className="modal-deadline">Deadline: {formatDeadline(selectedGoal.targetDate)}</span>
               </div>
 
-              <button className="modal-close" onClick={() => setSelectedGoal(null)} aria-label="Close">
+              <button className="modal-close" onClick={() => { setSelectedGoal(null); setConfirmDelete(false); }} aria-label="Close">
                 x
               </button>
             </div>
@@ -403,20 +423,41 @@ const Goals = () => {
             </div>
 
             <div className="goal-modal-actions">
-              <button className="btn-primary" onClick={handleAddCustomAmount} disabled={addingAmount}>
+              <button className="btn-primary" onClick={handleAddCustomAmount} disabled={addingAmount || deletingGoal}>
                 {addingAmount ? 'Adding...' : `Add ${formatCurrency(addAmount || 0)}`}
               </button>
-              
+
               <button
                 className="btn-secondary"
                 onClick={() => {
                   setSelectedGoal(null);
+                  setConfirmDelete(false);
                   setShowAddGoalModal(true);
                 }}
-                disabled={addingAmount}
+                disabled={addingAmount || deletingGoal}
               >
                 Edit Goal
               </button>
+
+              {confirmDelete ? (
+                <div className="delete-confirm">
+                  <span>Delete this goal?</span>
+                  <button className="btn-danger" onClick={handleDeleteGoal} disabled={deletingGoal}>
+                    {deletingGoal ? 'Deleting...' : 'Yes, delete'}
+                  </button>
+                  <button className="btn-secondary" onClick={() => setConfirmDelete(false)} disabled={deletingGoal}>
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="btn-danger-outline"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={addingAmount || deletingGoal}
+                >
+                  Delete Goal
+                </button>
+              )}
             </div>
           </div>
         </div>
