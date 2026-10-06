@@ -18,6 +18,9 @@ router.get('/', protect, transactionController.getAllTransactions);
 // Undo transaction ✅ IMPORTANT
 router.post('/:id/undo', protect, transactionController.undoTransaction);
 
+// Get auto-detected recurring transaction suggestions (≥2 months, same description+amount)
+router.get('/recurring-suggestions', protect, transactionController.getRecurringSuggestions);
+
 // Skip next occurrence
 router.patch('/recurring/:id/skip', protect, transactionController.skipNextOccurrence);
 
