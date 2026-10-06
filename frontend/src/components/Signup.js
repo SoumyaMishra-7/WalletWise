@@ -420,7 +420,7 @@ const Signup = () => {
             {loading ? (
               <>
                 <span className="spinner"></span>
-                Creating Account...
+                <span>Creating Account...</span>
               </>
             ) : (
               "Create Account"
