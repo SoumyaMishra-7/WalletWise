@@ -210,8 +210,40 @@ const addAmount = async (req, res) => {
     }
 };
 
+// Delete a savings goal
+const deleteGoal = async (req, res) => {
+    try {
+        const goalId = req.params.id;
+
+        if (!isValidObjectId(goalId)) {
+            return res.status(400).json({ success: false, message: 'Invalid goal ID format' });
+        }
+
+        const goal = await SavingsGoal.findOneAndDelete({
+            _id: goalId,
+            userId: req.userId
+        });
+
+        if (!goal) {
+            return res.status(404).json({
+                success: false,
+                message: 'Goal not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Savings goal deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete goal error:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete goal' });
+    }
+};
+
 module.exports = {
     createGoal,
     getAllGoals,
-    addAmount
+    addAmount,
+    deleteGoal
 };
