@@ -3,7 +3,11 @@ import "./ConfirmDialog.css";
 
 const ConfirmDialog = ({
   isOpen,
+  title = "Confirm Action",
   message,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+  type = "warning",
   onConfirm,
   onCancel,
 }) => {
@@ -14,12 +18,26 @@ const ConfirmDialog = ({
     setActive("confirm");
   }, [isOpen]);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e) => { if (e.key === "Escape") onCancel?.(); };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="confirm-overlay">
-      <div className="confirm-modal">
-        <h3>Confirm Action</h3>
+    <div
+      className="confirm-overlay"
+      onClick={(e) => { if (e.target === e.currentTarget) onCancel?.(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+    >
+      <div className={`confirm-modal confirm-modal--${type}`}>
+        <h3 id="confirm-title">{title}</h3>
         <p>{message}</p>
 
         <div className="confirm-actions">
@@ -30,7 +48,7 @@ const ConfirmDialog = ({
             onMouseEnter={() => setActive("cancel")}
             onClick={onCancel}
           >
-            Cancel
+            {cancelText}
           </button>
 
           <button
@@ -38,7 +56,7 @@ const ConfirmDialog = ({
             onMouseEnter={() => setActive("confirm")}
             onClick={onConfirm}
           >
-            Confirm
+            {confirmText}
           </button>
         </div>
       </div>

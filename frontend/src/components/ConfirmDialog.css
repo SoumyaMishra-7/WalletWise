@@ -75,6 +75,19 @@
   transform: translateX(0%);
 }
 
+/* Type variants — change the slider/confirm button color */
+.confirm-modal--danger .slider {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.confirm-modal--warning .slider {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.confirm-modal--info .slider {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
