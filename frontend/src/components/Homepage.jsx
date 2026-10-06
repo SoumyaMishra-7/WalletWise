@@ -473,7 +473,7 @@ const Homepage = () => {
                     viewport={{ once: true }}
                   />
                   <motion.path
-                    d="M 250 200 C 250 250, 220 300, 200 340"
+                    d="M 250 200 C 250 250, 220 280, 210 295"
                     fill="none"
                     stroke="#CBD5E1"
                     strokeWidth="2"
