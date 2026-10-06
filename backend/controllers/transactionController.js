@@ -36,7 +36,9 @@ const transactionSchema = z.object({
   recurringInterval: z.enum(['daily', 'weekly', 'monthly']).nullable().optional(),
   walletId: z.string().nullable().optional(),
   isEncrypted: z.boolean().optional().default(false),
-  encryptedData: z.string().nullable().optional()
+  encryptedData: z.string().nullable().optional(),
+  currency: z.string().trim().toUpperCase().max(3).nullable().optional(),
+  originalAmount: z.number().min(0).nullable().optional()
 });
 
 // ================= ADD TRANSACTION =================
@@ -68,7 +70,9 @@ const addTransaction = catchAsync(async (req, res, next) => {
     recurringInterval,
     walletId,
     isEncrypted,
-    encryptedData
+    encryptedData,
+    currency: txCurrency,
+    originalAmount: txOriginalAmount
   } = parsed.data;
 
   // Duplicate Detection (24 hour window)
@@ -102,10 +106,30 @@ const addTransaction = catchAsync(async (req, res, next) => {
       nextExecutionDate = now;
     }
 
+    // Multi-currency: if a foreign currency is provided, convert to the user's base currency
+    let finalAmount = amount;
+    let storedCurrency = txCurrency || null;
+    let storedOriginalAmount = txOriginalAmount || null;
+    let storedRate = null;
+
+    if (txCurrency) {
+      const userRecord = await User.findById(userId).select('currency');
+      const baseCurrency = userRecord?.currency || 'USD';
+      if (txCurrency.toUpperCase() !== baseCurrency.toUpperCase()) {
+        const { convert } = require('../services/exchangeRateService');
+        const inputAmt = txOriginalAmount || amount;
+        const { convertedAmount, rate } = await convert(inputAmt, txCurrency, baseCurrency);
+        finalAmount = convertedAmount;
+        storedOriginalAmount = inputAmt;
+        storedRate = rate;
+        storedCurrency = txCurrency.toUpperCase();
+      }
+    }
+
     const transaction = new Transaction({
       userId,
       type,
-      amount,
+      amount: finalAmount,
       category,
       description,
       paymentMethod,
@@ -117,7 +141,10 @@ const addTransaction = catchAsync(async (req, res, next) => {
       walletId: walletId || null,
       paidBy: walletId ? userId : null,
       isEncrypted,
-      encryptedData
+      encryptedData,
+      currency: storedCurrency,
+      originalAmount: storedOriginalAmount,
+      exchangeRateAtTime: storedRate
     });
 
     await transaction.save({ session });
@@ -474,6 +501,25 @@ const getTransactionActivity = catchAsync(async (req, res) => {
   });
 });
 
+// GET /transactions/supported-currencies — list supported ISO currency codes
+const getSupportedCurrencies = catchAsync(async (req, res) => {
+  const { getSupportedCurrencies: getCurrencies } = require('../services/exchangeRateService');
+  res.json({ success: true, currencies: getCurrencies() });
+});
+
+// GET /transactions/convert — convert an amount between currencies
+// Query: ?from=INR&to=USD&amount=1000
+const convertCurrency = catchAsync(async (req, res) => {
+  const { from = 'USD', to = 'USD', amount } = req.query;
+  const parsedAmount = parseFloat(amount);
+  if (isNaN(parsedAmount) || parsedAmount < 0) {
+    return res.status(400).json({ success: false, message: 'Valid amount query param is required' });
+  }
+  const { convert } = require('../services/exchangeRateService');
+  const result = await convert(parsedAmount, from, to);
+  res.json({ success: true, from: from.toUpperCase(), to: to.toUpperCase(), original: parsedAmount, ...result });
+});
+
 module.exports = {
   addTransaction,
   getAllTransactions,
@@ -481,5 +527,7 @@ module.exports = {
   deleteTransaction,
   undoTransaction,
   skipNextOccurrence,
-  getTransactionActivity
+  getTransactionActivity,
+  getSupportedCurrencies,
+  convertCurrency
 };

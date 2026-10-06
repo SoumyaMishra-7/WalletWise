@@ -78,6 +78,27 @@ const transactionSchema = new mongoose.Schema({
     default: null
   },
 
+  // Multi-currency fields (issue #416)
+  currency: {
+    type: String,
+    default: null,
+    uppercase: true,
+    trim: true,
+    maxlength: 3
+  },
+
+  originalAmount: {
+    type: Number,
+    default: null,
+    min: 0
+  },
+
+  exchangeRateAtTime: {
+    type: Number,
+    default: null,
+    min: 0
+  },
+
   // Privacy Vault Fields
   isEncrypted: {
     type: Boolean,

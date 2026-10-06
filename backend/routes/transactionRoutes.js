@@ -9,6 +9,12 @@ router.get(
     transactionController.getTransactionActivity
 );
 
+// Get supported currency codes
+router.get('/supported-currencies', transactionController.getSupportedCurrencies);
+
+// Convert an amount between currencies (?from=INR&to=USD&amount=1000)
+router.get('/convert', protect, transactionController.convertCurrency);
+
 // Add transaction
 router.post('/', protect, transactionController.addTransaction);
 
