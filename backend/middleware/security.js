@@ -35,9 +35,13 @@ const enforceJsonContent = (req, res, next) => {
         return next();
     }
 
-    // Allow multipart/form-data exclusively for the profile update endpoint
-    if (req.is('multipart/form-data') && req.originalUrl.split('?')[0].endsWith('/auth/profile')) {
-        return next();
+    // Allow multipart/form-data for file-upload endpoints (avatar, images)
+    if (req.is('multipart/form-data')) {
+        const cleanPath = req.originalUrl.split('?')[0];
+        const uploadWhitelist = ['/auth/profile'];
+        if (uploadWhitelist.some(path => cleanPath.endsWith(path))) {
+            return next();
+        }
     }
 
     // Reject other content types
