@@ -1,4 +1,5 @@
 const SavingsGoal = require('../models/SavingGoal');
+const User = require('../models/User');
 const { isValidObjectId } = require('../utils/validation');
 const gamification = require('../utils/gamification');
 
@@ -186,8 +187,26 @@ const addAmount = async (req, res) => {
             });
         }
 
+        // Check user has sufficient wallet balance before transferring
+        const user = await User.findById(req.userId).lean();
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        if ((user.walletBalance || 0) < amount) {
+            return res.status(400).json({
+                success: false,
+                message: 'Insufficient wallet balance to add to this goal'
+            });
+        }
+
+        const actualAdded = Math.min(amount, goal.targetAmount - goal.currentAmount);
         goal.currentAmount = Math.min(goal.targetAmount, goal.currentAmount + amount);
         await goal.save();
+
+        // Deduct the transferred amount from the user's personal wallet
+        await User.findByIdAndUpdate(req.userId, {
+            $inc: { walletBalance: -actualAdded }
+        });
 
         res.json({
             success: true,
