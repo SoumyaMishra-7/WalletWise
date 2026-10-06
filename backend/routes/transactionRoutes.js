@@ -18,6 +18,9 @@ router.get('/', protect, transactionController.getAllTransactions);
 // Undo transaction ✅ IMPORTANT
 router.post('/:id/undo', protect, transactionController.undoTransaction);
 
+// Manually trigger recurring transaction processing (background worker handles this on schedule)
+router.post('/trigger-recurring', protect, transactionController.triggerRecurring);
+
 // Skip next occurrence
 router.patch('/recurring/:id/skip', protect, transactionController.skipNextOccurrence);
 

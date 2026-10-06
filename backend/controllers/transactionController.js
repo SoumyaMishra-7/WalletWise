@@ -196,57 +196,6 @@ const getAllTransactions = catchAsync(async (req, res) => {
     query.walletId = null; // Only personal transactions
   }
 
-  // Process recurring transactions
-  // For simplicity, recurring transactions are currently bound to personal userId.
-  // If we want recurring inside shared wallets, we'll need to expand this query.
-  const recurringTransactions = await Transaction.find({
-    userId,
-    isRecurring: true,
-    nextExecutionDate: { $lte: new Date() },
-    walletId: null // Process only personal recurring transactions for now
-  });
-
-  for (const rt of recurringTransactions) {
-    await withTransaction(async (session) => {
-
-      const newTransaction = new Transaction({
-        userId: rt.userId,
-        type: rt.type,
-        amount: rt.amount,
-        category: rt.category,
-        description: rt.description,
-        paymentMethod: rt.paymentMethod,
-        mood: rt.mood,
-        date: new Date()
-      });
-
-      await newTransaction.save({ session });
-
-      const balanceChange = rt.type === 'income' ? rt.amount : -rt.amount;
-
-      await User.findByIdAndUpdate(
-        rt.userId,
-        { $inc: { walletBalance: balanceChange } },
-        { session }
-      );
-
-      await logTransactionActivity({
-        userId: rt.userId,
-        transactionId: newTransaction._id,
-        action: "CREATED"
-      });
-
-      let nextDate = new Date(rt.nextExecutionDate);
-
-      if (rt.recurringInterval === "daily") nextDate.setDate(nextDate.getDate() + 1);
-      else if (rt.recurringInterval === "weekly") nextDate.setDate(nextDate.getDate() + 7);
-      else if (rt.recurringInterval === "monthly") nextDate.setMonth(nextDate.getMonth() + 1);
-
-      rt.nextExecutionDate = nextDate;
-      await rt.save({ session });
-    });
-  }
-
   if (type && type !== 'all') query.type = type;
 
   if (startDate || endDate) {
@@ -474,6 +423,15 @@ const getTransactionActivity = catchAsync(async (req, res) => {
   });
 });
 
+// POST /transactions/trigger-recurring  — dedicated endpoint for manually triggering
+// recurring transaction processing. The background worker (worker.js) runs this on
+// schedule; this endpoint exists for local dev and testing only.
+const triggerRecurring = catchAsync(async (req, res) => {
+  const { processRecurringTransactions } = require('../worker');
+  await processRecurringTransactions();
+  res.json({ success: true, message: 'Recurring transactions processed' });
+});
+
 module.exports = {
   addTransaction,
   getAllTransactions,
@@ -481,5 +439,6 @@ module.exports = {
   deleteTransaction,
   undoTransaction,
   skipNextOccurrence,
-  getTransactionActivity
+  getTransactionActivity,
+  triggerRecurring
 };
