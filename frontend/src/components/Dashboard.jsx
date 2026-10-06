@@ -21,8 +21,10 @@ import {
   FaBrain, FaArrowUp, FaCalendarAlt, FaClock,
   FaSync, FaHome, FaExchangeAlt,
   FaCog, FaChartPie, FaMagic, FaTrophy,
-  FaLock, FaUnlock, FaFire, FaStar
+  FaLock, FaUnlock, FaFire, FaStar,
+  FaSun, FaMoon
 } from 'react-icons/fa';
+import { useTheme } from '../context/ThemeContext';
 import { Line, Pie } from 'react-chartjs-2';
 import { toast } from 'react-hot-toast';
 import { handleGamificationReward } from '../utils/RewardCelebration';
@@ -78,7 +80,7 @@ const Dashboard = () => {
   const [isTourOpen, setIsTourOpen] = useState(false);
   const hasPromptedTourRef = useRef(false);
   const refreshingRef = useRef(false);
-  // const { isDark, toggleTheme } = useTheme(); // CACHE BUST TEMPORARY COMMENT
+  const { isDark, toggleTheme } = useTheme();
 
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
@@ -985,7 +987,6 @@ const Dashboard = () => {
               <span style={{ fontWeight: 600 }}>Lvl {currentLevelInfo.level}</span>
             </div>
           </div>
-          {/*
           <button
             className="theme-toggle"
             onClick={toggleTheme}
@@ -996,7 +997,6 @@ const Dashboard = () => {
           >
             {isDark ? <FaSun /> : <FaMoon />}
           </button>
-          */}
           <button
             className="user-profile-trigger"
             onClick={() => setShowUserMenu(!showUserMenu)}
