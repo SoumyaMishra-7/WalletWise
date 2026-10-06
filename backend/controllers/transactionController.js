@@ -260,7 +260,7 @@ const getAllTransactions = catchAsync(async (req, res) => {
   }
 
   if (search) {
-    const regex = new RegExp(search, 'i');
+    const regex = new RegExp(escapeRegex(search), 'i');
     query.$or = [{ description: regex }, { category: regex }];
   }
 
