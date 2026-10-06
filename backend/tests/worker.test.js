@@ -15,6 +15,11 @@ let mongoServer;
 jest.setTimeout(60000);
 
 beforeAll(async () => {
+    // Disconnect from any existing connection created by the global setup file
+    // so we can connect to a replica set (required by transactions/workers).
+    if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+    }
     mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
     const mongoUri = mongoServer.getUri();
     await mongoose.connect(mongoUri);
