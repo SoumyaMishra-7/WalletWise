@@ -474,6 +474,13 @@ const getTransactionActivity = catchAsync(async (req, res) => {
   });
 });
 
+// GET /transactions/recurring-suggestions — returns likely-recurring expense patterns
+const getRecurringSuggestions = catchAsync(async (req, res) => {
+  const { detectRecurringCandidates } = require('../services/recurringDetectionService');
+  const suggestions = await detectRecurringCandidates(req.userId);
+  res.json({ success: true, suggestions, count: suggestions.length });
+});
+
 module.exports = {
   addTransaction,
   getAllTransactions,
@@ -481,5 +488,6 @@ module.exports = {
   deleteTransaction,
   undoTransaction,
   skipNextOccurrence,
-  getTransactionActivity
+  getTransactionActivity,
+  getRecurringSuggestions
 };
