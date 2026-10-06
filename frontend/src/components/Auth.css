@@ -682,3 +682,16 @@ body.theme-dark .form-group input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--text-main) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+/* Inline field validation errors */
+.field-error {
+  border-color: var(--danger-pill, #ef4444) !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+}
+
+.field-error-msg {
+  display: block;
+  color: var(--danger-pill, #ef4444);
+  font-size: 0.75rem;
+  margin-top: 4px;
+  font-weight: 500;
+}
