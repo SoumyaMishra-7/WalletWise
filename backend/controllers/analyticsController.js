@@ -237,16 +237,45 @@ exports.getForecast = async (req, res) => {
     const currentDay = now.getDate();
     const monthCompletionRatio = Math.max(currentDay / daysInMonth, 0.01); // Avoid division by zero
 
+    // Weights for weighted moving average — most recent month gets highest weight
+    const WMA_WEIGHTS = [0.2, 0.3, 0.5]; // indices 0=oldest, 2=newest
+
     const forecasts = historicalData.map(hist => {
       const current = currentMonthExpenses.find(c => c._id === hist._id) || { total: 0 };
 
-      // Calculate trend (last month vs average)
+      // Sort ascending by time
       hist.monthlyHistory.sort((a, b) => (a.year * 12 + a.month) - (b.year * 12 + b.month));
-      const lastMonth = hist.monthlyHistory[hist.monthlyHistory.length - 1]?.total || 0;
-      const trend = lastMonth > hist.averageSpending ? "increasing" : "decreasing";
 
-      // Prediction for next month (using average + slight trend weight)
-      const prediction = Math.round(hist.averageSpending * 1.05); // 5% buffer for safety
+      // Fill any months with no transactions (so missing months default to 0)
+      const filledMonths = [];
+      for (let offset = 2; offset >= 0; offset--) {
+        const d = new Date(startOfCurrentMonth);
+        d.setMonth(d.getMonth() - offset - 1);
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        const found = hist.monthlyHistory.find(h => h.year === y && h.month === m);
+        filledMonths.push(found ? found.total : 0);
+      }
+
+      // Weighted moving average: older months get lower weight
+      const totalWeight = filledMonths.reduce((sum, _, i) => sum + WMA_WEIGHTS[i], 0);
+      const wma = filledMonths.reduce((sum, val, i) => sum + val * WMA_WEIGHTS[i], 0) / totalWeight;
+
+      // Linear trend slope (simple least-squares over the 3-month window)
+      const n = filledMonths.length;
+      const xMean = (n - 1) / 2;
+      const yMean = filledMonths.reduce((s, v) => s + v, 0) / n;
+      const slope = filledMonths.reduce((num, v, i) => num + (i - xMean) * (v - yMean), 0) /
+                    filledMonths.reduce((den, _, i) => den + (i - xMean) ** 2, 0);
+
+      const trend = slope > 0 ? "increasing" : slope < 0 ? "decreasing" : "stable";
+
+      // Prediction = WMA + one step of the trend
+      const prediction = Math.max(0, Math.round(wma + slope));
+
+      // Confidence: how many non-zero months we had
+      const nonZeroMonths = filledMonths.filter(v => v > 0).length;
+      const confidence = nonZeroMonths >= 3 ? "high" : nonZeroMonths === 2 ? "medium" : "low";
 
       // Current Velocity Projection
       const projectedEndTotal = Math.round(current.total / monthCompletionRatio);
@@ -257,6 +286,8 @@ exports.getForecast = async (req, res) => {
         averageHistorical: Math.round(hist.averageSpending),
         predictedNextMonth: prediction,
         trend,
+        confidence,
+        trendSlope: Math.round(slope),
         currentMonth: {
           spent: current.total,
           projected: projectedEndTotal,
