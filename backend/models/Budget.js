@@ -51,6 +51,18 @@ const budgetSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+
+  // Optional daily and weekly spending caps
+  dailyLimit: {
+    type: Number,
+    default: null,
+    min: [0, 'Daily limit must be non-negative']
+  },
+  weeklyLimit: {
+    type: Number,
+    default: null,
+    min: [0, 'Weekly limit must be non-negative']
   }
 }, {
   timestamps: true
