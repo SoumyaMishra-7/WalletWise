@@ -626,6 +626,76 @@ const getTransactionActivity = catchAsync(async (req, res) => {
   });
 });
 
+// POST /transactions/import — import transactions from a CSV upload
+const importTransactionsFromCSV = catchAsync(async (req, res) => {
+  const { parseTransactionCSV } = require('../utils/csvParser');
+
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No CSV file provided' });
+  }
+
+  const { parsed, errors, preview } = parseTransactionCSV(req.file.buffer);
+
+  if (!parsed.length) {
+    return res.status(422).json({
+      success: false,
+      message: 'No valid transactions found in the CSV',
+      errors
+    });
+  }
+
+  const { preview: previewOnly } = req.query;
+  if (previewOnly === 'true') {
+    return res.json({ success: true, preview, total: parsed.length, errors });
+  }
+
+  // Duplicate detection: check each parsed transaction against existing ones
+  // A duplicate is: same userId + same amount + same date (to the day) + same description
+  const userId = req.userId;
+  const imported = [];
+  const duplicates = [];
+
+  for (const tx of parsed) {
+    const startOfDay = new Date(tx.date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(tx.date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existing = await Transaction.findOne({
+      userId,
+      amount: tx.amount,
+      type: tx.type,
+      description: tx.description,
+      date: { $gte: startOfDay, $lte: endOfDay }
+    });
+
+    if (existing) {
+      duplicates.push({ description: tx.description, date: tx.date, amount: tx.amount });
+      continue;
+    }
+
+    const newTx = new Transaction({
+      userId,
+      type: tx.type,
+      amount: tx.amount,
+      category: tx.category,
+      description: tx.description,
+      date: tx.date,
+      paymentMethod: 'other'
+    });
+    await newTx.save();
+    imported.push(newTx._id);
+  }
+
+  res.status(201).json({
+    success: true,
+    message: `Imported ${imported.length} transaction(s)`,
+    importedCount: imported.length,
+    duplicatesSkipped: duplicates.length,
+    errors
+  });
+});
+
 module.exports = {
   addTransaction,
   getAllTransactions,
@@ -633,5 +703,6 @@ module.exports = {
   deleteTransaction,
   undoTransaction,
   skipNextOccurrence,
-  getTransactionActivity
+  getTransactionActivity,
+  importTransactionsFromCSV
 };
