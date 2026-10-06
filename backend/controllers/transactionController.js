@@ -238,6 +238,16 @@ const getAllTransactions = catchAsync(async (req, res) => {
 
   const query = {};
   if (walletId) {
+    // IDOR guard: verify the requesting user is a member of the wallet
+    const Wallet = require('../models/Wallet');
+    const wallet = await Wallet.findById(walletId).lean();
+    if (!wallet) {
+      throw new AppError('Wallet not found', 404);
+    }
+    const isMember = wallet.members.some((m) => m.user.toString() === userId.toString());
+    if (!isMember) {
+      throw new AppError('Access denied to this wallet', 403);
+    }
     query.walletId = walletId;
   } else {
     query.userId = userId;
