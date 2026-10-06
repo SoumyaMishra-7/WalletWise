@@ -574,6 +574,7 @@ const Homepage = () => {
                   icon: <Compass size={24} />,
                   title: "Flexible Budgeting",
                   text: "Plan tuition, rent, and daily spending with flexible lanes designed for student life.",
+                  link: "/login",
                   visual: (
                     <div className="ww-bento-visual">
                       <div className="bar-group">
@@ -607,6 +608,7 @@ const Homepage = () => {
                   icon: <BarChart3 size={24} />,
                   title: "Visual Reports",
                   text: "Generate weekly insights that explain exactly where your money goes.",
+                  link: "/login",
                   visual: (
                     <div className="ww-bento-visual">
                       <div className="chart-row">
@@ -641,10 +643,10 @@ const Homepage = () => {
                     <div className="ww-card-icon">{item.icon}</div>
                     <h3>{item.title}</h3>
                     <p>{item.text}</p>
-                    {item.className === "span-2" && (
-                      <div className="ww-bento-link">
+                    {item.link && (
+                      <a href={item.link} className="ww-bento-link" aria-label={`Learn more about ${item.title}`}>
                         Learn more <ArrowUpRight size={16} />
-                      </div>
+                      </a>
                     )}
                   </div>
                   {/* Render Visual for large cards */}
