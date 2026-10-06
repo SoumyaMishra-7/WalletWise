@@ -774,28 +774,36 @@ const Homepage = () => {
                 <Wallet size={20} />
                 <span>WalletWise</span>
               </div>
-
               <p className="ww-footer-text">
                 Smart finance tracking made simple. Manage expenses, track goals,
                 and grow financially with confidence.
               </p>
+              <p className="ww-footer-tagline">Your money, understood.</p>
             </div>
 
             <div className="ww-footer-links">
-              <h4>Quick Links</h4>
+              <h4>Navigation</h4>
               <a href="#about">About</a>
               <a href="#features">Features</a>
+              <a href="#how">How It Works</a>
               <a href="#testimonials">Stories</a>
-              <a href="#contact">Contact</a>
+            </div>
+
+            <div className="ww-footer-links">
+              <h4>Account</h4>
+              <a href="/login">Sign In</a>
+              <a href="/signup">Get Started</a>
+              <a href="/forgot-password">Reset Password</a>
             </div>
 
             <div className="ww-footer-social">
-              <h4>Follow Us</h4>
+              <h4>Connect</h4>
               <div className="social-icons">
-                <a href="https://github.com/SoumyaMishra-7/WalletWise"><i className="fab fa-github"></i></a>
-                <a href="https://www.linkedin.com/in/soumya-mishra-0828a529a/"><i className="fab fa-linkedin"></i></a>
-                <a href="2400031768@kluniversity.in"><i className="fa-solid fa-envelope"></i></a>
+                <a href="https://github.com/SoumyaMishra-7/WalletWise" aria-label="GitHub"><i className="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/soumya-mishra-0828a529a/" aria-label="LinkedIn"><i className="fab fa-linkedin"></i></a>
+                <a href="mailto:2400031768@kluniversity.in" aria-label="Email"><i className="fa-solid fa-envelope"></i></a>
               </div>
+              <p className="ww-footer-contact-label">Questions? Reach out anytime.</p>
             </div>
 
           </div>

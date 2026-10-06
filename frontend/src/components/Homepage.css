@@ -1025,9 +1025,22 @@ body.theme-dark .ww-header.scrolled {
 /* GRID LAYOUT */
 .ww-footer-grid {
   display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
   gap: 40px;
   align-items: start;
+}
+
+.ww-footer-tagline {
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.ww-footer-contact-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 8px;
 }
 
 /* BRAND */
