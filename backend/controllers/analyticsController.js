@@ -276,3 +276,14 @@ exports.getForecast = async (req, res) => {
     res.status(500).json({ message: "Forecasting error" });
   }
 };
+
+exports.getFinancialHealth = async (req, res) => {
+  try {
+    const { computeFinancialHealthScore } = require('../services/financialHealthService');
+    const result = await computeFinancialHealthScore(req.userId);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('Financial health error:', err);
+    res.status(500).json({ success: false, message: 'Failed to compute financial health score' });
+  }
+};
