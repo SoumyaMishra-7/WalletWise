@@ -51,6 +51,28 @@ const budgetSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+
+  // Rollover settings
+  rolloverEnabled: {
+    type: Boolean,
+    default: false
+  },
+  // 'positive' = carry unused only; 'both' = carry unused and deduct overspend
+  rolloverMode: {
+    type: String,
+    enum: ['positive', 'both'],
+    default: 'positive'
+  },
+  // Net amount carried in from the previous month (positive = extra budget, negative = overspend debt)
+  rolloverAmount: {
+    type: Number,
+    default: 0
+  },
+  // Flag set to true once rollover has been applied so it never runs twice
+  rolloverApplied: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

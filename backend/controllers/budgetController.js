@@ -465,7 +465,7 @@ const updateBudget = async (req, res) => {
         }
 
         // Update fields with a secure whitelist
-        const allowedUpdates = ['totalBudget', 'categories', 'isActive'];
+        const allowedUpdates = ['totalBudget', 'categories', 'isActive', 'rolloverEnabled', 'rolloverMode'];
 
         allowedUpdates.forEach(key => {
             if (updates[key] !== undefined) {
@@ -552,8 +552,11 @@ const getBudgetSummary = async (req, res) => {
             };
         });
 
-        const utilization = budget.totalBudget > 0
-            ? Math.min((totalSpent / budget.totalBudget) * 100, 100)
+        const rolloverAmount = budget.rolloverAmount || 0;
+        const effectiveBudget = budget.totalBudget + rolloverAmount;
+
+        const utilization = effectiveBudget > 0
+            ? Math.min((totalSpent / effectiveBudget) * 100, 100)
             : 0;
 
         return res.json({
@@ -561,6 +564,10 @@ const getBudgetSummary = async (req, res) => {
             hasBudget: true,
             summary: {
                 totalBudget: budget.totalBudget,
+                rolloverEnabled: budget.rolloverEnabled,
+                rolloverMode: budget.rolloverMode,
+                rolloverAmount,
+                effectiveBudget,
                 categories: categoriesWithSpend.map(cat => ({
                     name: cat.name,
                     allocated: cat.amount,
@@ -570,7 +577,7 @@ const getBudgetSummary = async (req, res) => {
                     color: cat.color
                 })),
                 spent: totalSpent,
-                remaining: Math.max(budget.totalBudget - totalSpent, 0),
+                remaining: Math.max(effectiveBudget - totalSpent, 0),
                 utilization
             }
         });
@@ -584,6 +591,73 @@ const getBudgetSummary = async (req, res) => {
     }
 };
 
+// Apply rollover from the previous month into the current budget
+// Idempotent: sets rolloverApplied = true so it never runs twice for the same budget
+const applyRollover = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const currentMonth = new Date().toISOString().slice(0, 7);
+
+        const currentBudget = await Budget.findOne({ userId, month: currentMonth, isActive: true });
+        if (!currentBudget) {
+            return res.status(404).json({ success: false, message: 'No budget found for the current month' });
+        }
+        if (!currentBudget.rolloverEnabled) {
+            return res.status(400).json({ success: false, message: 'Rollover is not enabled for this budget' });
+        }
+        if (currentBudget.rolloverApplied) {
+            return res.status(409).json({ success: false, message: 'Rollover has already been applied for this month' });
+        }
+
+        // Find previous month
+        const prevDate = new Date();
+        prevDate.setDate(1);
+        prevDate.setMonth(prevDate.getMonth() - 1);
+        const prevMonth = prevDate.toISOString().slice(0, 7);
+
+        const prevBudget = await Budget.findOne({ userId, month: prevMonth, isActive: true });
+        if (!prevBudget) {
+            return res.status(404).json({ success: false, message: 'No budget found for the previous month to roll over from' });
+        }
+
+        // Calculate actual spending for the previous month
+        const prevStart = new Date(prevDate.getFullYear(), prevDate.getMonth(), 1);
+        const prevEnd = new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
+        const prevExpenses = await Transaction.find({
+            userId,
+            type: 'expense',
+            date: { $gte: prevStart, $lte: prevEnd }
+        }).select('amount');
+
+        const prevTotalSpent = prevExpenses.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+        const prevNetRemaining = prevBudget.totalBudget - prevTotalSpent; // positive = underspent, negative = overspent
+
+        // Apply rollover based on mode
+        let rolloverAmount = 0;
+        if (currentBudget.rolloverMode === 'positive') {
+            rolloverAmount = Math.max(0, prevNetRemaining); // carry only unused budget
+        } else {
+            rolloverAmount = prevNetRemaining; // carry unused AND deduct overspend
+        }
+
+        currentBudget.rolloverAmount = Math.round(rolloverAmount * 100) / 100;
+        currentBudget.rolloverApplied = true;
+        await currentBudget.save();
+
+        return res.json({
+            success: true,
+            message: 'Rollover applied successfully',
+            rolloverAmount: currentBudget.rolloverAmount,
+            effectiveBudget: currentBudget.totalBudget + currentBudget.rolloverAmount
+        });
+
+    } catch (error) {
+        console.error('Apply rollover error:', error);
+        res.status(500).json({ success: false, message: 'Failed to apply rollover' });
+    }
+};
+
 module.exports = {
     setBudget,
     getCurrentBudget,
@@ -592,5 +666,6 @@ module.exports = {
     copyPreviousBudget,
     deleteBudget,
     updateBudget,
-    getBudgetSummary
+    getBudgetSummary,
+    applyRollover
 };

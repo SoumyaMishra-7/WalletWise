@@ -38,6 +38,9 @@ router.put('/:id', protect, sanitizeInput, budgetController.updateBudget);
 // Get Budget Summary with Transaction Matching
 router.get('/stats/summary', protect, budgetController.getBudgetSummary);
 
+// Apply rollover from previous month (idempotent)
+router.post('/rollover/apply', protect, budgetController.applyRollover);
+
 // Get Budget by Month
 router.get('/:month', protect, budgetController.getBudgetByMonth);
 
