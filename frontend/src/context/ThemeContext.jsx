@@ -48,6 +48,20 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [loading, authUser, theme]);
 
+  // Follow OS-level theme changes in real time when the user has no explicit preference stored
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => {
+      // Only follow system changes when the user hasn't saved a personal preference
+      // (authUser.theme being set means they chose explicitly via the toggle)
+      if (!authUser?.theme) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+    mq.addEventListener('change', handleChange);
+    return () => mq.removeEventListener('change', handleChange);
+  }, [authUser]);
+
   const toggleTheme = useCallback(async () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     // Optimistic UI update
