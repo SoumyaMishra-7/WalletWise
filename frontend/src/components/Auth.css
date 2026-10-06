@@ -209,7 +209,10 @@ html {
   margin-right: 8px;
   color: var(--brand-primary);
   display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
   font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .form-group input,
