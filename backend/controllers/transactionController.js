@@ -188,6 +188,16 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
+    try {
+      await transaction.save({ session });
+    } catch (error) {
+      // Revert the balance change applied above if the write fails
+      if (walletId) {
+        await Wallet.findByIdAndUpdate(walletId, { $inc: { balance: -balanceChange } }, { session });
+      } else {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } }, { session });
+      }
+      throw error;
     }
 
     // Log Activity
@@ -471,6 +481,11 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
+    const query = { _id: transaction.walletId };
+    if (STRICT_MODE && balanceChange < 0) {
+      query.balance = { $gte: Math.abs(balanceChange) };
+    }
+    const updatedWallet = await Wallet.findOneAndUpdate(query, {
       $inc: { balance: balanceChange }
     });
     if (!updatedWallet) {
@@ -504,7 +519,10 @@ const deleteTransaction = catchAsync(async (req, res) => {
   await logTransactionActivity({
     userId,
     transactionId: transaction._id,
-    action: "DELETED"
+    action: "DELETED",
+    // Keep a full server-side snapshot so undo can rebuild the exact
+    // transaction without trusting anything sent back by the client.
+    changes: transaction.toObject()
   });
 
   res.json({
@@ -551,47 +569,98 @@ const skipNextOccurrence = catchAsync(async (req, res) => {
 // ================= UNDO TRANSACTION =================
 const undoTransaction = catchAsync(async (req, res) => {
   const userId = req.userId;
-  const { deletedTransaction } = req.body;
+  const { deletedTransaction, transactionId } = req.body;
 
-  if (!deletedTransaction) {
-    throw new AppError('No transaction data provided for undo', 400);
+  // The id is the only piece of client input we trust. Everything used to
+  // rebuild the transaction comes from the DELETED snapshot written when it
+  // was removed, so a caller cannot invent an amount, type or wallet.
+  const originalId = transactionId || (deletedTransaction && deletedTransaction._id);
+
+  if (!originalId) {
+    throw new AppError('No transaction id provided for undo', 400);
+  }
+
+  if (!isValidObjectId(originalId)) {
+    throw new AppError('Invalid transaction ID format', 400);
+  }
+
+  const activity = await TransactionActivity.findOne({
+    userId,
+    transactionId: originalId,
+    action: 'DELETED'
+  }).sort({ timestamp: -1 });
+
+  const snapshot = activity && activity.changes;
+
+  if (!snapshot || !snapshot.type || typeof snapshot.amount !== 'number') {
+    throw new AppError('No deleted transaction found to restore', 404);
   }
 
   const balanceChange =
-    deletedTransaction.type === 'income'
-      ? deletedTransaction.amount
-      : -deletedTransaction.amount;
+    snapshot.type === 'income' ? snapshot.amount : -snapshot.amount;
 
-  const query = { _id: userId };
-  if (STRICT_MODE && balanceChange < 0) {
-    query.walletBalance = { $gte: Math.abs(balanceChange) };
-  }
+  if (snapshot.walletId) {
+    // Restore to the wallet the transaction originally belonged to.
+    const query = { _id: snapshot.walletId };
+    if (STRICT_MODE && balanceChange < 0) {
+      query.balance = { $gte: Math.abs(balanceChange) };
+    }
 
-  const updatedUser = await User.findOneAndUpdate(query, {
-    $inc: { walletBalance: balanceChange }
-  });
+    const updatedWallet = await Wallet.findOneAndUpdate(query, {
+      $inc: { balance: balanceChange }
+    });
 
-  if (!updatedUser) {
-    throw new AppError('Cannot undo expense: Insufficient personal funds', 400);
+    if (!updatedWallet) {
+      throw new AppError('Cannot undo transaction: Insufficient funds in shared wallet', 400);
+    }
+  } else {
+    const query = { _id: userId };
+    if (STRICT_MODE && balanceChange < 0) {
+      query.walletBalance = { $gte: Math.abs(balanceChange) };
+    }
+
+    const updatedUser = await User.findOneAndUpdate(query, {
+      $inc: { walletBalance: balanceChange }
+    });
+
+    if (!updatedUser) {
+      throw new AppError('Cannot undo transaction: Insufficient personal funds', 400);
+    }
   }
 
   const restored = new Transaction({
     userId,
-    type: deletedTransaction.type,
-    amount: deletedTransaction.amount,
-    category: deletedTransaction.category,
-    description: deletedTransaction.description,
-    paymentMethod: deletedTransaction.paymentMethod,
-    mood: deletedTransaction.mood,
-    date: deletedTransaction.date || new Date()
+    type: snapshot.type,
+    amount: snapshot.amount,
+    category: snapshot.category,
+    description: snapshot.description,
+    paymentMethod: snapshot.paymentMethod,
+    mood: snapshot.mood,
+    date: snapshot.date || new Date(),
+    isRecurring: snapshot.isRecurring || false,
+    recurringInterval: snapshot.recurringInterval || null,
+    nextExecutionDate: snapshot.nextExecutionDate || null,
+    walletId: snapshot.walletId || null,
+    paidBy: snapshot.paidBy || null,
+    isEncrypted: snapshot.isEncrypted || false,
+    encryptedData: snapshot.encryptedData || null
   });
 
   try {
     await restored.save();
-  } catch(e) {
-    await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } });
+  } catch (e) {
+    // Undo the balance change before surfacing the write failure.
+    if (snapshot.walletId) {
+      await Wallet.findByIdAndUpdate(snapshot.walletId, { $inc: { balance: -balanceChange } });
+    } else {
+      await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } });
+    }
     throw e;
   }
+
+  // Clear the snapshot so the same deletion cannot be restored twice, while
+  // keeping the DELETED entry in the activity trail.
+  await TransactionActivity.updateOne({ _id: activity._id }, { $set: { changes: {} } });
 
   await logTransactionActivity({
     userId,
