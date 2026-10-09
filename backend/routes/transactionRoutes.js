@@ -15,6 +15,9 @@ router.post('/', protect, transactionController.addTransaction);
 // Get all transactions
 router.get('/', protect, transactionController.getAllTransactions);
 
+// Manually process recurring transactions
+router.post('/process-recurring', protect, transactionController.processRecurringTransactionsManual);
+
 // Undo transaction ✅ IMPORTANT
 router.post('/:id/undo', protect, transactionController.undoTransaction);
 
