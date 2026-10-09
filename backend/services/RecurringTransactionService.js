@@ -3,7 +3,7 @@ const Transaction = require('../models/Transactions');
 const User = require('../models/User');
 const AppError = require('../utils/appError');
 const { withTransaction } = require('../utils/catchAsync');
-const { logTransactionActivity } = require('../utils/logActivity');
+const { logTransactionActivity } = require('../utils/activityLogger');
 
 const STRICT_MODE = process.env.STRICT_WALLET_BALANCE === 'true';
 
