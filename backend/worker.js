@@ -5,6 +5,21 @@ const Subscription = require('./models/Subscription');
 const User = require('./models/User');
 const { sendEmail } = require('./utils/mailer');
 
+/**
+ * Escape HTML special characters to prevent injection in email templates.
+ * @param {*} value - value to escape
+ * @returns {string} safe HTML string
+ */
+function escapeHtml(value) {
+    const str = String(value == null ? '' : value);
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
 // Helper to log structured info
 const log = (level, task, message, data = {}) => {
     const logData = {
@@ -89,19 +104,26 @@ const processBillReminders = async () => {
 
             if (dueDate >= targetDateStart && dueDate <= targetDateEnd) {
                 try {
-                    const emailSubject = `Upcoming Bill: ${sub.name} is due soon!`;
+                    const safeName = escapeHtml(sub.name);
+                    const safeDisplayName = escapeHtml(
+                        sub.userId.fullName || sub.userId.email.split('@')[0] || 'there'
+                    );
+                    const safeCurrency = escapeHtml(sub.currency || '₹');
+                    const safeAmount = escapeHtml(sub.amount);
+                    const safeCategory = escapeHtml(sub.category);
+                    const emailSubject = `Upcoming Bill: ${safeName} is due soon!`;
                     const emailHtml = `
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                             <h2 style="color: #2563eb;">WalletWise Bill Reminder</h2>
-                            <p>Hi ${sub.userId.fullName || sub.userId.email.split('@')[0] || 'there'},</p>
-                            <p>This is a friendly reminder that your subscription for <strong>${sub.name}</strong> is due in ${reminderDays} day(s).</p>
-                            
+                            <p>Hi ${safeDisplayName},</p>
+                            <p>This is a friendly reminder that your subscription for <strong>${safeName}</strong> is due in ${escapeHtml(reminderDays)} day(s).</p>
+
                             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <p style="margin: 5px 0;"><strong>Amount:</strong> ${sub.currency || '?'}${sub.amount}</p>
-                                <p style="margin: 5px 0;"><strong>Due Date:</strong> ${dueDate.toLocaleDateString()}</p>
-                                <p style="margin: 5px 0;"><strong>Category:</strong> ${sub.category}</p>
+                                <p style="margin: 5px 0;"><strong>Amount:</strong> ${safeCurrency}${safeAmount}</p>
+                                <p style="margin: 5px 0;"><strong>Due Date:</strong> ${escapeHtml(dueDate.toLocaleDateString())}</p>
+                                <p style="margin: 5px 0;"><strong>Category:</strong> ${safeCategory}</p>
                             </div>
-        
+
                             <p>Make sure you have enough balance in your account!</p>
                             <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
                                 You are receiving this email because you enabled bill tracking in WalletWise. You can update your notification preferences from your Profile Settings.

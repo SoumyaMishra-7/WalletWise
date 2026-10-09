@@ -13,6 +13,24 @@
 
 ---
 
+## 📑 Table of Contents
+
+- [📖 Overview](#-overview)
+- [🚀 Why WalletWise Exists](#-why-walletwise-exists)
+- [🧠 Design Principle: Behaviour-Aware Finance](#-design-principle-behaviour-aware-finance)
+- [🏗️ Architectural Overview](#-architectural-overview)
+- [🔩 Core Functional Components](#-core-functional-components)
+- [💡 Value Proposition](#-value-proposition)
+- [🎯 Target Audience](#-target-audience)
+- [🛠️ Tech Stack](#-tech-stack)
+- [🚀 Getting Started](#-getting-started)
+- [📊 Roadmap](#-roadmap)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [📧 Contact](#-contact)
+
+---
+
 ## 📖 Overview
 
 WalletWise is a next-generation personal finance platform designed to **teach, guide, and protect** users—especially students and young professionals—from poor financial decisions.
