@@ -782,11 +782,24 @@ body.theme-dark .ww-header.scrolled {
   display: flex;
   align-items: center;
   gap: 6px;
+  width: fit-content;
   margin-top: 20px;
   font-weight: 600;
   color: var(--color-primary);
   font-size: 0.9rem;
   cursor: pointer;
+  /* Rendered as a router link now, so drop the browser's anchor styling */
+  text-decoration: none;
+}
+
+.ww-bento-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.ww-bento-link:hover {
+  text-decoration: underline;
 }
 
 /* Visuals Area (Right side of span-2 cards) */
