@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
@@ -91,7 +91,7 @@ const Signup = () => {
         }
         break;
       case "phoneNumber":
-        if (value && value.length < 10) {
+        if (value && value.length !== 10) {
           error = "Phone number must be 10 digits";
         }
         break;
@@ -106,24 +106,53 @@ const Signup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const updatedData = { ...formData, [name]: value };
+    let nextValue = value;
+    if (name === "phoneNumber") {
+      nextValue = value.replace(/\D/g, "").slice(0, 10);
+    }
+    const updatedData = { ...formData, [name]: nextValue };
     setFormData(updatedData);
 
-    if (touched[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: validateField(name, value, updatedData),
-      }));
-    }
+    setErrors((prev) => {
+      const nextErrors = { ...prev };
+      if (touched[name]) {
+        nextErrors[name] = validateField(name, nextValue, updatedData);
+      }
+      if (name === "password" && (touched.confirmPassword || updatedData.confirmPassword)) {
+        nextErrors.confirmPassword = validateField(
+          "confirmPassword",
+          updatedData.confirmPassword,
+          updatedData
+        );
+      }
+      if (name === "confirmPassword" && (touched.password || updatedData.password)) {
+        nextErrors.confirmPassword = validateField(
+          "confirmPassword",
+          nextValue,
+          updatedData
+        );
+      }
+      return nextErrors;
+    });
   };
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
-    setErrors((prev) => ({
-      ...prev,
-      [name]: validateField(name, value),
-    }));
+    setErrors((prev) => {
+      const nextErrors = {
+        ...prev,
+        [name]: validateField(name, value, formData),
+      };
+      if (name === "password" && (touched.confirmPassword || formData.confirmPassword)) {
+        nextErrors.confirmPassword = validateField(
+          "confirmPassword",
+          formData.confirmPassword,
+          formData
+        );
+      }
+      return nextErrors;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -185,17 +214,35 @@ const Signup = () => {
 
       if (error.response) {
         const { status, data } = error.response;
+        console.error(`Server error ${status}:`, data);
+
         if (status === 400) {
-          errorMessage = data.errors?.[0]?.msg || data.message || "Please check your input fields";
+          // Handle validation errors
+          if (data.errors && data.errors.length > 0) {
+            errorMessage =
+              data.errors[0].msg || "Please check your input fields";
+          } else {
+            errorMessage = data.message || "Please check your input fields";
+          }
         } else if (status === 409 || status === 422) {
-          errorMessage = data.message || "User already exists with this email or student ID";
+          errorMessage =
+            data.message || "User already exists with this email or student ID";
         } else if (status === 500) {
           errorMessage = "Server error. Please try again later.";
         } else if (status === 429) {
           errorMessage = data.message || "Too many attempts. Please try again in 15 minutes.";
         }
       } else if (error.request) {
-        errorMessage = `Cannot connect to server.`;
+        console.error("No response from server. Is backend running?");
+        const apiOrigin = getApiOrigin();
+        errorMessage =
+          `Cannot connect to server. Please make sure the backend is reachable at ${apiOrigin}`;
+      } else {
+        console.error("Error:", error.message);
+        if (error.message.includes("Network Error")) {
+          errorMessage =
+            "Network error. Check your connection and CORS settings.";
+        }
       }
       toast.error(errorMessage);
     } finally {
@@ -261,10 +308,14 @@ const Signup = () => {
                 onBlur={handleBlur}
                 placeholder="Your student ID"
                 className={touched.studentId && errors.studentId ? "input-error" : ""}
+                aria-invalid={touched.studentId && !!errors.studentId}
+                aria-describedby={touched.studentId && errors.studentId ? "studentId-error" : undefined}
                 disabled={loading}
               />
               {touched.studentId && errors.studentId && (
-                <span className="inline-error-message">{errors.studentId}</span>
+                <span id="studentId-error" className="inline-error-message" role="alert">
+                  {errors.studentId}
+                </span>
               )}
             </div>
 
@@ -283,10 +334,14 @@ const Signup = () => {
                 onBlur={handleBlur}
                 placeholder="Your full name"
                 className={touched.fullName && errors.fullName ? "input-error" : ""}
+                aria-invalid={touched.fullName && !!errors.fullName}
+                aria-describedby={touched.fullName && errors.fullName ? "fullName-error" : undefined}
                 disabled={loading}
               />
               {touched.fullName && errors.fullName && (
-                <span className="inline-error-message">{errors.fullName}</span>
+                <span id="fullName-error" className="inline-error-message" role="alert">
+                  {errors.fullName}
+                </span>
               )}
             </div>
           </div>
@@ -306,10 +361,14 @@ const Signup = () => {
               onBlur={handleBlur}
               placeholder="Your email address"
               className={touched.email && errors.email ? "input-error" : ""}
+              aria-invalid={touched.email && !!errors.email}
+              aria-describedby={touched.email && errors.email ? "email-error" : undefined}
               disabled={loading}
             />
             {touched.email && errors.email && (
-              <span className="inline-error-message">{errors.email}</span>
+              <span id="email-error" className="inline-error-message" role="alert">
+                {errors.email}
+              </span>
             )}
           </div>
 
@@ -330,6 +389,8 @@ const Signup = () => {
                   onBlur={handleBlur}
                   placeholder="Min 8 characters"
                   className={touched.password && errors.password ? "input-error" : ""}
+                  aria-invalid={touched.password && !!errors.password}
+                  aria-describedby={touched.password && errors.password ? "password-error" : undefined}
                   disabled={loading}
                 />
 
@@ -344,7 +405,9 @@ const Signup = () => {
                 </button>
               </div>
               {touched.password && errors.password && (
-                <span className="inline-error-message">{errors.password}</span>
+                <span id="password-error" className="inline-error-message" role="alert">
+                  {errors.password}
+                </span>
               )}
             </div>
 
@@ -364,6 +427,8 @@ const Signup = () => {
                   onBlur={handleBlur}
                   placeholder="Confirm password"
                   className={touched.confirmPassword && errors.confirmPassword ? "input-error" : ""}
+                  aria-invalid={touched.confirmPassword && !!errors.confirmPassword}
+                  aria-describedby={touched.confirmPassword && errors.confirmPassword ? "confirmPassword-error" : undefined}
                   disabled={loading}
                 />
 
@@ -378,7 +443,9 @@ const Signup = () => {
                 </button>
               </div>
               {touched.confirmPassword && errors.confirmPassword && (
-                <span className="inline-error-message">{errors.confirmPassword}</span>
+                <span id="confirmPassword-error" className="inline-error-message" role="alert">
+                  {errors.confirmPassword}
+                </span>
               )}
             </div>
           </div>
@@ -397,17 +464,18 @@ const Signup = () => {
                 value={phoneNumber}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                onInput={(e) => {
-                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                }}
                 placeholder="10-digit phone number"
                 pattern="[0-9]*"
                 maxLength="10"
                 className={touched.phoneNumber && errors.phoneNumber ? "input-error" : ""}
+                aria-invalid={touched.phoneNumber && !!errors.phoneNumber}
+                aria-describedby={touched.phoneNumber && errors.phoneNumber ? "phoneNumber-error" : undefined}
                 disabled={loading}
               />
               {touched.phoneNumber && errors.phoneNumber && (
-                <span className="inline-error-message">{errors.phoneNumber}</span>
+                <span id="phoneNumber-error" className="inline-error-message" role="alert">
+                  {errors.phoneNumber}
+                </span>
               )}
             </div>
 
@@ -448,10 +516,14 @@ const Signup = () => {
               onBlur={handleBlur}
               placeholder="e.g., Computer Science"
               className={touched.department && errors.department ? "input-error" : ""}
+              aria-invalid={touched.department && !!errors.department}
+              aria-describedby={touched.department && errors.department ? "department-error" : undefined}
               disabled={loading}
             />
             {touched.department && errors.department && (
-              <span className="inline-error-message">{errors.department}</span>
+              <span id="department-error" className="inline-error-message" role="alert">
+                {errors.department}
+              </span>
             )}
           </div>
 
