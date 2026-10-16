@@ -188,6 +188,16 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
+    try {
+      await transaction.save({ session });
+    } catch (error) {
+      // Revert the balance change applied above if the write fails
+      if (walletId) {
+        await Wallet.findByIdAndUpdate(walletId, { $inc: { balance: -balanceChange } }, { session });
+      } else {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } }, { session });
+      }
+      throw error;
     }
 
     // Log Activity
@@ -471,6 +481,11 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
+    const query = { _id: transaction.walletId };
+    if (STRICT_MODE && balanceChange < 0) {
+      query.balance = { $gte: Math.abs(balanceChange) };
+    }
+    const updatedWallet = await Wallet.findOneAndUpdate(query, {
       $inc: { balance: balanceChange }
     });
     if (!updatedWallet) {
@@ -626,6 +641,71 @@ const getTransactionActivity = catchAsync(async (req, res) => {
   });
 });
 
+// ================= EXPORT TRANSACTIONS =================
+const escapeCsv = (value) => {
+  const str = value === null || value === undefined ? '' : String(value);
+  return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+};
+
+const buildExportQuery = (userId, query) => {
+  const filter = { userId };
+  if (query.type && query.type !== 'all') filter.type = query.type;
+  if (query.startDate || query.endDate) {
+    filter.date = {};
+    if (query.startDate) filter.date.$gte = new Date(query.startDate);
+    if (query.endDate) {
+      const end = new Date(query.endDate);
+      end.setHours(23, 59, 59, 999);
+      filter.date.$lte = end;
+    }
+  }
+  return filter;
+};
+
+const exportTransactionsCsv = catchAsync(async (req, res) => {
+  const transactions = await Transaction.find(buildExportQuery(req.userId, req.query))
+    .sort({ date: -1 })
+    .lean();
+
+  const header = ['date', 'type', 'amount', 'category', 'description', 'paymentMethod'];
+  const lines = [header.join(',')];
+  for (const tx of transactions) {
+    lines.push([
+      escapeCsv(tx.date ? new Date(tx.date).toISOString().slice(0, 10) : ''),
+      escapeCsv(tx.type),
+      escapeCsv(tx.amount),
+      escapeCsv(tx.category),
+      escapeCsv(tx.description || ''),
+      escapeCsv(tx.paymentMethod || '')
+    ].join(','));
+  }
+
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="transactions.csv"');
+  res.send(lines.join('\n'));
+});
+
+const exportTransactionsPdf = catchAsync(async (req, res) => {
+  const PDFDocument = require('pdfkit');
+  const transactions = await Transaction.find(buildExportQuery(req.userId, req.query))
+    .sort({ date: -1 })
+    .limit(500)
+    .lean();
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'attachment; filename="transactions.pdf"');
+  const doc = new PDFDocument({ margin: 40 });
+  doc.pipe(res);
+  doc.fontSize(16).text('WalletWise Transactions', { underline: true });
+  doc.moveDown();
+  transactions.forEach((tx, i) => {
+    const date = tx.date ? new Date(tx.date).toISOString().slice(0, 10) : '';
+    doc.fontSize(10).text(`${i + 1}. ${date} ${tx.type} ${tx.amount} ${tx.category} ${tx.description || ''}`);
+  });
+  if (transactions.length === 0) doc.fontSize(10).text('No transactions found.');
+  doc.end();
+});
+
 module.exports = {
   addTransaction,
   getAllTransactions,
@@ -633,5 +713,7 @@ module.exports = {
   deleteTransaction,
   undoTransaction,
   skipNextOccurrence,
-  getTransactionActivity
+  getTransactionActivity,
+  exportTransactionsCsv,
+  exportTransactionsPdf
 };
