@@ -372,5 +372,49 @@ describe('Transaction Controller', () => {
             expect(txList.length).toBe(2);
             expect(txList[0].amount).toBe(100);
         });
+
+        it('should deny reading another wallet transactions through the walletId query param', async () => {
+            const owner = new User({
+                studentId: 'WALLETOWNER',
+                email: 'walletowner@example.com',
+                walletBalance: 1000
+            });
+            await owner.save();
+
+            const wallet = await Wallet.create({
+                name: 'Owner wallet',
+                owner: owner._id,
+                members: [{ user: owner._id, role: 'admin' }],
+                balance: 500
+            });
+
+            await new Transaction({
+                userId: owner._id,
+                type: 'expense',
+                amount: 100,
+                category: 'food',
+                walletId: wallet._id
+            }).save();
+
+            // The user created in beforeEach is not a member of that wallet
+            const req = mockRequest({}, { walletId: wallet._id.toString() }, {}, user._id);
+            const res = mockResponse();
+            let denied = null;
+
+            await getAllTransactions(req, res, (err) => { denied = err; });
+
+            expect(denied).not.toBeNull();
+            expect(denied.statusCode).toBe(403);
+            expect(res.json).not.toHaveBeenCalled();
+
+            // A member of the wallet can still list its transactions
+            const memberReq = mockRequest({}, { walletId: wallet._id.toString() }, {}, owner._id);
+            const memberRes = mockResponse();
+            await getAllTransactions(memberReq, memberRes, (err) => { throw err; });
+
+            const payload = memberRes.json.mock.results[0].value;
+            expect(payload.success).toBe(true);
+            expect(payload.transactions.length).toBe(1);
+        });
     });
 });
