@@ -1,6 +1,7 @@
 const Transaction = require('../models/Transactions');
 const Subscription = require('../models/Subscription');
 const Budget = require('../models/Budget');
+const { getAvailableBudget } = require('../utils/budgetRollover');
 const insightsService = require('../services/insightsService');
 
 const startOfWeek = (d) => {
@@ -85,7 +86,7 @@ const evaluatePurchase = async (req, res) => {
     ]);
 
     const totalSpent = txs.reduce((sum, t) => sum + (t.amount || 0), 0);
-    const budgetLimit = budget ? budget.totalBudget : 0;
+    const budgetLimit = budget ? getAvailableBudget(await Budget.applyRollover(budget)) : 0;
     const budgetLeft = budgetLimit - totalSpent;
 
     // Upcoming critical obligations (next 15 days)

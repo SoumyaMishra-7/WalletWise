@@ -1,3 +1,5 @@
+const { getAvailableBudget } = require('../utils/budgetRollover');
+
 /**
  * DashboardService — extracted from dashboardController.
  * 
@@ -69,7 +71,7 @@ class DashboardService {
                 mood: t.mood
             }));
 
-        const monthlyBudget = budget?.totalBudget || 0;
+        const monthlyBudget = getAvailableBudget(budget);
         const budgetUsedPercentage = monthlyBudget > 0 ?
             Math.min((monthlyExpenses / monthlyBudget) * 100, 100) : 0;
         const budgetLeft = Math.max(0, monthlyBudget - monthlyExpenses);

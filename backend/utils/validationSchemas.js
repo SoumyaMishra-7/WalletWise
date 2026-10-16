@@ -21,7 +21,9 @@ const categorySchema = z.object({
 const budgetSchema = z.object({
   totalBudget: z.number().positive('Total budget must be positive'),
   month: z.string().regex(/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format').optional(),
-  categories: z.array(categorySchema).min(1, 'At least one category is required')
+  categories: z.array(categorySchema).min(1, 'At least one category is required'),
+  rolloverEnabled: z.boolean().optional(),
+  rolloverMode: z.enum(['positive', 'both']).optional()
 }).refine(data => {
   const totalPercentage = data.categories.reduce((sum, cat) => sum + cat.percentage, 0);
   return Math.abs(totalPercentage - 100) <= 0.01;
@@ -29,7 +31,9 @@ const budgetSchema = z.object({
 
 const updateBudgetSchema = z.object({
   totalBudget: z.number().positive('Total budget must be positive').optional(),
-  categories: z.array(categorySchema).min(1).optional()
+  categories: z.array(categorySchema).min(1).optional(),
+  rolloverEnabled: z.boolean().optional(),
+  rolloverMode: z.enum(['positive', 'both']).optional()
 }).refine(data => {
   if (data.categories) {
     const totalPercentage = data.categories.reduce((sum, cat) => sum + cat.percentage, 0);

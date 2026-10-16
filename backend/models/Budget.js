@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
 const { CATEGORIES } = require('../constants/categories');
+const {
+  ROLLOVER_MODE_VALUES,
+  DEFAULT_ROLLOVER_MODE,
+  isValidMonth,
+  getCurrentMonth,
+  getPreviousMonth,
+  getMonthRange,
+  calculateRollover
+} = require('../utils/budgetRollover');
 
 const budgetSchema = new mongoose.Schema({
   userId: {
@@ -39,6 +48,11 @@ const budgetSchema = new mongoose.Schema({
     color: {
       type: String,
       default: '#667eea'
+    },
+    // Amount carried into this category from last month (may be negative in 'both' mode)
+    rolloverAmount: {
+      type: Number,
+      default: 0
     }
   }],
 
@@ -51,6 +65,28 @@ const budgetSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+
+  // ---- Rollover (opt-in, off by default so existing budgets are unchanged) ----
+  rolloverEnabled: {
+    type: Boolean,
+    default: false
+  },
+  // 'positive' = carry only unused money, 'both' = also carry overspending
+  rolloverMode: {
+    type: String,
+    enum: ROLLOVER_MODE_VALUES,
+    default: DEFAULT_ROLLOVER_MODE
+  },
+  // Sum of the category rollovers (the value that is added to totalBudget)
+  rolloverAmount: {
+    type: Number,
+    default: 0
+  },
+  // Idempotency marker: the source month (YYYY-MM) the rollover was calculated from
+  rolloverAppliedFrom: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true
@@ -66,6 +102,84 @@ budgetSchema.methods.toJSON = function () {
   delete budget._id;
   delete budget.__v;
   return budget;
+};
+
+// Clear any calculated rollover (used when settings or categories change)
+budgetSchema.methods.resetRollover = function () {
+  this.rolloverAmount = 0;
+  this.rolloverAppliedFrom = null;
+  this.categories.forEach((category) => {
+    category.rolloverAmount = 0;
+  });
+};
+
+/**
+ * Apply last month's leftover (or overspend) to this budget.
+ *
+ * Safe to call as often as you like:
+ *  - the result is ASSIGNED, never incremented, so it can never be applied twice;
+ *  - `rolloverAppliedFrom` short-circuits repeat calls;
+ *  - the write is a conditional update, so two concurrent requests cannot both win;
+ *  - months that have not started yet are skipped (the source month is not closed).
+ *
+ * Returns the up-to-date budget document (use the return value, not the argument).
+ */
+budgetSchema.statics.applyRollover = async function (budget, { now = new Date() } = {}) {
+  if (!budget || !budget.rolloverEnabled || !isValidMonth(budget.month)) {
+    return budget;
+  }
+  // A future month's source month is still running - wait until it has closed.
+  if (budget.month > getCurrentMonth(now)) {
+    return budget;
+  }
+
+  const sourceMonth = getPreviousMonth(budget.month); // handles Jan -> previous Dec
+  if (budget.rolloverAppliedFrom === sourceMonth) {
+    return budget; // already applied
+  }
+
+  const previousBudget = await this.findOne({
+    userId: budget.userId,
+    month: sourceMonth,
+    isActive: true
+  });
+  if (!previousBudget) {
+    return budget; // nothing to carry; retry later in case it is created retroactively
+  }
+
+  const Transaction = require('./Transactions'); // lazy: avoids circular requires
+  const { start, end } = getMonthRange(sourceMonth);
+  const spentRows = await Transaction.aggregate([
+    { $match: { userId: budget.userId, type: 'expense', date: { $gte: start, $lt: end } } },
+    { $group: { _id: '$category', spent: { $sum: '$amount' } } }
+  ]);
+  // Lower-case in JS (same matching rule as the budget summary) and merge any case variants
+  const spentByCategory = new Map();
+  spentRows.forEach((row) => {
+    const key = String(row._id || '').toLowerCase();
+    spentByCategory.set(key, (spentByCategory.get(key) || 0) + (row.spent || 0));
+  });
+
+  const { total, categories } = calculateRollover({
+    previousBudget,
+    categories: budget.categories,
+    spentByCategory,
+    mode: budget.rolloverMode
+  });
+
+  const updatedCategories = budget.categories.map((category, index) => ({
+    ...category.toObject(),
+    rolloverAmount: categories[index].rolloverAmount
+  }));
+
+  const updated = await this.findOneAndUpdate(
+    { _id: budget._id, rolloverEnabled: true, rolloverAppliedFrom: { $ne: sourceMonth } },
+    { $set: { rolloverAmount: total, rolloverAppliedFrom: sourceMonth, categories: updatedCategories } },
+    { new: true }
+  );
+
+  // null => a concurrent request already applied it (or the budget was removed)
+  return updated || (await this.findById(budget._id)) || budget;
 };
 
 // Static method to get current month budget
@@ -115,10 +229,13 @@ budgetSchema.statics.copyPreviousMonth = async function (userId) {
       color: cat.color
     })),
     month: currentMonth,
-    isActive: true
+    isActive: true,
+    rolloverEnabled: previousBudget.rolloverEnabled,
+    rolloverMode: previousBudget.rolloverMode
   });
 
-  return await newBudget.save();
+  await newBudget.save();
+  return await this.applyRollover(newBudget);
 };
 
 module.exports = mongoose.model('Budget', budgetSchema);

@@ -21,7 +21,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
     totalBudget: '',
-    categories: DEFAULT_CATEGORIES
+    categories: DEFAULT_CATEGORIES,
+    rolloverEnabled: false,
+    rolloverMode: 'positive'
   });
 
   const [activeCategory, setActiveCategory] = useState(0);
@@ -35,11 +37,40 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     if (isOpen) {
       setFormData({
         totalBudget: '',
-        categories: DEFAULT_CATEGORIES
+        categories: DEFAULT_CATEGORIES,
+        rolloverEnabled: false,
+        rolloverMode: 'positive'
       });
       setActiveCategory(0);
       setError('');
     }
+  }, [isOpen]);
+
+  // Pre-fill the rollover choice from the existing budget so re-saving a budget
+  // never silently switches rollover off. Best effort: failures are ignored.
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data } = await api.get('/api/budget/stats/summary');
+        const summary = data?.summary;
+        if (!cancelled && data?.hasBudget && summary) {
+          setFormData(prev => ({
+            ...prev,
+            rolloverEnabled: Boolean(summary.rolloverEnabled),
+            rolloverMode: summary.rolloverMode === 'both' ? 'both' : 'positive'
+          }));
+        }
+      } catch (err) {
+        // Optional pre-fill only
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
 
   // Update amounts when total budget changes
@@ -196,7 +227,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
     const budgetData = {
       totalBudget,
       categories: normalizedCategories,
-      month: new Date().toISOString().slice(0, 7)
+      month: new Date().toISOString().slice(0, 7),
+      rolloverEnabled: Boolean(formData.rolloverEnabled),
+      rolloverMode: formData.rolloverMode === 'both' ? 'both' : 'positive'
     };
 
     try {
@@ -249,10 +282,11 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
           updatedCategories[0].amountStr = updatedCategories[0].amount.toString();
         }
 
-        setFormData({
+        setFormData(prev => ({
+          ...prev,
           totalBudget: totalBudget.toString(),
           categories: updatedCategories
-        });
+        }));
 
         toast.success('Generated smart budget based on your spending history!', {
           icon: '🤖',
@@ -283,7 +317,9 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
   const resetForm = () => {
     setFormData({
       totalBudget: '',
-      categories: DEFAULT_CATEGORIES
+      categories: DEFAULT_CATEGORIES,
+      rolloverEnabled: false,
+      rolloverMode: 'positive'
     });
     setActiveCategory(0);
     setError('');
@@ -337,6 +373,50 @@ const SetBudget = ({ isOpen, onClose, onSetBudget }) => {
                 disabled={loading}
               />
             </div>
+          </div>
+
+          {/* Rollover */}
+          <div className="rollover-group">
+            <label className="rollover-toggle" htmlFor="rolloverEnabled">
+              <input
+                type="checkbox"
+                id="rolloverEnabled"
+                checked={formData.rolloverEnabled}
+                onChange={(e) => setFormData(prev => ({ ...prev, rolloverEnabled: e.target.checked }))}
+                disabled={loading}
+              />
+              <span>
+                <strong>Roll over last month's leftover</strong>
+                <small>Carry unused budget into this month, category by category.</small>
+              </span>
+            </label>
+
+            {formData.rolloverEnabled && (
+              <div className="rollover-modes" role="radiogroup" aria-label="Rollover mode">
+                <label className="rollover-mode">
+                  <input
+                    type="radio"
+                    name="rolloverMode"
+                    value="positive"
+                    checked={formData.rolloverMode === 'positive'}
+                    onChange={() => setFormData(prev => ({ ...prev, rolloverMode: 'positive' }))}
+                    disabled={loading}
+                  />
+                  <span>Unused budget only</span>
+                </label>
+                <label className="rollover-mode">
+                  <input
+                    type="radio"
+                    name="rolloverMode"
+                    value="both"
+                    checked={formData.rolloverMode === 'both'}
+                    onChange={() => setFormData(prev => ({ ...prev, rolloverMode: 'both' }))}
+                    disabled={loading}
+                  />
+                  <span>Unused budget and overspending</span>
+                </label>
+              </div>
+            )}
           </div>
 
           {/* Quick Allocation Buttons */}

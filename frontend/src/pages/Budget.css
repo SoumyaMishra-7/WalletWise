@@ -551,3 +551,11 @@ body.theme-dark .quick-action.budget span:first-child,
     align-items: flex-start;
   }
 }
+
+/* Budget rollover note */
+.rollover-note {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.9;
+}

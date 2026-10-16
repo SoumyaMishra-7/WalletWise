@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Transaction = require('../models/Transactions');
 const Budget = require('../models/Budget');
+const { getAvailableBudget } = require('../utils/budgetRollover');
 const SavingsGoal = require('../models/SavingGoal');
 const Subscription = require('../models/Subscription');
 
@@ -59,7 +60,8 @@ const getDashboardSummary = async (req, res) => {
             }));
 
         // Calculate budget data
-        const monthlyBudget = budget?.totalBudget || 0;
+        // Rollover-adjusted amount (identical to totalBudget when rollover is off)
+        const monthlyBudget = budget ? getAvailableBudget(await Budget.applyRollover(budget)) : 0;
         const budgetUsedPercentage = monthlyBudget > 0 ?
             Math.min((monthlyExpenses / monthlyBudget) * 100, 100) : 0;
         const budgetLeft = Math.max(0, monthlyBudget - monthlyExpenses);
