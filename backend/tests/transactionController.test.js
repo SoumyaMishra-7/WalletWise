@@ -372,5 +372,25 @@ describe('Transaction Controller', () => {
             expect(txList.length).toBe(2);
             expect(txList[0].amount).toBe(100);
         });
+
+        it('treats search input as literal text instead of crashing', async () => {
+            await Transaction.insertMany([
+                { userId: user._id, type: 'expense', amount: 10, category: 'other', description: 'coffee (morning)', date: new Date('2024-01-01') },
+                { userId: user._id, type: 'expense', amount: 20, category: 'other', description: 'lunch', date: new Date('2024-01-02') }
+            ]);
+
+            for (const search of ['(', '*', '(a+)+$']) {
+                const req = mockRequest({}, { search }, {}, user._id);
+                const res = mockResponse();
+                await getAllTransactions(req, res, (err) => { throw err; });
+                expect(res.json).toHaveBeenCalled();
+                expect(res.json.mock.results[0].value.success).toBe(true);
+            }
+
+            const req = mockRequest({}, { search: 'coffee (morning)' }, {}, user._id);
+            const res = mockResponse();
+            await getAllTransactions(req, res, (err) => { throw err; });
+            expect(res.json.mock.results[0].value.transactions.length).toBe(1);
+        });
     });
 });

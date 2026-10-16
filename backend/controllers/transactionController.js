@@ -188,6 +188,16 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
+    try {
+      await transaction.save({ session });
+    } catch (error) {
+      // Revert the balance change applied above if the write fails
+      if (walletId) {
+        await Wallet.findByIdAndUpdate(walletId, { $inc: { balance: -balanceChange } }, { session });
+      } else {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } }, { session });
+      }
+      throw error;
     }
 
     // Log Activity
@@ -471,6 +481,11 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
+    const query = { _id: transaction.walletId };
+    if (STRICT_MODE && balanceChange < 0) {
+      query.balance = { $gte: Math.abs(balanceChange) };
+    }
+    const updatedWallet = await Wallet.findOneAndUpdate(query, {
       $inc: { balance: balanceChange }
     });
     if (!updatedWallet) {
