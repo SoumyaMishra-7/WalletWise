@@ -172,8 +172,34 @@ exports.getAnalyticsSummary = async (req, res) => {
   }
 };
 
-exports.getForecast = async (req, res) => {
-  try {
+// Trend-aware forecast from oldest-to-newest monthly totals.
+// Uses least-squares slope so a steady climb predicts above the plain
+// average (e.g. 5000, 6000, 7000 predicts 8000, not 6000).
+const computeTrendForecast = (totals, averageSpending) => {
+  const points = (totals || []).filter((v) => Number.isFinite(v));
+  if (points.length < 2) {
+    const fallback = Math.round((averageSpending || points[0] || 0) * 1.05);
+    return { trend: 'stable', predictedNextMonth: Math.max(0, fallback), slope: 0 };
+  }
+  const n = points.length;
+  const meanX = (n - 1) / 2;
+  const meanY = points.reduce((s, v) => s + v, 0) / n;
+  let num = 0;
+  let den = 0;
+  points.forEach((y, x) => {
+    num += (x - meanX) * (y - meanY);
+    den += (x - meanX) * (x - meanX);
+  });
+  const slope = den === 0 ? 0 : num / den;
+  const last = points[points.length - 1];
+  const avg = averageSpending || meanY || 0;
+  const band = Math.abs(avg) * 0.05;
+  const trend = slope > band ? 'increasing' : slope < -band ? 'decreasing' : 'stable';
+  const predictedNextMonth = Math.max(0, Math.round(last + slope));
+  return { trend, predictedNextMonth, slope };
+};
+
+exports.getForecast = async (req, res) => {  try {
     const userObjectId = new mongoose.Types.ObjectId(req.userId);
     const now = new Date();
     const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -240,13 +266,11 @@ exports.getForecast = async (req, res) => {
     const forecasts = historicalData.map(hist => {
       const current = currentMonthExpenses.find(c => c._id === hist._id) || { total: 0 };
 
-      // Calculate trend (last month vs average)
+      // Trend-aware forecast from the sorted monthly history.
       hist.monthlyHistory.sort((a, b) => (a.year * 12 + a.month) - (b.year * 12 + b.month));
-      const lastMonth = hist.monthlyHistory[hist.monthlyHistory.length - 1]?.total || 0;
-      const trend = lastMonth > hist.averageSpending ? "increasing" : "decreasing";
-
-      // Prediction for next month (using average + slight trend weight)
-      const prediction = Math.round(hist.averageSpending * 1.05); // 5% buffer for safety
+      const totals = hist.monthlyHistory.map((h) => h.total);
+      const trendInfo = computeTrendForecast(totals, hist.averageSpending);
+      const { trend, predictedNextMonth, slope } = trendInfo;
 
       // Current Velocity Projection
       const projectedEndTotal = Math.round(current.total / monthCompletionRatio);
@@ -255,8 +279,9 @@ exports.getForecast = async (req, res) => {
       return {
         category: hist._id,
         averageHistorical: Math.round(hist.averageSpending),
-        predictedNextMonth: prediction,
+        predictedNextMonth,
         trend,
+        trendSlope: Math.round(slope),
         currentMonth: {
           spent: current.total,
           projected: projectedEndTotal,
@@ -276,3 +301,5 @@ exports.getForecast = async (req, res) => {
     res.status(500).json({ message: "Forecasting error" });
   }
 };
+
+exports.computeTrendForecast = computeTrendForecast;
