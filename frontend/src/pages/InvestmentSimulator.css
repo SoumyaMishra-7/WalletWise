@@ -250,6 +250,45 @@
   font-weight: 500;
 }
 
+.no-results,
+.empty-state {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+}
+
+.state-panel {
+  max-width: 560px;
+  margin: 3rem auto;
+  text-align: center;
+}
+
+.state-panel h2 {
+  justify-content: center;
+}
+
+.state-panel p {
+  color: #475569;
+  margin: 0 0 1.5rem;
+}
+
+.btn-retry {
+  padding: 0.625rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: #4f46e5;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-retry:hover {
+  background: #4338ca;
+}
+
 @media (max-width: 768px) {
   
   .simulator-grid {

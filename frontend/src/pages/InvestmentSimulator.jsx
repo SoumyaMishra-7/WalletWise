@@ -12,12 +12,14 @@ const InvestmentSimulator = () => {
     const [totalValue, setTotalValue] = useState(0);
     const [availableToInvest, setAvailableToInvest] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTooltip, setActiveTooltip] = useState(null);
 
     const fetchSimulationData = async () => {
         try {
             setLoading(true);
+            setLoadError(null);
             const [marketRes, portfolioRes] = await Promise.all([
                 api.get('/api/investments/market'),
                 api.get('/api/investments/portfolio')
@@ -34,6 +36,7 @@ const InvestmentSimulator = () => {
         } catch (error) {
             console.error('Simulation error:', error);
             toast.error('Failed to load simulation data');
+            setLoadError(error.response?.data?.message || 'Could not reach the server for market and portfolio data.');
         } finally {
             setLoading(false);
         }
@@ -76,6 +79,20 @@ const InvestmentSimulator = () => {
     };
 
     if (loading) return <DashboardSkeleton />;
+
+    if (loadError) {
+        return (
+            <div className="simulator-page">
+                <section className="state-panel card">
+                    <h2>Could not load the simulator</h2>
+                    <p>{loadError}</p>
+                    <button type="button" className="btn-retry" onClick={fetchSimulationData}>
+                        Retry
+                    </button>
+                </section>
+            </div>
+        );
+    }
 
     const filteredMarket = marketData.filter(stock =>
         stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -201,8 +218,10 @@ const InvestmentSimulator = () => {
                                         <button onClick={() => handleBuy(stock.symbol)} className="btn-buy">Buy</button>
                                     </div>
                                 ))
+                            ) : marketData.length === 0 ? (
+                                <p className="no-results">Market data is unavailable right now.</p>
                             ) : (
-                                <p className="no-results">No stocks found.</p>
+                                <p className="no-results">No stocks match your search.</p>
                             )}
                         </div>
                     </section>
