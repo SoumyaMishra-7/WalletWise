@@ -12,91 +12,140 @@ module.exports = async ({ github, context }) => {
   const dayStamp = now.toISOString().slice(0, 10);
   const dailyMarker = `<!-- daily-difficulty-reminder:${dayStamp} -->`;
 
-  const msPerDay = 24 * 60 * 60 * 1000;
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-  const addDaysUTC = (dateObj, days) => {
-    const d = new Date(dateObj);
-    d.setUTCDate(d.getUTCDate() + days);
-    return d;
+  const addDaysUTC = (date, days) => {
+    const result = new Date(date);
+    result.setUTCDate(result.getUTCDate() + days);
+    return result;
   };
 
-  const isoDate = (d) => d.toISOString().slice(0, 10);
+  const isoDate = (date) => date.toISOString().slice(0, 10);
 
-  const issues = await github.paginate(github.rest.issues.listForRepo, {
-    owner,
-    repo,
-    state: "open",
-    per_page: 100,
-  });
-
-  for (const issue of issues) {
-    if (issue.pull_request) continue;
-
-    const labels = (issue.labels || []).map((l) =>
-      typeof l === "string" ? l : l.name
-    );
-    const diffLabel = Object.keys(SLA).find((l) => labels.includes(l));
-    if (!diffLabel) continue;
-
-    const assignees = (issue.assignees || []).map((a) => a.login);
-    if (assignees.length === 0) continue;
-
-    const slaDays = SLA[diffLabel];
-
-    const events = await github.paginate(github.rest.issues.listEvents, {
+  // Get all open issues
+  const issues = await github.paginate(
+    github.rest.issues.listForRepo,
+    {
       owner,
       repo,
-      issue_number: issue.number,
+      state: "open",
       per_page: 100,
-    });
+    }
+  );
 
+  for (const issue of issues) {
+    // Skip pull requests
+    if (issue.pull_request) continue;
+
+    const labels = (issue.labels || [])
+      .map((label) => (typeof label === "string" ? label : label.name))
+      .filter(Boolean);
+
+    // Find difficulty label
+    const difficultyLabel = Object.keys(SLA).find((label) =>
+      labels.includes(label)
+    );
+
+    if (!difficultyLabel) continue;
+
+    // Get assignees
+    const assignees = (issue.assignees || [])
+      .map((assignee) => assignee.login)
+      .filter(Boolean);
+
+    if (assignees.length === 0) continue;
+
+    const slaDays = SLA[difficultyLabel];
+
+    // Get issue events
+    const events = await github.paginate(
+      github.rest.issues.listEvents,
+      {
+        owner,
+        repo,
+        issue_number: issue.number,
+        per_page: 100,
+      }
+    );
+
+    // Find the latest assignment event
     const assignedEvents = events
-      .filter((e) => e.event === "assigned" && e.created_at)
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      .filter(
+        (event) =>
+          event.event === "assigned" &&
+          event.created_at
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.created_at) - new Date(a.created_at)
+      );
 
+    // SLA starts from latest assignment
     const assignedAt = assignedEvents.length
       ? new Date(assignedEvents[0].created_at)
       : new Date(issue.created_at);
 
     const dueAt = addDaysUTC(assignedAt, slaDays);
 
-    const daysLeft = Math.ceil((dueAt - now) / msPerDay);
-    const assignedDateStr = isoDate(assignedAt);
-    const dueDateStr = isoDate(dueAt);
+    const daysLeft = Math.ceil(
+      (dueAt.getTime() - now.getTime()) / MS_PER_DAY
+    );
 
-    const comments = await github.paginate(github.rest.issues.listComments, {
-      owner,
-      repo,
-      issue_number: issue.number,
-      per_page: 100,
-    });
+    const assignedDate = isoDate(assignedAt);
+    const dueDate = isoDate(dueAt);
 
-    if (comments.some((c) => (c.body || "").includes(dailyMarker))) continue;
+    // Get existing comments
+    const comments = await github.paginate(
+      github.rest.issues.listComments,
+      {
+        owner,
+        repo,
+        issue_number: issue.number,
+        per_page: 100,
+      }
+    );
 
-    const mentions = assignees.map((u) => `@${u}`).join(" ");
+    // Prevent duplicate reminder for the same day
+    const alreadyRemindedToday = comments.some(
+      (comment) =>
+        (comment.body || "").includes(dailyMarker)
+    );
+
+    if (alreadyRemindedToday) continue;
+
+    const mentions = assignees
+      .map((username) => `@${username}`)
+      .join(" ");
 
     let statusLine;
     let actionLine;
 
     if (daysLeft > 0) {
-      statusLine = `✅ **${daysLeft} day(s) left** (due on **${dueDateStr}**)`;
-      actionLine = `Please share a quick update (progress + blockers).`;
+      statusLine = `✅ **${daysLeft} day(s) left** (due on **${dueDate}**)`;
+      actionLine =
+        "Please share a quick update on your progress and any blockers.";
     } else if (daysLeft === 0) {
-      statusLine = `⚠️ **Due today** (**${dueDateStr}**)`;
-      actionLine = `Please finish today or comment blockers.`;
+      statusLine = `⚠️ **Due today** (**${dueDate}**)`;
+      actionLine =
+        "Please complete the issue today or comment with any blockers.";
     } else {
-      statusLine = `🚨 **Overdue by ${Math.abs(daysLeft)} day(s)** (was due on **${dueDateStr}**)`;
-      actionLine = `Please complete **ASAP**. If there’s no progress update soon, this may be **reassigned** to someone else.`;
+      statusLine = `🚨 **Overdue by ${Math.abs(
+        daysLeft
+      )} day(s)** (was due on **${dueDate}**)`;
+
+      actionLine =
+        "Please complete this issue **ASAP**. If there is no progress update, the issue may be **reassigned**.";
     }
 
     const body = `${dailyMarker}
-⏰ **Daily Reminder** (${diffLabel})
+⏰ **Daily Reminder** — ${difficultyLabel}
 
-- Assigned on: **${assignedDateStr}**
-- SLA: **${slaDays} days**
-- ${statusLine}
+- 👤 Assigned on: **${assignedDate}**
+- ⏳ SLA: **${slaDays} day(s)**
+- 📅 ${statusLine}
 
 ${mentions}
+
 ${actionLine}
 `;
 
