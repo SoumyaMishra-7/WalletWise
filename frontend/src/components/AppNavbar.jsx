@@ -11,6 +11,7 @@ import {
   FaChartPie,
   FaBullseye,
   FaChartBar,
+  FaStar,
   FaSun,
   FaMoon,
   FaCalendarCheck
@@ -28,12 +29,19 @@ const navItems = [
   { id: 'profile-top', label: 'Profile', icon: FaUserCircle, path: '/profile' }
 ];
 
-const profileNavItems = [
-  { id: 'profile', label: 'Profile', icon: FaUserCircle, path: '/profile' },
-  { id: 'goals-profile', label: 'Goals', icon: FaBullseye, path: '/goals' },
-  { id: 'wallets', label: 'Wallets', icon: FaWallet, path: '/wallets' },
-  { id: 'subscriptions', label: 'Subscriptions', icon: FaCalendarCheck, path: '/subscriptions' },
-  { id: 'settings', label: 'Settings', icon: FaCog, path: '/settings' }
+// Single deduplicated menu for the user dropdown: the top nav plus the
+// profile-only entries, with Rewards included and Profile/Goals kept once.
+const userDropdownItems = [
+  { id: 'dd-rewards', label: 'Rewards', icon: FaStar, path: '/gamification' },
+  { id: 'dd-dashboard', label: 'Dashboard', icon: FaHome, path: '/dashboard' },
+  { id: 'dd-transactions', label: 'Transactions', icon: FaExchangeAlt, path: '/transactions' },
+  { id: 'dd-budget', label: 'Budget', icon: FaChartPie, path: '/budget' },
+  { id: 'dd-goals', label: 'Goals', icon: FaBullseye, path: '/goals' },
+  { id: 'dd-reports', label: 'Reports', icon: FaChartBar, path: '/reports' },
+  { id: 'dd-profile', label: 'Profile', icon: FaUserCircle, path: '/profile' },
+  { id: 'dd-wallets', label: 'Wallets', icon: FaWallet, path: '/wallets' },
+  { id: 'dd-subscriptions', label: 'Subscriptions', icon: FaCalendarCheck, path: '/subscriptions' },
+  { id: 'dd-settings', label: 'Settings', icon: FaCog, path: '/settings' }
 ];
 
 const AppNavbar = () => {
@@ -159,23 +167,7 @@ const AppNavbar = () => {
 
             <div className="dropdown-divider"></div>
 
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  className="dropdown-item"
-                  role="menuitem"
-                  onClick={() => setShowUserMenu(false)}
-                >
-                  <Icon />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-
-            {profileNavItems.map((item) => {
+            {userDropdownItems.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
