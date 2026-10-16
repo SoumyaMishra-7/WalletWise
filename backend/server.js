@@ -391,4 +391,12 @@ if (process.env.NODE_ENV !== 'test') {
     });
 }
 
+// Start the background worker. Nothing ever called initWorker(), which left
+// recurring transactions to be executed as a side effect of a GET request;
+// they are now scheduled here instead.
+if (process.env.NODE_ENV !== 'test') {
+    const { initWorker } = require('./worker');
+    initWorker();
+}
+
 module.exports = app;

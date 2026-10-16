@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../server');
+const User = require('../models/User');
 
 describe('Authentication Flow', () => {
     const testUser = {
@@ -62,5 +63,27 @@ describe('Authentication Flow', () => {
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toHaveProperty('success', false);
+    });
+
+    it('persists notification preferences on the user record', async () => {
+        const regRes = await request(app).post('/api/auth/register').send(testUser);
+        expect(regRes.statusCode).toBe(201);
+
+        const res = await request(app)
+            .put('/api/auth/profile')
+            .set('Authorization', `Bearer ${regRes.body.token}`)
+            .send({ billRemindersEnabled: false, reminderDaysBefore: 7 });
+
+        expect(res.statusCode).toBe(200);
+
+        // Read straight from the database. notificationPrefs used to be absent
+        // from the schema, so mongoose dropped it on save and the worker always
+        // fell back to its defaults.
+        const saved = await User.findOne({ email: testUser.email });
+
+        expect(saved).not.toBeNull();
+        expect(saved.notificationPrefs).toBeDefined();
+        expect(saved.notificationPrefs.billRemindersEnabled).toBe(false);
+        expect(saved.notificationPrefs.reminderDaysBefore).toBe(7);
     });
 });

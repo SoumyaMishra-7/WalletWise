@@ -8,10 +8,16 @@ const {
     addTransaction,
     getAllTransactions,
     updateTransaction,
-    deleteTransaction
+    deleteTransaction,
+    processRecurringNow
 } = require('../controllers/transactionController');
+const { processDueRecurringTransactions } = require('../services/RecurringTransactionService');
 
 let mongoServer;
+
+// This suite runs against a replica set, so it starts its own server instead
+// of sharing the standalone one from tests/setup.js.
+global.__MONGODB_MANAGED_BY_SUITE__ = true;
 
 jest.setTimeout(60000);
 
@@ -279,6 +285,14 @@ describe('Transaction Controller', () => {
 
             await getAllTransactions(req, res);
 
+            // The read path stays a read: nothing is created or charged yet
+            expect(res.json).toHaveBeenCalled();
+            expect((await User.findById(user._id)).walletBalance).toBe(1000);
+            expect((await Transaction.find({ userId: user._id, category: 'salary' })).length).toBe(1);
+
+            // The recurring processor is what does the work now
+            await processDueRecurringTransactions({ userId: user._id });
+
             const updatedUser = await User.findById(user._id);
             expect(updatedUser.walletBalance).toBe(1300); // 1000 + 300
 
@@ -289,6 +303,28 @@ describe('Transaction Controller', () => {
             // Check next execution date
             const updatedRecurring = await Transaction.findById(recurringTx._id);
             expect(updatedRecurring.nextExecutionDate.toISOString()).toBe(new Date('2024-02-01T08:00:00.000Z').toISOString());
+        });
+
+        it('exposes an explicit trigger for recurring processing', async () => {
+            mockdate.set('2024-01-01T10:00:00.000Z');
+
+            await new Transaction({
+                userId: user._id,
+                type: 'income',
+                amount: 300,
+                category: 'salary',
+                isRecurring: true,
+                recurringInterval: 'monthly',
+                nextExecutionDate: new Date('2024-01-01T08:00:00.000Z')
+            }).save();
+
+            const res = mockResponse();
+            await processRecurringNow(mockRequest({}, {}, {}, user._id), res, (err) => { throw err; });
+
+            const payload = res.json.mock.results[0].value;
+            expect(payload.success).toBe(true);
+            expect(payload.processed).toBe(1);
+            expect((await User.findById(user._id)).walletBalance).toBe(1300);
         });
 
         it('should not break the list or lose the schedule when a recurring item fails to process', async () => {
@@ -323,6 +359,10 @@ describe('Transaction Controller', () => {
             const res = mockResponse();
             await getAllTransactions(req, res, (err) => { throw err; });
 
+            // Processing is separate from the read, but the failure still must
+            // not stop the healthy recurrence or lose the broken item's schedule
+            await processDueRecurringTransactions({ userId: user._id });
+
             // The request succeeds and the healthy recurrence is still processed
             expect(res.json).toHaveBeenCalled();
             const updatedUser = await User.findById(user._id);
@@ -350,7 +390,7 @@ describe('Transaction Controller', () => {
             }).save();
 
             await Promise.all([1, 2, 3].map(() =>
-                getAllTransactions(mockRequest({}, {}, {}, user._id), mockResponse(), () => {})
+                processDueRecurringTransactions({ userId: user._id })
             ));
 
             const updatedUser = await User.findById(user._id);

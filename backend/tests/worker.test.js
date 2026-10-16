@@ -12,6 +12,12 @@ jest.mock('../utils/mailer', () => ({
 const mailerContext = require('../utils/mailer');
 
 let mongoServer;
+
+// worker.js drives session transactions, which only work on a replica set, so
+// this suite starts its own server instead of sharing the standalone one from
+// tests/setup.js.
+global.__MONGODB_MANAGED_BY_SUITE__ = true;
+
 jest.setTimeout(60000);
 
 beforeAll(async () => {
@@ -151,16 +157,18 @@ describe('Worker Utility - processRecurringTransactions', () => {
 
         await processRecurringTransactions();
 
-        // It should have created a new transaction with date=now
+        // The schedule was two occurrences behind (Dec 31 10:00 and Jan 1
+        // 10:00, which is exactly "now"), and the shared processor catches up
+        // on both in a single run instead of leaving one behind. Three
+        // documents total: the schedule itself plus the two executions.
         const transactions = await Transaction.find({ category: 'education' });
-        expect(transactions.length).toBe(2);
+        expect(transactions.length).toBe(3);
 
-        // Origin transaction should have nextExecutionDate advanced by 1 day from old execution date
         const originTx = transactions.find(t => t.isRecurring);
-        expect(originTx.nextExecutionDate.toISOString()).toBe(new Date('2024-01-01T10:00:00.000Z').toISOString());
+        expect(originTx.nextExecutionDate.toISOString()).toBe(new Date('2024-01-02T10:00:00.000Z').toISOString());
 
         // Check wallet balance updated
         const updatedUser = await User.findById(user._id);
-        expect(updatedUser.walletBalance).toBe(970); // 1000 - 30
+        expect(updatedUser.walletBalance).toBe(940); // 1000 - (30 twice)
     });
 });
