@@ -29,6 +29,9 @@ router.get('/', protect, budgetController.getAllBudgets);
 // Copy Previous Budget
 router.post('/copy-previous', protect, sanitizeInput, budgetController.copyPreviousBudget);
 
+// Apply rollover from previous month (must be before /:month)
+router.post('/apply-rollover', protect, budgetController.applyRollover);
+
 // Delete Budget
 router.delete('/:id', protect, budgetController.deleteBudget);
 

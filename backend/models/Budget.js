@@ -47,6 +47,27 @@ const budgetSchema = new mongoose.Schema({
     required: true,
     match: [/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format']
   },
+
+  rolloverEnabled: {
+    type: Boolean,
+    default: false
+  },
+
+  rolloverMode: {
+    type: String,
+    enum: ['positive', 'both'],
+    default: 'positive'
+  },
+
+  rolloverAmount: {
+    type: Number,
+    default: 0
+  },
+
+  rolloverFrom: {
+    type: String,
+    default: null
+  },
   
   isActive: {
     type: Boolean,
