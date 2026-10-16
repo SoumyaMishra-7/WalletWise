@@ -13,6 +13,19 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const gamification = require('../utils/gamification');
 const { escapeRegex } = require('../utils/helpers');
+const { CATEGORIES } = require('../constants/categories');
+const Category = require('../models/Category');
+
+const resolveCategory = async (userId, category) => {
+  const name = String(category).trim().toLowerCase();
+  if (CATEGORIES.includes(name)) return name;
+  const custom = await Category.findOne({
+    userId,
+    name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+  }).lean();
+  if (custom) return name;
+  return null;
+};
 
 // Local development fallback (no MongoDB replica set)
 const withTransaction = async (operation) => {
@@ -82,6 +95,14 @@ const addTransaction = catchAsync(async (req, res, next) => {
     isEncrypted,
     encryptedData
   } = parsed.data;
+
+  const allowedCategory = await resolveCategory(userId, category);
+  if (!allowedCategory) {
+    return res.status(400).json({
+      success: false,
+      message: 'Unknown category. Create it under Categories first.'
+    });
+  }
 
   if (walletId) {
     if (!isValidObjectId(walletId)) {
@@ -188,6 +209,16 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
+    try {
+      await transaction.save({ session });
+    } catch (error) {
+      // Revert the balance change applied above if the write fails
+      if (walletId) {
+        await Wallet.findByIdAndUpdate(walletId, { $inc: { balance: -balanceChange } }, { session });
+      } else {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: -balanceChange } }, { session });
+      }
+      throw error;
     }
 
     // Log Activity
@@ -412,6 +443,14 @@ const updateTransaction = catchAsync(async (req, res) => {
 
   const updateData = parsed.data;
 
+  if (updateData.category !== undefined) {
+    const allowed = await resolveCategory(userId, updateData.category);
+    if (!allowed) {
+      throw new AppError('Unknown category. Create it under Categories first.', 400);
+    }
+    updateData.category = allowed;
+  }
+
   // Compute old contribution to wallet balance before mutating the document
   const oldBalanceEffect = oldTransaction.type === 'income'
     ? oldTransaction.amount
@@ -471,6 +510,11 @@ const deleteTransaction = catchAsync(async (req, res) => {
       : transaction.amount;
 
   if (transaction.walletId) {
+    const query = { _id: transaction.walletId };
+    if (STRICT_MODE && balanceChange < 0) {
+      query.balance = { $gte: Math.abs(balanceChange) };
+    }
+    const updatedWallet = await Wallet.findOneAndUpdate(query, {
       $inc: { balance: balanceChange }
     });
     if (!updatedWallet) {

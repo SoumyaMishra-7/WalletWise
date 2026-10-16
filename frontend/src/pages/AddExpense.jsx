@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getCurrencySymbol } from '../utils/currency';
 import { useVault } from '../context/VaultContext';
 import { encryptNote } from '../services/encryption';
+import api from '../api/client';
 import VaultSetup from '../components/Vault/VaultSetup';
 import VaultUnlock from '../components/Vault/VaultUnlock';
 import './AddExpense.css';
@@ -25,7 +26,15 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [customCategories, setCustomCategories] = useState([]);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    api.get('/api/categories').then((res) => {
+      if (res.data?.success) setCustomCategories(res.data.custom || []);
+    }).catch(() => {});
+  }, [isOpen]);
 
   // Vault States
   const { isVaultEnabled, isUnlocked, cryptoKey } = useVault();
@@ -71,8 +80,12 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
     { value: 'other', label: 'Other' }
   ];
 
-  const moodOptions = [
-    { value: 'happy', label: 'Happy / Excited' },
+  const allExpenseCategories = [
+    ...expenseCategories,
+    ...customCategories.map((c) => ({ value: String(c.name).toLowerCase(), label: c.name }))
+  ];
+
+  const moodOptions = [    { value: 'happy', label: 'Happy / Excited' },
     { value: 'stressed', label: 'Stressed / Tired' },
     { value: 'bored', label: 'Bored / Impulsive' },
     { value: 'sad', label: 'Sad / Low' },
@@ -411,7 +424,7 @@ const AddExpense = ({ isOpen, onClose, onSuccess, transactionToEdit }) => {
           <div className="expense-form-group">
             <label>Category</label>
             <div className="selection-grid">
-              {expenseCategories.map(cat => (
+              {allExpenseCategories.map(cat => (
                 <button
                   key={cat.value}
                   type="button"
