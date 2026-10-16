@@ -12,6 +12,12 @@ jest.mock('../utils/mailer', () => ({
 const mailerContext = require('../utils/mailer');
 
 let mongoServer;
+
+// worker.js drives session transactions, which only work on a replica set, so
+// this suite starts its own server instead of sharing the standalone one from
+// tests/setup.js.
+global.__MONGODB_MANAGED_BY_SUITE__ = true;
+
 jest.setTimeout(60000);
 
 beforeAll(async () => {

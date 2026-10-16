@@ -141,7 +141,17 @@ const userUpdateSchema = z.object({
   incomeFrequency: z.string().optional(),
   incomeSources: z.string().optional(),
   priorities: z.string().optional(),
-  riskTolerance: z.string().optional()
+  riskTolerance: z.string().optional(),
+  // Notification Settings
+  billRemindersEnabled: z
+    .union([z.boolean(), z.string()])
+    .transform((value) => value === true || value === 'true')
+    .optional(),
+  reminderDaysBefore: z
+    .union([z.number(), z.string()])
+    .transform(Number)
+    .refine((value) => [1, 3, 7].includes(value), 'Must be 1, 3, or 7')
+    .optional()
 });
 
 const verifyEmailSchema = z.object({

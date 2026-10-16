@@ -13,6 +13,10 @@ const {
 
 let mongoServer;
 
+// This suite runs against a replica set, so it starts its own server instead
+// of sharing the standalone one from tests/setup.js.
+global.__MONGODB_MANAGED_BY_SUITE__ = true;
+
 jest.setTimeout(60000);
 
 beforeAll(async () => {
