@@ -23,13 +23,13 @@ const inferCategoryType = (name) => {
   const normalized = String(name || '').toLowerCase();
 
   const mapping = {
-    food: ['food', 'grocery', 'groceries', 'dining', 'meal', 'eating'],
-    transport: ['transport', 'travel', 'commute', 'fuel', 'uber', 'taxi'],
-    shopping: ['shopping', 'shop', 'clothes'],
-    entertainment: ['entertainment', 'entertain', 'fun', 'leisure', 'movie'],
+         food: ['food', 'grocery', 'groceries', 'dining', 'meal', 'meals', 'eating', 'restaurant', 'restaurants', 'snacks'],
+    transport: ['transport', 'transportation', 'travel', 'commute', 'fuel', 'gas', 'uber', 'taxi'],
+    shopping: ['shopping', 'shop', 'clothes', 'clothing'],
+    entertainment: ['entertainment', 'entertain', 'fun', 'leisure', 'movie', 'movies'],
     education: ['education', 'school', 'study'],
-    healthcare: ['healthcare', 'health', 'medical'],
-    housing: ['housing', 'rent', 'home', 'utility']
+    healthcare: ['healthcare', 'health', 'medical', 'medicine'],
+    housing: ['housing', 'rent', 'home', 'utility', 'utilities']
   };
 
   for (const [type, keywords] of Object.entries(mapping)) {
@@ -73,10 +73,14 @@ async function migrate() {
 
   } catch (error) {
     console.error('❌ Migration failed:', error);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
     await mongoose.connection.close();
   }
 }
 
-migrate();
+if (require.main === module) {
+  migrate();
+}
+
+module.exports = { inferCategoryType };
