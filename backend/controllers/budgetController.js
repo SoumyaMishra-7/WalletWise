@@ -28,29 +28,39 @@ const setBudget = async (req, res) => {
         let totalAmount = 0;
 
         for (const category of categories) {
-            if (!category.name || category.amount === undefined || category.percentage === undefined) {
+            if (!category.name || category.amount == null || category.percentage == null) {
                 return res.status(400).json({
                     success: false,
                     message: 'Each category must have name, amount, and percentage'
                 });
             }
 
-            if (category.percentage < 0 || category.percentage > 100) {
+            const pct = Number(category.percentage);
+            const amt = Number(category.amount);
+
+            if (isNaN(pct) || isNaN(amt)) {
+                return res.status(400).json({
+                    success: false,
+                    message: `amount and percentage for "${category.name}" must be valid numbers`
+                });
+            }
+
+            if (pct < 0 || pct > 100) {
                 return res.status(400).json({
                     success: false,
                     message: `Percentage for ${category.name} must be between 0 and 100`
                 });
             }
 
-            if (category.amount < 0) {
+            if (amt < 0) {
                 return res.status(400).json({
                     success: false,
                     message: `Amount for ${category.name} cannot be negative`
                 });
             }
 
-            totalPercentage += category.percentage;
-            totalAmount += category.amount;
+            totalPercentage += pct;
+            totalAmount += amt;
         }
 
         // Check if percentages sum to 100
