@@ -14,7 +14,7 @@ Introduced a "Skip Next" mechanism that increments the `nextExecutionDate` witho
 
 ### Backend Changes:
 
-- `transactionRoutes.js`: Exposes a new `POST /api/transactions/:id/skip` endpoint.
+- `transactionRoutes.js`: Exposes a new `PATCH /api/transactions/recurring/:id/skip` endpoint.
 
 - `transactionController.js`: Verifies if a transaction is recurring before incrementing its `nextExecutionDate` by a day, week, or month, according to its interval. Saves the updated state.
 
