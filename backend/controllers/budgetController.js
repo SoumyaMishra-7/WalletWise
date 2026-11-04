@@ -286,7 +286,10 @@ const copyPreviousBudget = async (req, res) => {
 
 
         const currentDate = new Date();
-        const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+        // Month keys come from toISOString() (UTC), so step back a month in UTC
+        // too. Building the date in local time and then calling toISOString()
+        // lands on the previous UTC day east of UTC, i.e. two months back in IST.
+        const previousMonth = new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth() - 1, 1))
             .toISOString().slice(0, 7);
 
         const previousBudget = await Budget.findOne({
