@@ -186,7 +186,7 @@ app.use('/api/v1/auth', authLimiter);
 app.use('/api/auth', authLimiter);
 
 // ==================== DATABASE CONNECTION ====================
-console.log(`🔗 Connecting to MongoDB: ${MONGODB_URI}`);
+console.log('🔗 Connecting to MongoDB');
 
 if (process.env.NODE_ENV !== 'test') {
     mongoose.connect(MONGODB_URI, {

@@ -188,7 +188,7 @@ const addTransaction = catchAsync(async (req, res, next) => {
       encryptedData
     });
 
-    }
+    await transaction.save({ session });
 
     // Log Activity
     await logTransactionActivity({
