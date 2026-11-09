@@ -77,7 +77,7 @@ budgetSchema.statics.getCurrentBudget = async function (userId) {
 // Static method to copy previous month's budget
 budgetSchema.statics.copyPreviousMonth = async function (userId) {
   const currentDate = new Date();
-  const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+  const previousMonth = new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth() - 1, 1))
     .toISOString().slice(0, 7);
 
   const previousBudget = await this.findOne({
