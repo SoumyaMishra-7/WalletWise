@@ -1,4 +1,5 @@
-name: Auto Comment on Issue
+
+name: "💬 Auto Comment on Issue"
 
 on:
   issues:
@@ -9,21 +10,34 @@ permissions:
 
 jobs:
   comment:
+    name: Add Welcome Comment
     runs-on: ubuntu-latest
+
     steps:
       - name: Add Comment to Issue
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const issueNumber = context.issue.number;
 
-            const commentBody1 = `### Thank you for raising this issue!\n We'll review it as soon as possible. We truly appreciate your contributions! ✨\n\n> Meanwhile make sure you've visited the README.md, CONTRIBUTING.md, and CODE_OF_CONDUCT.md before creating a PR for this. Also, please do NOT create a PR until this issue has been assigned to you.`;
+            const commentBody = `### 🎉 Thank you for raising this issue!
+
+            We'll review it as soon as possible. We truly appreciate your contributions!
+
+            > 📌 **Before creating a Pull Request:**
+            >
+            > - Make sure you have read the \`README.md\`.
+            > - Review the \`CONTRIBUTING.md\` guidelines.
+            > - Read the \`CODE_OF_CONDUCT.md\`.
+            > - Please do not create a Pull Request until this issue has been assigned to you.
+
+            Thank you for contributing to our project! ✨`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
-              body: commentBody1
+              body: commentBody
             });
 
-            console.log('Both comments added successfully.');
+            console.log(`Successfully added a welcome comment to issue #${issueNumber}.`);
